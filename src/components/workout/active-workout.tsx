@@ -240,7 +240,7 @@ export function ActiveWorkout({
                       </Badge>
                     </div>
                     
-                    <div className="space-y-2">
+                    <div className="space-y-0">
                       {visibleGroups.map(muscleGroup => {
                         const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
                         const hasExercises = groupExercises.length > 0;
