@@ -117,19 +117,33 @@ export function UnifiedExerciseCard({
             {onCompleteSet && (
               <>
                 {setCount > 1 ? (
-                  // Multiple sets - show next set button
-                  completedSets < setCount && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onCompleteSet && onCompleteSet()}
-                      className="h-5 px-1.5 text-xs"
-                      disabled={disabled}
-                    >
-                      <Check className="h-2.5 w-2.5 mr-1" />
-                      {completedSets + 1}
-                    </Button>
-                  )
+                  // Multiple sets - show completion controls
+                  <div className="flex items-center gap-0.5">
+                    {completedSets > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onCompleteSet && onCompleteSet(true)}
+                        className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground"
+                        disabled={disabled}
+                        title="Undo last set"
+                      >
+                        <span className="text-xs">-</span>
+                      </Button>
+                    )}
+                    {completedSets < setCount && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onCompleteSet && onCompleteSet()}
+                        className="h-5 px-1.5 text-xs"
+                        disabled={disabled}
+                      >
+                        <Check className="h-2.5 w-2.5 mr-1" />
+                        {completedSets + 1}
+                      </Button>
+                    )}
+                  </div>
                 ) : (
                   // Single set - show check button
                   <Button
