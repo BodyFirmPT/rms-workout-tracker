@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Check } from "lucide-react";
 
 interface ProgressRingProps {
   progress: number;
@@ -54,7 +55,11 @@ export function ProgressRing({
       {showText && (
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="text-sm font-semibold text-foreground">
-            {Math.round(progress)}%
+            {Math.round(progress) === 100 ? (
+              <Check className="h-4 w-4" />
+            ) : (
+              `${Math.round(progress)}%`
+            )}
           </span>
         </div>
       )}
