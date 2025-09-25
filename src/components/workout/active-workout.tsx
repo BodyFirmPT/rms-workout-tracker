@@ -249,7 +249,7 @@ export function ActiveWorkout({
                           // Show added exercises for this muscle group - table-like layout
                           return <div key={muscleGroup.id} className="space-y-0">
                                 {/* Muscle group header */}
-                                <div className="flex items-center justify-between py-2 px-3 bg-muted/50 border-b-2 border-border rounded-t-lg">
+                                <div className="flex items-center justify-between py-2 px-3 bg-muted/50 border border-border rounded-t-lg">
                                   <div className="flex items-center gap-2">
                                     <h3 className="text-sm font-semibold text-foreground">{muscleGroup.name}</h3>
                                     <Badge variant="secondary" className="text-xs px-1.5 py-0">
