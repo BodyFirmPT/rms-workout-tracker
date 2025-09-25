@@ -144,7 +144,9 @@ export function ActiveWorkout({
 
   return <div className="space-y-6">
       {/* Workout Header */}
-      <Card className="bg-primary-gradient text-primary-foreground shadow-primary">
+      <Card className={`text-primary-foreground shadow-primary ${
+        isCompleted ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' : 'bg-primary-gradient'
+      }`}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>

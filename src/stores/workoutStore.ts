@@ -205,7 +205,13 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
       const activeWorkout = get().activeWorkout;
       if (activeWorkout) {
         await WorkoutService.completeWorkout(activeWorkout.id);
-        set({ activeWorkout: null });
+        const completedWorkout = { ...activeWorkout, status: 'completed' as const };
+        set((state) => ({ 
+          activeWorkout: completedWorkout,
+          workouts: state.workouts.map(w => 
+            w.id === activeWorkout.id ? completedWorkout : w
+          )
+        }));
       }
     } catch (error) {
       console.error('Failed to complete workout:', error);
