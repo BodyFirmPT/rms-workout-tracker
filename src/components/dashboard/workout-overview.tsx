@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Calendar, Clock, Play, Plus, Target, Users, Settings, Trash2, Timer, Edit } from "lucide-react";
+import { Calendar, Clock, Play, Plus, Target, Users, Settings, Trash2, Timer, Edit, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgressRing } from "@/components/ui/progress-ring";
@@ -8,6 +8,7 @@ import { useWorkoutStore } from "@/stores/workoutStore";
 import { CreateWorkoutDialog } from "@/components/workout/create-workout-dialog";
 import { DeleteWorkoutDialog } from "@/components/workout/delete-workout-dialog";
 import { EditWorkoutDialog } from "@/components/workout/edit-workout-dialog";
+import { DuplicateWorkoutDialog } from "@/components/workout/duplicate-workout-dialog";
 import { format } from "date-fns";
 import { Workout } from "@/types/workout";
 
@@ -16,6 +17,7 @@ export function WorkoutOverview() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [deletingWorkout, setDeletingWorkout] = useState<Workout | null>(null);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
+  const [duplicatingWorkout, setDuplicatingWorkout] = useState<Workout | null>(null);
   const [workoutProgresses, setWorkoutProgresses] = useState<{ [id: string]: number }>({});
   const { 
     workouts, 
@@ -50,8 +52,8 @@ export function WorkoutOverview() {
   }, [workouts, activeWorkout, getWorkoutProgress]);
 
   const recentWorkouts = workouts
-    .slice(-5)
-    .reverse();
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5);
 
   const handleViewWorkout = (workoutId: string) => {
     navigate(`/workout/${workoutId}`);
@@ -221,6 +223,17 @@ export function WorkoutOverview() {
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
+                        setDuplicatingWorkout(workout);
+                      }}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setEditingWorkout(workout);
                       }}
                       className="text-muted-foreground hover:text-foreground"
@@ -275,6 +288,14 @@ export function WorkoutOverview() {
           open={!!editingWorkout}
           onOpenChange={(open) => !open && setEditingWorkout(null)}
           workout={editingWorkout}
+        />
+      )}
+
+      {duplicatingWorkout && (
+        <DuplicateWorkoutDialog
+          open={!!duplicatingWorkout}
+          onOpenChange={(open) => !open && setDuplicatingWorkout(null)}
+          workout={duplicatingWorkout}
         />
       )}
     </div>

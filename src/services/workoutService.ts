@@ -191,6 +191,74 @@ export class WorkoutService {
     if (error) throw error;
   }
 
+  static async duplicateWorkout(workoutId: string, clientId: string, date: Date) {
+    // First get the original workout with its exercises
+    const { data: originalWorkout, error: workoutError } = await supabase
+      .from('workout')
+      .select('*')
+      .eq('id', workoutId)
+      .single();
+
+    if (workoutError) {
+      console.error('Error fetching original workout:', workoutError);
+      throw workoutError;
+    }
+
+    const { data: originalExercises, error: exercisesError } = await supabase
+      .from('workout_exercise')
+      .select('*')
+      .eq('workout_id', workoutId);
+
+    if (exercisesError) {
+      console.error('Error fetching original exercises:', exercisesError);
+      throw exercisesError;
+    }
+
+    // Create the new workout
+    const { data: newWorkout, error: createWorkoutError } = await supabase
+      .from('workout')
+      .insert({
+        client_id: clientId,
+        note: originalWorkout.note,
+        date: date.toISOString().split('T')[0],
+        is_active: false
+      })
+      .select()
+      .single();
+
+    if (createWorkoutError) {
+      console.error('Error creating duplicate workout:', createWorkoutError);
+      throw createWorkoutError;
+    }
+
+    // Duplicate all exercises
+    if (originalExercises && originalExercises.length > 0) {
+      const exercisesToInsert = originalExercises.map(exercise => ({
+        workout_id: newWorkout.id,
+        muscle_group_id: exercise.muscle_group_id,
+        exercise_name: exercise.exercise_name,
+        reps: exercise.reps,
+        unit: exercise.unit,
+        count: exercise.count,
+        note: exercise.note || '',
+        set_count: exercise.set_count,
+        completed_sets: 0, // Reset completion status
+        is_completed: false
+      }));
+
+      const { error: insertExercisesError } = await supabase
+        .from('workout_exercise')
+        .insert(exercisesToInsert);
+
+      if (insertExercisesError) {
+        console.error('Error duplicating exercises:', insertExercisesError);
+        throw insertExercisesError;
+      }
+    }
+
+    return newWorkout;
+  }
+
   // Workout Exercises
   static async getWorkoutExercises(workoutId: string): Promise<WorkoutExercise[]> {
     const { data, error } = await supabase
