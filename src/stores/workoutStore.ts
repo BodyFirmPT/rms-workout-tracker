@@ -196,6 +196,22 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
           )
         }
       }));
+
+      // Check if all exercises are now completed and auto-complete workout
+      const currentExercises = get().workoutExercises[workoutId] || [];
+      const updatedExercises = currentExercises.map(ex => 
+        ex.id === exerciseId ? updatedExercise : ex
+      );
+      
+      const allExercisesCompleted = updatedExercises.length > 0 && 
+        updatedExercises.every(ex => ex.completed_sets >= ex.set_count);
+      
+      if (allExercisesCompleted) {
+        const workout = get().workouts.find(w => w.id === workoutId);
+        if (workout && workout.status !== 'completed') {
+          await get().completeWorkout(workoutId);
+        }
+      }
     } catch (error) {
       console.error('Failed to complete exercise set:', error);
     }

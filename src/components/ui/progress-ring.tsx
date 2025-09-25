@@ -56,7 +56,7 @@ export function ProgressRing({
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="text-sm font-semibold text-foreground">
             {Math.round(progress) === 100 ? (
-              <Check className="h-4 w-4" />
+              <Check className="h-4 w-4 text-primary" />
             ) : (
               `${Math.round(progress)}%`
             )}
