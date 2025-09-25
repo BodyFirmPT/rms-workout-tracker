@@ -184,8 +184,9 @@ export function ActiveWorkout({
             const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
             const hasExercises = groupExercises.length > 0;
             
-            // Only hide muscle groups without exercises if workout has been started (has exercises) or is read-only
-            if ((activeWorkout && exercises.length > 0) || isReadOnlyMode) {
+            // Only hide muscle groups without exercises if this workout is actively started or in read-only mode
+            const isWorkoutStarted = activeWorkout && activeWorkout.id === currentWorkout.id;
+            if (isWorkoutStarted || isReadOnlyMode) {
               if (!hasExercises) return null;
             }
             
