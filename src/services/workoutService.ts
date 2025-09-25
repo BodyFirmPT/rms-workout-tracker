@@ -97,6 +97,18 @@ export class WorkoutService {
     if (error) throw error;
   }
 
+  static async updateWorkout(id: string, updates: Partial<{ note: string; date: string }>): Promise<Workout> {
+    const { data, error } = await supabase
+      .from('workout')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+
   static async deleteWorkout(id: string): Promise<void> {
     const { error } = await supabase
       .from('workout')

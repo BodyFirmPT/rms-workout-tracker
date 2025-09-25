@@ -1,12 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Calendar, Clock, Play, Plus, Target, Users, Settings, Trash2, Timer } from "lucide-react";
+import { Calendar, Clock, Play, Plus, Target, Users, Settings, Trash2, Timer, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgressRing } from "@/components/ui/progress-ring";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { CreateWorkoutDialog } from "@/components/workout/create-workout-dialog";
 import { DeleteWorkoutDialog } from "@/components/workout/delete-workout-dialog";
+import { EditWorkoutDialog } from "@/components/workout/edit-workout-dialog";
 import { format } from "date-fns";
 import { Workout } from "@/types/workout";
 
@@ -14,6 +15,7 @@ export function WorkoutOverview() {
   const navigate = useNavigate();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [deletingWorkout, setDeletingWorkout] = useState<Workout | null>(null);
+  const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
   const [workoutProgresses, setWorkoutProgresses] = useState<{ [id: string]: number }>({});
   const { 
     workouts, 
@@ -219,6 +221,17 @@ export function WorkoutOverview() {
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
+                        setEditingWorkout(workout);
+                      }}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setDeletingWorkout(workout);
                       }}
                       className="text-destructive hover:text-destructive"
@@ -254,6 +267,14 @@ export function WorkoutOverview() {
           open={!!deletingWorkout}
           onOpenChange={(open) => !open && setDeletingWorkout(null)}
           workout={deletingWorkout}
+        />
+      )}
+
+      {editingWorkout && (
+        <EditWorkoutDialog
+          open={!!editingWorkout}
+          onOpenChange={(open) => !open && setEditingWorkout(null)}
+          workout={editingWorkout}
         />
       )}
     </div>

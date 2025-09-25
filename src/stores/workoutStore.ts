@@ -41,6 +41,7 @@ interface WorkoutStore {
   loadWorkoutExercises: (workoutId: string) => Promise<void>;
   deleteExercise: (workoutId: string, exerciseId: string) => Promise<void>;
   deleteWorkout: (id: string) => Promise<void>;
+  updateWorkout: (id: string, updates: Partial<{ note: string; date: string }>) => Promise<void>;
   updateExercise: (workoutId: string, exerciseId: string, updates: Partial<CreateWorkoutExerciseInput>) => Promise<void>;
 }
 
@@ -242,6 +243,21 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
     } catch (error) {
       console.error('Failed to get unique exercises for client:', error);
       return [];
+    }
+  },
+
+  updateWorkout: async (id: string, updates: Partial<{ note: string; date: string }>) => {
+    try {
+      const updatedWorkout = await WorkoutService.updateWorkout(id, updates);
+      set((state) => ({
+        workouts: state.workouts.map(w => 
+          w.id === id ? updatedWorkout : w
+        ),
+        // Update active workout if it's the one being updated
+        activeWorkout: state.activeWorkout?.id === id ? updatedWorkout : state.activeWorkout
+      }));
+    } catch (error) {
+      console.error('Failed to update workout:', error);
     }
   },
 
