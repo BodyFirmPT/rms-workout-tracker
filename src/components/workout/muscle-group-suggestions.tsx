@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { UnifiedExerciseCard } from "@/components/ui/unified-exercise-card";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { MuscleGroup, WorkoutExercise } from "@/types/workout";
-
 interface MuscleGroupSuggestionsProps {
   muscleGroup: MuscleGroup;
   clientId: string;
@@ -15,20 +14,20 @@ interface MuscleGroupSuggestionsProps {
   onAddExercise: () => void;
   disabled?: boolean;
 }
-
-export function MuscleGroupSuggestions({ 
-  muscleGroup, 
-  clientId, 
-  workoutId, 
+export function MuscleGroupSuggestions({
+  muscleGroup,
+  clientId,
+  workoutId,
   hasExistingExercises,
   onAddExercise,
   disabled = false
 }: MuscleGroupSuggestionsProps) {
   const [suggestions, setSuggestions] = useState<WorkoutExercise[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  const { getUniqueExercisesForClient, addExerciseToWorkout } = useWorkoutStore();
-
+  const {
+    getUniqueExercisesForClient,
+    addExerciseToWorkout
+  } = useWorkoutStore();
   useEffect(() => {
     const loadSuggestions = async () => {
       setLoading(true);
@@ -41,10 +40,8 @@ export function MuscleGroupSuggestions({
         setLoading(false);
       }
     };
-    
     loadSuggestions();
   }, [clientId, muscleGroup.id, getUniqueExercisesForClient]);
-
   const handleCopyExercise = async (exercise: WorkoutExercise) => {
     if (!disabled) {
       await addExerciseToWorkout(workoutId, {
@@ -58,62 +55,35 @@ export function MuscleGroupSuggestions({
       });
     }
   };
-
-  return (
-    <Card className={`${hasExistingExercises ? 'bg-accent/50' : ''}`}>
+  return <Card className={`${hasExistingExercises ? 'bg-accent/50' : ''}`}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CardTitle className="text-base font-medium">{muscleGroup.name}</CardTitle>
-            {muscleGroup.default_group && (
-              <Badge variant="secondary" className="text-xs">Default</Badge>
-            )}
+            {muscleGroup.default_group}
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onAddExercise}
-            className="h-7 px-2 text-xs"
-            disabled={disabled}
-          >
+          <Button variant="outline" size="sm" onClick={onAddExercise} className="h-7 px-2 text-xs" disabled={disabled}>
             <Plus className="h-3 w-3 mr-1" />
             Add
           </Button>
         </div>
       </CardHeader>
       
-      {suggestions.length > 0 && (
-        <CardContent className="pt-0 space-y-2">
+      {suggestions.length > 0 && <CardContent className="pt-0 space-y-2">
           <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
             <History className="h-3 w-3" />
             Recent exercises for this client:
           </div>
           
           <div className="space-y-2">
-            {suggestions.map((exercise, index) => (
-              <UnifiedExerciseCard
-                key={index}
-                exerciseName={exercise.exercise_name}
-                reps={exercise.reps}
-                unit={exercise.unit}
-                setCount={exercise.set_count}
-                note={exercise.note || undefined}
-                variant="suggested"
-                onAdd={() => handleCopyExercise(exercise)}
-                disabled={disabled}
-              />
-            ))}
+            {suggestions.map((exercise, index) => <UnifiedExerciseCard key={index} exerciseName={exercise.exercise_name} reps={exercise.reps} unit={exercise.unit} setCount={exercise.set_count} note={exercise.note || undefined} variant="suggested" onAdd={() => handleCopyExercise(exercise)} disabled={disabled} />)}
           </div>
-        </CardContent>
-      )}
+        </CardContent>}
       
-      {!loading && suggestions.length === 0 && !hasExistingExercises && (
-        <CardContent className="pt-0">
+      {!loading && suggestions.length === 0 && !hasExistingExercises && <CardContent className="pt-0">
           <div className="text-xs text-muted-foreground text-center py-2">
             No previous exercises for this muscle group
           </div>
-        </CardContent>
-      )}
-    </Card>
-  );
+        </CardContent>}
+    </Card>;
 }
