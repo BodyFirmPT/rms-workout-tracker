@@ -98,13 +98,13 @@ export class WorkoutService {
     return data || [];
   }
 
-  static async createWorkout(clientId: string, note: string): Promise<Workout> {
+  static async createWorkout(clientId: string, note: string, date?: string): Promise<Workout> {
     const { data, error } = await supabase
       .from('workout')
       .insert({ 
         client_id: clientId, 
         note,
-        date: new Date().toISOString().split('T')[0]
+        date: date || new Date().toISOString().split('T')[0]
       })
       .select()
       .single();

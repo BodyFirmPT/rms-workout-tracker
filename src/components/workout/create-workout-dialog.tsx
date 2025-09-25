@@ -1,10 +1,14 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { CreateClientDialog } from "./create-client-dialog";
 
@@ -15,6 +19,7 @@ interface CreateWorkoutDialogProps {
 
 export function CreateWorkoutDialog({ open, onOpenChange }: CreateWorkoutDialogProps) {
   const [note, setNote] = useState("");
+  const [date, setDate] = useState<Date>(new Date());
   const [clientId, setClientId] = useState("");
   const [showCreateClient, setShowCreateClient] = useState(false);
   
@@ -22,12 +27,13 @@ export function CreateWorkoutDialog({ open, onOpenChange }: CreateWorkoutDialogP
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!note.trim() || !clientId) return;
+    if (!clientId) return;
 
-    const workoutId = createWorkout(clientId, note.trim());
+    const workoutId = createWorkout(clientId, note.trim(), date.toISOString().split('T')[0]);
     
     // Reset form
     setNote("");
+    setDate(new Date());
     setClientId("");
     onOpenChange(false);
     
@@ -79,13 +85,39 @@ export function CreateWorkoutDialog({ open, onOpenChange }: CreateWorkoutDialogP
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="note">Workout Name/Note</Label>
+              <Label>Workout Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={(selectedDate) => selectedDate && setDate(selectedDate)}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="note">Workout Note (Optional)</Label>
               <Input
                 id="note"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="e.g., Upper Body Strength, Cardio Session"
-                required
               />
             </div>
             
@@ -93,7 +125,7 @@ export function CreateWorkoutDialog({ open, onOpenChange }: CreateWorkoutDialogP
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={!note.trim() || !clientId}>
+              <Button type="submit" disabled={!clientId}>
                 Create Workout
               </Button>
             </div>
