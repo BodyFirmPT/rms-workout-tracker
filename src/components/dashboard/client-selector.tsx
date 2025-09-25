@@ -81,11 +81,7 @@ export function ClientSelector() {
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-between">
-        <Button onClick={() => setShowCreateClient(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add New Client
-        </Button>
+      <div className="flex justify-end">
         <Button 
           variant="outline" 
           onClick={() => navigate("/muscle-groups")}
@@ -99,10 +95,18 @@ export function ClientSelector() {
       {/* Client Selection */}
       <Card>
         <CardHeader>
-          <CardTitle>Select a Client</CardTitle>
-          <CardDescription>
-            Choose a client to view their workouts and training progress
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Select a Client</CardTitle>
+              <CardDescription>
+                Choose a client to view their workouts and training progress
+              </CardDescription>
+            </div>
+            <Button onClick={() => setShowCreateClient(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add New Client
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {loading ? (
