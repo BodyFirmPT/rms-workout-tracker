@@ -9,14 +9,20 @@ import { AddExerciseDialog } from "@/components/workout/add-exercise-dialog";
 import { MuscleGroupSuggestions } from "@/components/workout/muscle-group-suggestions";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { format } from "date-fns";
+import { CreateWorkoutExerciseInput } from "@/types/workout";
 
-export function ActiveWorkout() {
+interface ActiveWorkoutProps {
+  workoutId?: string; // For viewing specific workouts
+}
+
+export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
   const [showAddExercise, setShowAddExercise] = useState(false);
   const [selectedMuscleGroupId, setSelectedMuscleGroupId] = useState<string | null>(null);
   const [workoutProgress, setWorkoutProgress] = useState(0);
   
   const { 
     activeWorkout, 
+    workouts,
     workoutExercises,
     muscleGroups,
     completeExerciseSet, 
@@ -27,41 +33,51 @@ export function ActiveWorkout() {
     loadWorkoutExercises,
     loadData,
     deleteExercise,
-    updateExercise
+    updateExercise,
+    addExerciseToWorkout,
+    getClientExerciseHistory
   } = useWorkoutStore();
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
+  // Determine which workout to display
+  const currentWorkout = workoutId ? workouts.find(w => w.id === workoutId) : activeWorkout;
+  const isViewingMode = !!workoutId; // If workoutId is provided, we're in viewing mode
+
   useEffect(() => {
-    if (activeWorkout) {
-      loadWorkoutExercises(activeWorkout.id);
+    if (currentWorkout) {
+      loadWorkoutExercises(currentWorkout.id);
     }
-  }, [activeWorkout, loadWorkoutExercises]);
+  }, [currentWorkout, loadWorkoutExercises]);
 
   useEffect(() => {
     const updateProgress = async () => {
-      if (activeWorkout) {
-        const progress = await getWorkoutProgress(activeWorkout.id);
+      if (currentWorkout) {
+        const progress = await getWorkoutProgress(currentWorkout.id);
         setWorkoutProgress(progress);
       }
     };
     updateProgress();
-  }, [activeWorkout, workoutExercises, getWorkoutProgress]);
+  }, [currentWorkout, workoutExercises, getWorkoutProgress]);
 
-  if (!activeWorkout) {
+  if (!currentWorkout) {
     return (
       <div className="text-center py-12">
         <Timer className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-        <h2 className="text-2xl font-semibold text-foreground mb-2">No Active Workout</h2>
-        <p className="text-muted-foreground">Start a workout to begin tracking your exercises</p>
+        <h2 className="text-2xl font-semibold text-foreground mb-2">
+          {workoutId ? "Workout Not Found" : "No Active Workout"}
+        </h2>
+        <p className="text-muted-foreground">
+          {workoutId ? "This workout could not be found" : "Start a workout to begin tracking your exercises"}
+        </p>
       </div>
     );
   }
 
-  const client = getClientById(activeWorkout.client_id);
-  const exercises = workoutExercises[activeWorkout.id] || [];
+  const client = getClientById(currentWorkout.client_id);
+  const exercises = workoutExercises[currentWorkout.id] || [];
   
   // Group exercises by muscle group
   const exercisesByMuscleGroup = exercises.reduce((acc, exercise) => {
@@ -92,7 +108,9 @@ export function ActiveWorkout() {
   };
 
   const handleCompleteSet = (exerciseId: string) => {
-    completeExerciseSet(activeWorkout.id, exerciseId);
+    if (!isViewingMode) {
+      completeExerciseSet(currentWorkout.id, exerciseId);
+    }
   };
 
   const handleCompleteWorkout = () => {
@@ -100,7 +118,9 @@ export function ActiveWorkout() {
   };
 
   const handleDeleteExercise = (exerciseId: string) => {
-    deleteExercise(activeWorkout.id, exerciseId);
+    if (!isViewingMode) {
+      deleteExercise(currentWorkout.id, exerciseId);
+    }
   };
 
   const handleEditExercise = (exerciseId: string) => {
@@ -118,10 +138,10 @@ export function ActiveWorkout() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Timer className="h-5 w-5" />
-                {activeWorkout.note}
+                {currentWorkout.note}
               </CardTitle>
               <CardDescription className="text-primary-foreground/80">
-                {client?.name} • {format(new Date(activeWorkout.date), 'MMMM d, yyyy')}
+                {client?.name} • {format(new Date(currentWorkout.date), 'MMMM d, yyyy')}
               </CardDescription>
             </div>
             <div className="text-right">
@@ -144,16 +164,18 @@ export function ActiveWorkout() {
               </p>
               
               <div className="flex gap-2">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setShowAddExercise(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Exercise
-                </Button>
+                {!isViewingMode && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setShowAddExercise(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Exercise
+                  </Button>
+                )}
                 
-                {workoutProgress === 100 && (
+                {!isViewingMode && workoutProgress === 100 && (
                   <Button
                     variant="secondary" 
                     size="sm"
@@ -205,6 +227,7 @@ export function ActiveWorkout() {
                           size="sm"
                           onClick={() => handleAddExerciseForMuscleGroup(muscleGroup.id)}
                           className="h-7 px-2 text-xs"
+                          disabled={isViewingMode}
                         >
                           <Plus className="h-3 w-3 mr-1" />
                           Add
@@ -223,9 +246,9 @@ export function ActiveWorkout() {
                           note={exercise.note}
                           muscleGroup={muscleGroup.name}
                           isCompleted={exercise.is_completed}
-                          onCompleteSet={() => handleCompleteSet(exercise.id)}
-                          onEdit={() => handleEditExercise(exercise.id)}
-                          onDelete={() => handleDeleteExercise(exercise.id)}
+                          onCompleteSet={!isViewingMode ? () => handleCompleteSet(exercise.id) : undefined}
+                          onEdit={!isViewingMode ? () => handleEditExercise(exercise.id) : undefined}
+                          onDelete={!isViewingMode ? () => handleDeleteExercise(exercise.id) : undefined}
                           isActive={true}
                         />
                       ))}
@@ -235,14 +258,15 @@ export function ActiveWorkout() {
               } else {
                 // Show muscle group suggestions
                 return (
-                  <MuscleGroupSuggestions
-                    key={muscleGroup.id}
-                    muscleGroup={muscleGroup}
-                    clientId={activeWorkout.client_id}
-                    workoutId={activeWorkout.id}
-                    hasExistingExercises={false}
-                    onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)}
-                  />
+                    <MuscleGroupSuggestions
+                      key={muscleGroup.id}
+                      muscleGroup={muscleGroup}
+                      clientId={currentWorkout.client_id}
+                      workoutId={currentWorkout.id}
+                      hasExistingExercises={false}
+                      onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)}
+                      disabled={isViewingMode}
+                    />
                 );
               }
             })}
@@ -268,6 +292,7 @@ export function ActiveWorkout() {
                         size="sm"
                         onClick={() => handleAddExerciseForMuscleGroup(muscleGroup.id)}
                         className="h-7 px-2 text-xs"
+                        disabled={isViewingMode}
                       >
                         <Plus className="h-3 w-3 mr-1" />
                         Add
@@ -286,9 +311,9 @@ export function ActiveWorkout() {
                         note={exercise.note}
                         muscleGroup={muscleGroupName}
                         isCompleted={exercise.is_completed}
-                        onCompleteSet={() => handleCompleteSet(exercise.id)}
-                        onEdit={() => handleEditExercise(exercise.id)}
-                        onDelete={() => handleDeleteExercise(exercise.id)}
+                        onCompleteSet={!isViewingMode ? () => handleCompleteSet(exercise.id) : undefined}
+                        onEdit={!isViewingMode ? () => handleEditExercise(exercise.id) : undefined}
+                        onDelete={!isViewingMode ? () => handleDeleteExercise(exercise.id) : undefined}
                         isActive={true}
                       />
                     ))}
@@ -297,24 +322,26 @@ export function ActiveWorkout() {
               );
             })}
 
-            {/* Add custom muscle group card */}
-            <Card className="border-dashed">
-              <CardContent className="flex items-center justify-center py-8">
-                <Button
-                  variant="ghost"
-                  onClick={() => handleAddExerciseForMuscleGroup('')}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Custom Muscle Group
-                </Button>
-              </CardContent>
-            </Card>
+            {/* Add custom muscle group card - only show in active mode */}
+            {!isViewingMode && (
+              <Card className="border-dashed">
+                <CardContent className="flex items-center justify-center py-8">
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleAddExerciseForMuscleGroup('')}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Custom Muscle Group
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      {exercises.length === 0 && (
+      {exercises.length === 0 && !isViewingMode && (
         <Card>
           <CardContent className="text-center py-12">
             <Plus className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -328,15 +355,17 @@ export function ActiveWorkout() {
         </Card>
       )}
 
-      <AddExerciseDialog
-        open={showAddExercise}
-        onOpenChange={(open) => {
-          setShowAddExercise(open);
-          if (!open) setSelectedMuscleGroupId(null);
-        }}
-        workoutId={activeWorkout.id}
-        preselectedMuscleGroupId={selectedMuscleGroupId || undefined}
-      />
+      {!isViewingMode && (
+        <AddExerciseDialog
+          open={showAddExercise}
+          onOpenChange={(open) => {
+            setShowAddExercise(open);
+            if (!open) setSelectedMuscleGroupId(null);
+          }}
+          workoutId={currentWorkout.id}
+          preselectedMuscleGroupId={selectedMuscleGroupId || undefined}
+        />
+      )}
     </div>
   );
 }

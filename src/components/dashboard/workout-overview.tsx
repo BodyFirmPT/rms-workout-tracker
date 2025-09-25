@@ -48,6 +48,10 @@ export function WorkoutOverview() {
     .slice(-5)
     .reverse();
 
+  const handleViewWorkout = (workoutId: string) => {
+    navigate(`/workout/${workoutId}`);
+  };
+
   const handleStartWorkout = (workoutId: string) => {
     startWorkout(workoutId);
     navigate("/workout");
@@ -172,7 +176,8 @@ export function WorkoutOverview() {
               return (
                 <div
                   key={workout.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => handleViewWorkout(workout.id)}
                 >
                   <div className="flex items-center gap-4">
                     <ProgressRing 
@@ -197,7 +202,10 @@ export function WorkoutOverview() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleStartWorkout(workout.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStartWorkout(workout.id);
+                      }}
                     >
                       <Play className="h-4 w-4 mr-2" />
                       Start

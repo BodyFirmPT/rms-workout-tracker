@@ -12,6 +12,7 @@ interface MuscleGroupSuggestionsProps {
   workoutId: string;
   hasExistingExercises: boolean;
   onAddExercise: () => void;
+  disabled?: boolean;
 }
 
 export function MuscleGroupSuggestions({ 
@@ -19,7 +20,8 @@ export function MuscleGroupSuggestions({
   clientId, 
   workoutId, 
   hasExistingExercises,
-  onAddExercise 
+  onAddExercise,
+  disabled = false
 }: MuscleGroupSuggestionsProps) {
   const [suggestions, setSuggestions] = useState<WorkoutExercise[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,15 +45,17 @@ export function MuscleGroupSuggestions({
   }, [clientId, muscleGroup.id, getUniqueExercisesForClient]);
 
   const handleCopyExercise = async (exercise: WorkoutExercise) => {
-    await addExerciseToWorkout(workoutId, {
-      muscle_group_id: exercise.muscle_group_id,
-      exercise_name: exercise.exercise_name,
-      reps: exercise.reps,
-      unit: exercise.unit,
-      count: exercise.count,
-      set_count: exercise.set_count,
-      note: exercise.note || ''
-    });
+    if (!disabled) {
+      await addExerciseToWorkout(workoutId, {
+        muscle_group_id: exercise.muscle_group_id,
+        exercise_name: exercise.exercise_name,
+        reps: exercise.reps,
+        unit: exercise.unit,
+        count: exercise.count,
+        set_count: exercise.set_count,
+        note: exercise.note || ''
+      });
+    }
   };
 
   return (
@@ -69,6 +73,7 @@ export function MuscleGroupSuggestions({
             size="sm"
             onClick={onAddExercise}
             className="h-7 px-2 text-xs"
+            disabled={disabled}
           >
             <Plus className="h-3 w-3 mr-1" />
             Add
@@ -101,6 +106,7 @@ export function MuscleGroupSuggestions({
                   size="sm"
                   onClick={() => handleCopyExercise(exercise)}
                   className="h-6 px-2 text-xs"
+                  disabled={disabled}
                 >
                   <Copy className="h-3 w-3 mr-1" />
                   Copy
