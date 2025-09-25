@@ -37,6 +37,8 @@ interface WorkoutStore {
   getClientExerciseHistory: (clientId: string, muscleGroupId?: string) => Promise<WorkoutExercise[]>;
   getUniqueExercisesForClient: (clientId: string, muscleGroupId: string) => Promise<WorkoutExercise[]>;
   loadWorkoutExercises: (workoutId: string) => Promise<void>;
+  deleteExercise: (workoutId: string, exerciseId: string) => Promise<void>;
+  updateExercise: (workoutId: string, exerciseId: string, updates: Partial<CreateWorkoutExerciseInput>) => Promise<void>;
 }
 
 export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
@@ -213,6 +215,36 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
     } catch (error) {
       console.error('Failed to get unique exercises for client:', error);
       return [];
+    }
+  },
+
+  deleteExercise: async (workoutId: string, exerciseId: string) => {
+    try {
+      await WorkoutService.deleteExercise(exerciseId);
+      set((state) => ({
+        workoutExercises: {
+          ...state.workoutExercises,
+          [workoutId]: (state.workoutExercises[workoutId] || []).filter(ex => ex.id !== exerciseId)
+        }
+      }));
+    } catch (error) {
+      console.error('Failed to delete exercise:', error);
+    }
+  },
+
+  updateExercise: async (workoutId: string, exerciseId: string, updates: Partial<CreateWorkoutExerciseInput>) => {
+    try {
+      const updatedExercise = await WorkoutService.updateExercise(exerciseId, updates);
+      set((state) => ({
+        workoutExercises: {
+          ...state.workoutExercises,
+          [workoutId]: (state.workoutExercises[workoutId] || []).map(ex =>
+            ex.id === exerciseId ? updatedExercise : ex
+          )
+        }
+      }));
+    } catch (error) {
+      console.error('Failed to update exercise:', error);
     }
   },
 }));

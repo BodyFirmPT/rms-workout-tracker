@@ -25,7 +25,9 @@ export function ActiveWorkout() {
     getClientById,
     getMuscleGroupById,
     loadWorkoutExercises,
-    loadData
+    loadData,
+    deleteExercise,
+    updateExercise
   } = useWorkoutStore();
 
   useEffect(() => {
@@ -95,6 +97,16 @@ export function ActiveWorkout() {
 
   const handleCompleteWorkout = () => {
     completeWorkout();
+  };
+
+  const handleDeleteExercise = (exerciseId: string) => {
+    deleteExercise(activeWorkout.id, exerciseId);
+  };
+
+  const handleEditExercise = (exerciseId: string) => {
+    // For now, we'll open the add exercise dialog with the exercise data pre-filled
+    // In a real app, you'd want a separate edit dialog
+    setShowAddExercise(true);
   };
 
   return (
@@ -170,7 +182,7 @@ export function ActiveWorkout() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="space-y-4">
             {/* Default muscle groups */}
             {defaultMuscleGroups.map((muscleGroup) => {
               const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
@@ -179,7 +191,7 @@ export function ActiveWorkout() {
               if (hasExercises) {
                 // Show added exercises for this muscle group
                 return (
-                  <Card key={muscleGroup.id} className="border-accent bg-accent/20">
+                  <Card key={muscleGroup.id}>
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -212,6 +224,8 @@ export function ActiveWorkout() {
                           muscleGroup={muscleGroup.name}
                           isCompleted={exercise.is_completed}
                           onCompleteSet={() => handleCompleteSet(exercise.id)}
+                          onEdit={() => handleEditExercise(exercise.id)}
+                          onDelete={() => handleDeleteExercise(exercise.id)}
                           isActive={true}
                         />
                       ))}
@@ -239,7 +253,7 @@ export function ActiveWorkout() {
               if (!muscleGroup || muscleGroup.default_group) return null;
               
               return (
-                <Card key={muscleGroupName} className="border-accent bg-accent/20">
+                <Card key={muscleGroupName}>
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -273,6 +287,8 @@ export function ActiveWorkout() {
                         muscleGroup={muscleGroupName}
                         isCompleted={exercise.is_completed}
                         onCompleteSet={() => handleCompleteSet(exercise.id)}
+                        onEdit={() => handleEditExercise(exercise.id)}
+                        onDelete={() => handleDeleteExercise(exercise.id)}
                         isActive={true}
                       />
                     ))}

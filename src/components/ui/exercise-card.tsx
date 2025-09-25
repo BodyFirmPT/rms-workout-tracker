@@ -1,4 +1,4 @@
-import { CheckCircle, Circle, Plus } from "lucide-react";
+import { CheckCircle, Circle, Plus, Edit, Trash2 } from "lucide-react";
 import { Button } from "./button";
 import { Card, CardContent } from "./card";
 import { Badge } from "./badge";
@@ -14,6 +14,8 @@ interface ExerciseCardProps {
   muscleGroup: string;
   isCompleted: boolean;
   onCompleteSet?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
   isActive?: boolean;
 }
 
@@ -27,6 +29,8 @@ export function ExerciseCard({
   muscleGroup,
   isCompleted,
   onCompleteSet,
+  onEdit,
+  onDelete,
   isActive = false
 }: ExerciseCardProps) {
   return (
@@ -64,16 +68,38 @@ export function ExerciseCard({
             )}
           </div>
           
-          {onCompleteSet && !isCompleted && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onCompleteSet}
-              className="shrink-0"
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          )}
+          <div className="flex gap-1 shrink-0">
+            {onEdit && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onEdit}
+                className="h-8 w-8 p-0"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onDelete}
+                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+            {onCompleteSet && !isCompleted && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onCompleteSet}
+                className="h-8 w-8 p-0"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
         
         {/* Progress visualization */}

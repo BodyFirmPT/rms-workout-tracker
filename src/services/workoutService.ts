@@ -264,4 +264,25 @@ export class WorkoutService {
     
     return Array.from(uniqueExercises.values()).slice(0, 3); // Return top 3 unique exercises
   }
+
+  static async deleteExercise(exerciseId: string): Promise<void> {
+    const { error } = await supabase
+      .from('workout_exercise')
+      .delete()
+      .eq('id', exerciseId);
+    
+    if (error) throw error;
+  }
+
+  static async updateExercise(exerciseId: string, updates: Partial<CreateWorkoutExerciseInput>): Promise<WorkoutExercise> {
+    const { data, error } = await supabase
+      .from('workout_exercise')
+      .update(updates)
+      .eq('id', exerciseId)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
 }
