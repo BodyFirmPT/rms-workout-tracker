@@ -35,20 +35,14 @@ const MuscleGroups = () => {
             Back to Dashboard
           </Button>
           
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-                <Target className="h-8 w-8" />
-                Muscle Groups
-              </h1>
-              <p className="text-lg text-muted-foreground mt-2">
-                Manage your muscle group categories for workout tracking
-              </p>
-            </div>
-            <Button onClick={() => setShowCreateDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Muscle Group
-            </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+              <Target className="h-8 w-8" />
+              Muscle Groups
+            </h1>
+            <p className="text-lg text-muted-foreground mt-2">
+              Manage your muscle group categories for workout tracking
+            </p>
           </div>
         </div>
 
