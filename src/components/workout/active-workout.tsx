@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckCircle, Plus, StopCircle, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,13 +10,34 @@ import { format } from "date-fns";
 
 export function ActiveWorkout() {
   const [showAddExercise, setShowAddExercise] = useState(false);
+  const [workoutProgress, setWorkoutProgress] = useState(0);
+  
   const { 
     activeWorkout, 
+    workoutExercises,
     completeExerciseSet, 
     completeWorkout, 
     getWorkoutProgress, 
-    getClientById 
+    getClientById,
+    getMuscleGroupById,
+    loadWorkoutExercises
   } = useWorkoutStore();
+
+  useEffect(() => {
+    if (activeWorkout) {
+      loadWorkoutExercises(activeWorkout.id);
+    }
+  }, [activeWorkout, loadWorkoutExercises]);
+
+  useEffect(() => {
+    const updateProgress = async () => {
+      if (activeWorkout) {
+        const progress = await getWorkoutProgress(activeWorkout.id);
+        setWorkoutProgress(progress);
+      }
+    };
+    updateProgress();
+  }, [activeWorkout, workoutExercises, getWorkoutProgress]);
 
   if (!activeWorkout) {
     return (
@@ -28,18 +49,19 @@ export function ActiveWorkout() {
     );
   }
 
-  const client = getClientById(activeWorkout.clientId);
-  const progress = getWorkoutProgress(activeWorkout.id);
+  const client = getClientById(activeWorkout.client_id);
+  const exercises = workoutExercises[activeWorkout.id] || [];
   
   // Group exercises by muscle group
-  const exercisesByMuscleGroup = activeWorkout.exercises.reduce((acc, exercise) => {
-    const key = exercise.muscleGroupName;
+  const exercisesByMuscleGroup = exercises.reduce((acc, exercise) => {
+    const muscleGroup = getMuscleGroupById(exercise.muscle_group_id);
+    const key = muscleGroup?.name || 'Unknown';
     if (!acc[key]) {
       acc[key] = [];
     }
     acc[key].push(exercise);
     return acc;
-  }, {} as Record<string, typeof activeWorkout.exercises>);
+  }, {} as Record<string, typeof exercises>);
 
   const handleCompleteSet = (exerciseId: string) => {
     completeExerciseSet(activeWorkout.id, exerciseId);
@@ -65,21 +87,21 @@ export function ActiveWorkout() {
               </CardDescription>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold">{progress}%</div>
+              <div className="text-2xl font-bold">{workoutProgress}%</div>
               <div className="text-sm opacity-90">Complete</div>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <Progress value={progress} className="bg-primary-foreground/20 [&>div]:bg-primary-foreground" />
+            <Progress value={workoutProgress} className="bg-primary-foreground/20 [&>div]:bg-primary-foreground" />
             
             <div className="flex items-center justify-between">
               <p className="text-sm opacity-90">
-                {activeWorkout.exercises.length} exercises • {
-                  activeWorkout.exercises.reduce((sum, ex) => sum + ex.completedSets, 0)
+                {exercises.length} exercises • {
+                  exercises.reduce((sum, ex) => sum + ex.completed_sets, 0)
                 } / {
-                  activeWorkout.exercises.reduce((sum, ex) => sum + ex.setCount, 0)
+                  exercises.reduce((sum, ex) => sum + ex.set_count, 0)
                 } sets completed
               </p>
               
@@ -93,7 +115,7 @@ export function ActiveWorkout() {
                   Add Exercise
                 </Button>
                 
-                {progress === 100 && (
+                {workoutProgress === 100 && (
                   <Button
                     variant="secondary" 
                     size="sm"
@@ -123,14 +145,14 @@ export function ActiveWorkout() {
             {exercises.map((exercise) => (
               <ExerciseCard
                 key={exercise.id}
-                exerciseName={exercise.exerciseName}
+                exerciseName={exercise.exercise_name}
                 reps={exercise.reps}
-                completedSets={exercise.completedSets}
-                totalSets={exercise.setCount}
+                completedSets={exercise.completed_sets}
+                totalSets={exercise.set_count}
                 unit={exercise.unit}
                 note={exercise.note}
-                muscleGroup={exercise.muscleGroupName}
-                isCompleted={exercise.isCompleted}
+                muscleGroup={muscleGroup}
+                isCompleted={exercise.is_completed}
                 onCompleteSet={() => handleCompleteSet(exercise.id)}
                 isActive={true}
               />
@@ -139,7 +161,7 @@ export function ActiveWorkout() {
         </Card>
       ))}
 
-      {activeWorkout.exercises.length === 0 && (
+      {exercises.length === 0 && (
         <Card>
           <CardContent className="text-center py-12">
             <Plus className="h-16 w-16 text-muted-foreground mx-auto mb-4" />

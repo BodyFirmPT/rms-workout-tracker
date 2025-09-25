@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import { 
   Trainer, 
   Client, 
@@ -8,6 +7,7 @@ import {
   WorkoutExercise, 
   CreateWorkoutExerciseInput 
 } from '@/types/workout';
+import { WorkoutService } from '@/services/workoutService';
 
 interface WorkoutStore {
   // Data
@@ -16,178 +16,183 @@ interface WorkoutStore {
   muscleGroups: MuscleGroup[];
   workouts: Workout[];
   activeWorkout: Workout | null;
+  workoutExercises: { [workoutId: string]: WorkoutExercise[] };
+  
+  // Loading states
+  loading: boolean;
   
   // Actions
-  addTrainer: (name: string) => void;
-  addClient: (name: string, trainerId: string) => void;
-  addMuscleGroup: (name: string, isDefault?: boolean) => string;
-  createWorkout: (clientId: string, note: string) => string;
-  startWorkout: (workoutId: string) => void;
-  addExerciseToWorkout: (workoutId: string, exercise: CreateWorkoutExerciseInput) => void;
-  completeExerciseSet: (workoutId: string, exerciseId: string) => void;
-  completeWorkout: () => void;
-  getWorkoutProgress: (workoutId: string) => number;
+  loadData: () => Promise<void>;
+  addTrainer: (name: string) => Promise<void>;
+  addClient: (name: string, trainerId: string) => Promise<void>;
+  addMuscleGroup: (name: string, isDefault?: boolean) => Promise<string>;
+  createWorkout: (clientId: string, note: string) => Promise<string>;
+  startWorkout: (workoutId: string) => Promise<void>;
+  addExerciseToWorkout: (workoutId: string, exercise: CreateWorkoutExerciseInput) => Promise<void>;
+  completeExerciseSet: (workoutId: string, exerciseId: string) => Promise<void>;
+  completeWorkout: () => Promise<void>;
+  getWorkoutProgress: (workoutId: string) => Promise<number>;
   getMuscleGroupById: (id: string) => MuscleGroup | undefined;
   getClientById: (id: string) => Client | undefined;
+  loadWorkoutExercises: (workoutId: string) => Promise<void>;
 }
 
-// Default muscle groups and sample data
-const defaultMuscleGroups: MuscleGroup[] = [
-  { id: '1', name: 'Chest', default: true },
-  { id: '2', name: 'Back', default: true },
-  { id: '3', name: 'Shoulders', default: true },
-  { id: '4', name: 'Arms', default: true },
-  { id: '5', name: 'Legs', default: true },
-  { id: '6', name: 'Core', default: true },
-];
+export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
+  trainers: [],
+  clients: [],
+  muscleGroups: [],
+  workouts: [],
+  activeWorkout: null,
+  workoutExercises: {},
+  loading: false,
 
-const sampleTrainer: Trainer = {
-  id: 'trainer-1',
-  name: 'Demo Trainer',
-};
+  loadData: async () => {
+    set({ loading: true });
+    try {
+      const [trainers, clients, muscleGroups, workouts, activeWorkout] = await Promise.all([
+        WorkoutService.getTrainers(),
+        WorkoutService.getClients(),
+        WorkoutService.getMuscleGroups(),
+        WorkoutService.getWorkouts(),
+        WorkoutService.getActiveWorkout()
+      ]);
 
-const sampleClient: Client = {
-  id: 'client-1', 
-  name: 'Demo Client',
-  trainerId: 'trainer-1',
-};
-
-export const useWorkoutStore = create<WorkoutStore>()(
-  persist(
-    (set, get) => ({
-      trainers: [sampleTrainer],
-      clients: [sampleClient],
-      muscleGroups: defaultMuscleGroups,
-      workouts: [],
-      activeWorkout: null,
-
-      addTrainer: (name: string) => {
-        const trainer: Trainer = {
-          id: Date.now().toString(),
-          name,
-        };
-        set((state) => ({ trainers: [...state.trainers, trainer] }));
-      },
-
-      addClient: (name: string, trainerId: string) => {
-        const client: Client = {
-          id: Date.now().toString(),
-          name,
-          trainerId,
-        };
-        set((state) => ({ clients: [...state.clients, client] }));
-      },
-
-      addMuscleGroup: (name: string, isDefault = false) => {
-        const muscleGroup: MuscleGroup = {
-          id: Date.now().toString(),
-          name,
-          default: isDefault,
-        };
-        set((state) => ({ 
-          muscleGroups: [...state.muscleGroups, muscleGroup] 
-        }));
-        return muscleGroup.id;
-      },
-
-      createWorkout: (clientId: string, note: string) => {
-        const workout: Workout = {
-          id: Date.now().toString(),
-          date: new Date().toISOString().split('T')[0],
-          note,
-          clientId,
-          exercises: [],
-        };
-        set((state) => ({ workouts: [...state.workouts, workout] }));
-        return workout.id;
-      },
-
-      startWorkout: (workoutId: string) => {
-        const workout = get().workouts.find(w => w.id === workoutId);
-        if (workout) {
-          set({ activeWorkout: { ...workout, isActive: true } });
-        }
-      },
-
-      addExerciseToWorkout: (workoutId: string, exercise: CreateWorkoutExerciseInput) => {
-        const workoutExercise: WorkoutExercise = {
-          id: Date.now().toString(),
-          workoutId,
-          muscleGroupId: exercise.muscleGroupId,
-          muscleGroupName: exercise.muscleGroupName,
-          exerciseName: exercise.exerciseName,
-          reps: exercise.reps,
-          unit: exercise.unit,
-          count: exercise.count,
-          note: exercise.note || '',
-          setCount: exercise.setCount,
-          completedSets: 0,
-          isCompleted: false,
-        };
-
-        set((state) => ({
-          workouts: state.workouts.map(workout =>
-            workout.id === workoutId
-              ? { ...workout, exercises: [...workout.exercises, workoutExercise] }
-              : workout
-          ),
-          activeWorkout: state.activeWorkout?.id === workoutId
-            ? { ...state.activeWorkout, exercises: [...state.activeWorkout.exercises, workoutExercise] }
-            : state.activeWorkout
-        }));
-      },
-
-      completeExerciseSet: (workoutId: string, exerciseId: string) => {
-        set((state) => {
-          const updateExercise = (exercise: WorkoutExercise) => {
-            if (exercise.id === exerciseId) {
-              const newCompletedSets = Math.min(exercise.completedSets + 1, exercise.setCount);
-              return {
-                ...exercise,
-                completedSets: newCompletedSets,
-                isCompleted: newCompletedSets >= exercise.setCount
-              };
-            }
-            return exercise;
-          };
-
-          return {
-            workouts: state.workouts.map(workout =>
-              workout.id === workoutId
-                ? { ...workout, exercises: workout.exercises.map(updateExercise) }
-                : workout
-            ),
-            activeWorkout: state.activeWorkout?.id === workoutId
-              ? { ...state.activeWorkout, exercises: state.activeWorkout.exercises.map(updateExercise) }
-              : state.activeWorkout
-          };
-        });
-      },
-
-      completeWorkout: () => {
-        set({ activeWorkout: null });
-      },
-
-      getWorkoutProgress: (workoutId: string) => {
-        const workout = get().workouts.find(w => w.id === workoutId) || get().activeWorkout;
-        if (!workout || workout.exercises.length === 0) return 0;
-        
-        const totalSets = workout.exercises.reduce((sum, ex) => sum + ex.setCount, 0);
-        const completedSets = workout.exercises.reduce((sum, ex) => sum + ex.completedSets, 0);
-        
-        return Math.round((completedSets / totalSets) * 100);
-      },
-
-      getMuscleGroupById: (id: string) => {
-        return get().muscleGroups.find(mg => mg.id === id);
-      },
-
-      getClientById: (id: string) => {
-        return get().clients.find(c => c.id === id);
-      },
-    }),
-    {
-      name: 'workout-storage',
+      set({ 
+        trainers, 
+        clients, 
+        muscleGroups, 
+        workouts, 
+        activeWorkout,
+        loading: false 
+      });
+    } catch (error) {
+      console.error('Failed to load data:', error);
+      set({ loading: false });
     }
-  )
-);
+  },
+
+  addTrainer: async (name: string) => {
+    try {
+      const trainer = await WorkoutService.addTrainer(name);
+      set((state) => ({ trainers: [...state.trainers, trainer] }));
+    } catch (error) {
+      console.error('Failed to add trainer:', error);
+    }
+  },
+
+  addClient: async (name: string, trainerId: string) => {
+    try {
+      const client = await WorkoutService.addClient(name, trainerId);
+      set((state) => ({ clients: [...state.clients, client] }));
+    } catch (error) {
+      console.error('Failed to add client:', error);
+    }
+  },
+
+  addMuscleGroup: async (name: string, isDefault = false) => {
+    try {
+      const muscleGroup = await WorkoutService.addMuscleGroup(name, isDefault);
+      set((state) => ({ 
+        muscleGroups: [...state.muscleGroups, muscleGroup] 
+      }));
+      return muscleGroup.id;
+    } catch (error) {
+      console.error('Failed to add muscle group:', error);
+      return '';
+    }
+  },
+
+  createWorkout: async (clientId: string, note: string) => {
+    try {
+      const workout = await WorkoutService.createWorkout(clientId, note);
+      set((state) => ({ workouts: [...state.workouts, workout] }));
+      return workout.id;
+    } catch (error) {
+      console.error('Failed to create workout:', error);
+      return '';
+    }
+  },
+
+  startWorkout: async (workoutId: string) => {
+    try {
+      await WorkoutService.startWorkout(workoutId);
+      const activeWorkout = await WorkoutService.getActiveWorkout();
+      set({ activeWorkout });
+    } catch (error) {
+      console.error('Failed to start workout:', error);
+    }
+  },
+
+  loadWorkoutExercises: async (workoutId: string) => {
+    try {
+      const exercises = await WorkoutService.getWorkoutExercises(workoutId);
+      set((state) => ({
+        workoutExercises: {
+          ...state.workoutExercises,
+          [workoutId]: exercises
+        }
+      }));
+    } catch (error) {
+      console.error('Failed to load workout exercises:', error);
+    }
+  },
+
+  addExerciseToWorkout: async (workoutId: string, exercise: CreateWorkoutExerciseInput) => {
+    try {
+      const workoutExercise = await WorkoutService.addExerciseToWorkout(workoutId, exercise);
+      set((state) => ({
+        workoutExercises: {
+          ...state.workoutExercises,
+          [workoutId]: [...(state.workoutExercises[workoutId] || []), workoutExercise]
+        }
+      }));
+    } catch (error) {
+      console.error('Failed to add exercise to workout:', error);
+    }
+  },
+
+  completeExerciseSet: async (workoutId: string, exerciseId: string) => {
+    try {
+      const updatedExercise = await WorkoutService.completeExerciseSet(exerciseId);
+      set((state) => ({
+        workoutExercises: {
+          ...state.workoutExercises,
+          [workoutId]: (state.workoutExercises[workoutId] || []).map(ex =>
+            ex.id === exerciseId ? updatedExercise : ex
+          )
+        }
+      }));
+    } catch (error) {
+      console.error('Failed to complete exercise set:', error);
+    }
+  },
+
+  completeWorkout: async () => {
+    try {
+      const activeWorkout = get().activeWorkout;
+      if (activeWorkout) {
+        await WorkoutService.completeWorkout(activeWorkout.id);
+        set({ activeWorkout: null });
+      }
+    } catch (error) {
+      console.error('Failed to complete workout:', error);
+    }
+  },
+
+  getWorkoutProgress: async (workoutId: string) => {
+    try {
+      return await WorkoutService.getWorkoutProgress(workoutId);
+    } catch (error) {
+      console.error('Failed to get workout progress:', error);
+      return 0;
+    }
+  },
+
+  getMuscleGroupById: (id: string) => {
+    return get().muscleGroups.find(mg => mg.id === id);
+  },
+
+  getClientById: (id: string) => {
+    return get().clients.find(c => c.id === id);
+  },
+}));

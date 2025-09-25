@@ -14,7 +14,169 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      client: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          trainer_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          trainer_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          trainer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_trainer_id_fkey"
+            columns: ["trainer_id"]
+            isOneToOne: false
+            referencedRelation: "trainer"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      muscle_group: {
+        Row: {
+          created_at: string
+          default_group: boolean
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          default_group?: boolean
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          default_group?: boolean
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      trainer: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      workout: {
+        Row: {
+          client_id: string
+          created_at: string
+          date: string
+          id: string
+          is_active: boolean | null
+          note: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          date?: string
+          id?: string
+          is_active?: boolean | null
+          note: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          is_active?: boolean | null
+          note?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workout_exercise: {
+        Row: {
+          completed_sets: number
+          count: number
+          created_at: string
+          exercise_name: string
+          id: string
+          is_completed: boolean
+          muscle_group_id: string
+          note: string | null
+          reps: string
+          set_count: number
+          unit: string
+          workout_id: string
+        }
+        Insert: {
+          completed_sets?: number
+          count: number
+          created_at?: string
+          exercise_name: string
+          id?: string
+          is_completed?: boolean
+          muscle_group_id: string
+          note?: string | null
+          reps: string
+          set_count: number
+          unit: string
+          workout_id: string
+        }
+        Update: {
+          completed_sets?: number
+          count?: number
+          created_at?: string
+          exercise_name?: string
+          id?: string
+          is_completed?: boolean
+          muscle_group_id?: string
+          note?: string | null
+          reps?: string
+          set_count?: number
+          unit?: string
+          workout_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_exercise_muscle_group_id_fkey"
+            columns: ["muscle_group_id"]
+            isOneToOne: false
+            referencedRelation: "muscle_group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_exercise_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "workout"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

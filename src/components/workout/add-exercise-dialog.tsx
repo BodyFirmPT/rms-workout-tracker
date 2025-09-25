@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -26,35 +26,36 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId }: AddExercise
   const [note, setNote] = useState("");
   const [showNewMuscleGroup, setShowNewMuscleGroup] = useState(false);
   
-  const { muscleGroups, addExerciseToWorkout, addMuscleGroup, getMuscleGroupById } = useWorkoutStore();
+  const { muscleGroups, addExerciseToWorkout, addMuscleGroup, loadData } = useWorkoutStore();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!exerciseName.trim()) return;
 
     let finalMuscleGroupId = muscleGroupId;
-    let finalMuscleGroupName = getMuscleGroupById(muscleGroupId)?.name || "";
 
     // Create new muscle group if needed
     if (showNewMuscleGroup && newMuscleGroup.trim()) {
-      finalMuscleGroupId = addMuscleGroup(newMuscleGroup.trim(), false);
-      finalMuscleGroupName = newMuscleGroup.trim();
+      finalMuscleGroupId = await addMuscleGroup(newMuscleGroup.trim(), false);
     }
 
     if (!finalMuscleGroupId) return;
 
     const exercise: CreateWorkoutExerciseInput = {
-      muscleGroupId: finalMuscleGroupId,
-      muscleGroupName: finalMuscleGroupName,
-      exerciseName: exerciseName.trim(),
+      muscle_group_id: finalMuscleGroupId,
+      exercise_name: exerciseName.trim(),
       reps,
       unit,
       count,
-      setCount: sets,
+      set_count: sets,
       note: note.trim(),
     };
 
-    addExerciseToWorkout(workoutId, exercise);
+    await addExerciseToWorkout(workoutId, exercise);
     
     // Reset form
     setExerciseName("");

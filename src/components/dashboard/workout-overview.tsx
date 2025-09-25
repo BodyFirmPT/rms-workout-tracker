@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar, Clock, Play, Plus, Target, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,14 +11,38 @@ import { format } from "date-fns";
 export function WorkoutOverview() {
   const navigate = useNavigate();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [workoutProgresses, setWorkoutProgresses] = useState<{ [id: string]: number }>({});
   const { 
     workouts, 
     activeWorkout, 
     clients, 
     startWorkout, 
     getWorkoutProgress, 
-    getClientById 
+    getClientById,
+    loadData,
+    loading
   } = useWorkoutStore();
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  useEffect(() => {
+    const loadProgresses = async () => {
+      const progresses: { [id: string]: number } = {};
+      if (activeWorkout) {
+        progresses[activeWorkout.id] = await getWorkoutProgress(activeWorkout.id);
+      }
+      for (const workout of workouts.slice(-5)) {
+        progresses[workout.id] = await getWorkoutProgress(workout.id);
+      }
+      setWorkoutProgresses(progresses);
+    };
+    
+    if (workouts.length > 0 || activeWorkout) {
+      loadProgresses();
+    }
+  }, [workouts, activeWorkout, getWorkoutProgress]);
 
   const recentWorkouts = workouts
     .slice(-5)
@@ -82,11 +106,11 @@ export function WorkoutOverview() {
                   Active Workout
                 </CardTitle>
                 <CardDescription className="text-primary-foreground/80">
-                  {getClientById(activeWorkout.clientId)?.name} • {activeWorkout.note}
+                  {getClientById(activeWorkout.client_id)?.name} • {activeWorkout.note}
                 </CardDescription>
               </div>
               <ProgressRing 
-                progress={getWorkoutProgress(activeWorkout.id)} 
+                progress={workoutProgresses[activeWorkout.id] || 0} 
                 size={60}
                 strokeWidth={6}
               />
@@ -96,7 +120,7 @@ export function WorkoutOverview() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm opacity-90">
-                  {activeWorkout.exercises.length} exercises • {format(new Date(activeWorkout.date), 'MMM d')}
+                  {format(new Date(activeWorkout.date), 'MMM d')}
                 </p>
               </div>
               <Button variant="secondary" size="sm" onClick={() => navigate("/workout")}>
@@ -124,7 +148,11 @@ export function WorkoutOverview() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {recentWorkouts.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Loading workouts...</p>
+            </div>
+          ) : recentWorkouts.length === 0 ? (
             <div className="text-center py-8">
               <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">No workouts yet</p>
@@ -138,8 +166,8 @@ export function WorkoutOverview() {
             </div>
           ) : (
             recentWorkouts.map((workout) => {
-              const client = getClientById(workout.clientId);
-              const progress = getWorkoutProgress(workout.id);
+              const client = getClientById(workout.client_id);
+              const progress = workoutProgresses[workout.id] || 0;
               
               return (
                 <div
@@ -156,9 +184,6 @@ export function WorkoutOverview() {
                       <h4 className="font-semibold">{workout.note}</h4>
                       <p className="text-sm text-muted-foreground">
                         {client?.name} • {format(new Date(workout.date), 'MMM d, yyyy')}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {workout.exercises.length} exercises
                       </p>
                     </div>
                   </div>
