@@ -97,6 +97,15 @@ export class WorkoutService {
     if (error) throw error;
   }
 
+  static async deleteWorkout(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('workout')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  }
+
   static async getMuscleGroupById(id: string): Promise<MuscleGroup | null> {
     const { data, error } = await supabase
       .from('muscle_group')

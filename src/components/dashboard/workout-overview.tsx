@@ -1,16 +1,19 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Calendar, Clock, Play, Plus, Target, Users, Settings } from "lucide-react";
+import { Calendar, Clock, Play, Plus, Target, Users, Settings, Trash2, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgressRing } from "@/components/ui/progress-ring";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { CreateWorkoutDialog } from "@/components/workout/create-workout-dialog";
+import { DeleteWorkoutDialog } from "@/components/workout/delete-workout-dialog";
 import { format } from "date-fns";
+import { Workout } from "@/types/workout";
 
 export function WorkoutOverview() {
   const navigate = useNavigate();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [deletingWorkout, setDeletingWorkout] = useState<Workout | null>(null);
   const [workoutProgresses, setWorkoutProgresses] = useState<{ [id: string]: number }>({});
   const { 
     workouts, 
@@ -177,6 +180,7 @@ export function WorkoutOverview() {
                 className="mt-4"
                 onClick={() => setShowCreateDialog(true)}
               >
+                <Plus className="h-4 w-4 mr-2" />
                 Create Your First Workout
               </Button>
             </div>
@@ -186,19 +190,18 @@ export function WorkoutOverview() {
               const progress = workoutProgresses[workout.id] || 0;
               
               return (
-                <div
-                  key={workout.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                  onClick={() => handleViewWorkout(workout.id)}
-                >
-                  <div className="flex items-center gap-4">
+                <div key={workout.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <div
+                    className="flex items-center gap-4 flex-1 cursor-pointer"
+                    onClick={() => handleViewWorkout(workout.id)}
+                  >
                     <ProgressRing 
                       progress={progress} 
                       size={48}
                       strokeWidth={4}
                     />
                     <div>
-                      <h4 className="font-bold">{format(new Date(workout.date), 'MMM d, yyyy')}</h4>
+                      <h4 className="font-bold">{format(new Date(workout.date + 'T00:00:00'), 'MMM d, yyyy')}</h4>
                       <p className="text-sm text-muted-foreground">
                         {client?.name}
                       </p>
@@ -210,7 +213,18 @@ export function WorkoutOverview() {
                     </div>
                   </div>
                   
-                  {progress < 100 && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeletingWorkout(workout);
+                      }}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -219,10 +233,10 @@ export function WorkoutOverview() {
                         handleStartWorkout(workout.id);
                       }}
                     >
-                      <Play className="h-4 w-4 mr-2" />
+                      <Timer className="h-4 w-4 mr-2" />
                       Start
                     </Button>
-                  )}
+                  </div>
                 </div>
               );
             })
@@ -231,9 +245,17 @@ export function WorkoutOverview() {
       </Card>
 
       <CreateWorkoutDialog 
-        open={showCreateDialog}
+        open={showCreateDialog} 
         onOpenChange={setShowCreateDialog}
       />
+
+      {deletingWorkout && (
+        <DeleteWorkoutDialog
+          open={!!deletingWorkout}
+          onOpenChange={(open) => !open && setDeletingWorkout(null)}
+          workout={deletingWorkout}
+        />
+      )}
     </div>
   );
 }

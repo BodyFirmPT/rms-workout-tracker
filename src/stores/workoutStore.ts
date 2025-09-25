@@ -40,6 +40,7 @@ interface WorkoutStore {
   getUniqueExercisesForClient: (clientId: string, muscleGroupId: string) => Promise<WorkoutExercise[]>;
   loadWorkoutExercises: (workoutId: string) => Promise<void>;
   deleteExercise: (workoutId: string, exerciseId: string) => Promise<void>;
+  deleteWorkout: (id: string) => Promise<void>;
   updateExercise: (workoutId: string, exerciseId: string, updates: Partial<CreateWorkoutExerciseInput>) => Promise<void>;
 }
 
@@ -241,6 +242,19 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
     } catch (error) {
       console.error('Failed to get unique exercises for client:', error);
       return [];
+    }
+  },
+
+  deleteWorkout: async (id: string) => {
+    try {
+      await WorkoutService.deleteWorkout(id);
+      set((state) => ({
+        workouts: state.workouts.filter(w => w.id !== id),
+        // Clear active workout if it's the one being deleted
+        activeWorkout: state.activeWorkout?.id === id ? null : state.activeWorkout
+      }));
+    } catch (error) {
+      console.error('Failed to delete workout:', error);
     }
   },
 
