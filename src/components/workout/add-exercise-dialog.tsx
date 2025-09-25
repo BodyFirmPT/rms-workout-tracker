@@ -23,7 +23,7 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, preselectedMu
   const [reps, setReps] = useState("");
   const [unit, setUnit] = useState("reps");
   const [count, setCount] = useState(1);
-  const [sets, setSets] = useState(3);
+  const [sets, setSets] = useState(1);
   const [note, setNote] = useState("");
   const [showNewMuscleGroup, setShowNewMuscleGroup] = useState(false);
   
@@ -73,7 +73,7 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, preselectedMu
     setReps("");
     setUnit("reps");
     setCount(1);
-    setSets(3);
+    setSets(1);
     setNote("");
     setShowNewMuscleGroup(false);
     onOpenChange(false);
