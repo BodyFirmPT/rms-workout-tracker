@@ -53,6 +53,27 @@ export class WorkoutService {
     return data;
   }
 
+  static async updateClient(id: string, updates: Partial<{ name: string; trainer_id: string }>): Promise<Client> {
+    const { data, error } = await supabase
+      .from('client')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+
+  static async deleteClient(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('client')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  }
+
   // Muscle Groups
   static async getMuscleGroups(): Promise<MuscleGroup[]> {
     const { data, error } = await supabase

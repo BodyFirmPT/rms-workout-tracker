@@ -24,6 +24,8 @@ interface WorkoutStore {
   loadData: () => Promise<void>;
   addTrainer: (name: string) => Promise<void>;
   addClient: (name: string, trainerId: string) => Promise<void>;
+  updateClient: (id: string, updates: Partial<{ name: string; trainer_id: string }>) => Promise<void>;
+  deleteClient: (id: string) => Promise<void>;
   addMuscleGroup: (name: string, isDefault?: boolean, category?: string) => Promise<string>;
   updateMuscleGroup: (id: string, updates: Partial<{ name: string; default_group: boolean; category: string }>) => Promise<void>;
   deleteMuscleGroup: (id: string) => Promise<void>;
@@ -92,6 +94,30 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
       set((state) => ({ clients: [...state.clients, client] }));
     } catch (error) {
       console.error('Failed to add client:', error);
+    }
+  },
+
+  updateClient: async (id: string, updates: Partial<{ name: string; trainer_id: string }>) => {
+    try {
+      const updatedClient = await WorkoutService.updateClient(id, updates);
+      set((state) => ({
+        clients: state.clients.map(c => 
+          c.id === id ? updatedClient : c
+        )
+      }));
+    } catch (error) {
+      console.error('Failed to update client:', error);
+    }
+  },
+
+  deleteClient: async (id: string) => {
+    try {
+      await WorkoutService.deleteClient(id);
+      set((state) => ({
+        clients: state.clients.filter(c => c.id !== id)
+      }));
+    } catch (error) {
+      console.error('Failed to delete client:', error);
     }
   },
 

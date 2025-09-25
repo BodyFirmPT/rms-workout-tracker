@@ -1,12 +1,20 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-import { Users, Settings, Target, Calendar } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Users, Settings, Target, Calendar, Plus, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWorkoutStore } from "@/stores/workoutStore";
+import { CreateClientDialog } from "@/components/workout/create-client-dialog";
+import { EditClientDialog } from "@/components/workout/edit-client-dialog";
+import { DeleteClientDialog } from "@/components/workout/delete-client-dialog";
+import { Client } from "@/types/workout";
 
 export function ClientSelector() {
   const navigate = useNavigate();
+  const [showCreateClient, setShowCreateClient] = useState(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [deletingClient, setDeletingClient] = useState<Client | null>(null);
+  
   const { 
     clients, 
     workouts,
@@ -73,7 +81,11 @@ export function ClientSelector() {
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-end">
+      <div className="flex justify-between">
+        <Button onClick={() => setShowCreateClient(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add New Client
+        </Button>
         <Button 
           variant="outline" 
           onClick={() => navigate("/muscle-groups")}
@@ -113,22 +125,49 @@ export function ClientSelector() {
                 return (
                   <Card 
                     key={client.id} 
-                    className="cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20"
-                    onClick={() => handleClientSelect(client.id)}
+                    className="relative group cursor-pointer hover:bg-muted/50 transition-colors border-2 hover:border-primary/20"
                   >
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg">{client.name}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm text-muted-foreground">
-                          {workoutCount} workout{workoutCount !== 1 ? 's' : ''}
+                    {/* Action buttons */}
+                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingClient(client);
+                        }}
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                      >
+                        <Edit className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeletingClient(client);
+                        }}
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+
+                    <div onClick={() => handleClientSelect(client.id)}>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-lg pr-16">{client.name}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm text-muted-foreground">
+                            {workoutCount} workout{workoutCount !== 1 ? 's' : ''}
+                          </div>
+                          <Button variant="ghost" size="sm">
+                            View →
+                          </Button>
                         </div>
-                        <Button variant="ghost" size="sm">
-                          View →
-                        </Button>
-                      </div>
-                    </CardContent>
+                      </CardContent>
+                    </div>
                   </Card>
                 );
               })}
@@ -136,6 +175,27 @@ export function ClientSelector() {
           )}
         </CardContent>
       </Card>
+
+      <CreateClientDialog
+        open={showCreateClient}
+        onOpenChange={setShowCreateClient}
+      />
+
+      {editingClient && (
+        <EditClientDialog
+          open={!!editingClient}
+          onOpenChange={(open) => !open && setEditingClient(null)}
+          client={editingClient}
+        />
+      )}
+
+      {deletingClient && (
+        <DeleteClientDialog
+          open={!!deletingClient}
+          onOpenChange={(open) => !open && setDeletingClient(null)}
+          client={deletingClient}
+        />
+      )}
     </div>
   );
 }
