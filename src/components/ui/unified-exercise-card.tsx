@@ -68,17 +68,6 @@ export function UnifiedExerciseCard({
           )}>
             {exerciseName}
           </span>
-          {!isSuggested && onDelete && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onDelete}
-              className="h-4 w-4 p-0 text-muted-foreground hover:text-destructive shrink-0"
-              disabled={disabled}
-            >
-              <Trash2 className="h-2.5 w-2.5" />
-            </Button>
-          )}
         </div>
         {note && (
           <div className="text-xs text-muted-foreground truncate mt-0.5">
@@ -196,6 +185,17 @@ export function UnifiedExerciseCard({
                 disabled={disabled}
               >
                 <Edit className="h-2.5 w-2.5" />
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onDelete}
+                className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive"
+                disabled={disabled}
+              >
+                <Trash2 className="h-2.5 w-2.5" />
               </Button>
             )}
           </>
