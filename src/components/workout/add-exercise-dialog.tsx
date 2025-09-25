@@ -8,15 +8,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { CreateWorkoutExerciseInput } from "@/types/workout";
+import { MuscleGroupSuggestions } from "@/components/workout/muscle-group-suggestions";
 
 interface AddExerciseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   workoutId: string;
+  clientId: string;
   preselectedMuscleGroupId?: string | null;
 }
 
-export function AddExerciseDialog({ open, onOpenChange, workoutId, preselectedMuscleGroupId }: AddExerciseDialogProps) {
+export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, preselectedMuscleGroupId }: AddExerciseDialogProps) {
   const [exerciseName, setExerciseName] = useState("");
   const [muscleGroupId, setMuscleGroupId] = useState("");
   const [newMuscleGroup, setNewMuscleGroup] = useState("");
@@ -28,7 +30,7 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, preselectedMu
   const [note, setNote] = useState("");
   const [showNewMuscleGroup, setShowNewMuscleGroup] = useState(false);
   
-  const { muscleGroups, addExerciseToWorkout, addMuscleGroup, loadData } = useWorkoutStore();
+  const { muscleGroups, addExerciseToWorkout, addMuscleGroup, loadData, getMuscleGroupById } = useWorkoutStore();
 
   useEffect(() => {
     loadData();
@@ -90,6 +92,11 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, preselectedMu
       setShowNewMuscleGroup(false);
       setMuscleGroupId(value);
     }
+  };
+
+  const handleQuickAdd = async () => {
+    // Close the dialog when an exercise is quick-added
+    onOpenChange(false);
   };
 
   return (
@@ -234,6 +241,23 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, preselectedMu
             </Button>
           </div>
         </form>
+
+        {/* Show suggestions only when a muscle group is selected */}
+        {(muscleGroupId || preselectedMuscleGroupId) && (() => {
+          const selectedMuscleGroup = getMuscleGroupById(muscleGroupId || preselectedMuscleGroupId || '');
+          return selectedMuscleGroup ? (
+            <div className="border-t mt-4 pt-4">
+              <div className="text-sm font-medium mb-2">Or choose from recent exercises:</div>
+              <MuscleGroupSuggestions
+                muscleGroup={selectedMuscleGroup}
+                clientId={clientId}
+                workoutId={workoutId}
+                hasExistingExercises={false}
+                onExerciseAdded={handleQuickAdd}
+              />
+            </div>
+          ) : null;
+        })()}
       </DialogContent>
     </Dialog>
   );

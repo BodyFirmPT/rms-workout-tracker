@@ -331,7 +331,7 @@ export function ActiveWorkout({
           <AddExerciseDialog open={showAddExercise} onOpenChange={open => {
         setShowAddExercise(open);
         if (!open) setSelectedMuscleGroupId(null);
-      }} workoutId={currentWorkout.id} preselectedMuscleGroupId={selectedMuscleGroupId || undefined} />
+      }} workoutId={currentWorkout.id} clientId={currentWorkout.client_id} preselectedMuscleGroupId={selectedMuscleGroupId || undefined} />
           <EditExerciseDialog open={showEditExercise} onOpenChange={open => {
         setShowEditExercise(open);
         if (!open) setEditingExercise(null);

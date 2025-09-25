@@ -9,13 +9,15 @@ interface MuscleGroupSuggestionsProps {
   workoutId: string;
   hasExistingExercises: boolean;
   disabled?: boolean;
+  onExerciseAdded?: () => void;
 }
 export function MuscleGroupSuggestions({
   muscleGroup,
   clientId,
   workoutId,
   hasExistingExercises,
-  disabled = false
+  disabled = false,
+  onExerciseAdded
 }: MuscleGroupSuggestionsProps) {
   const [suggestions, setSuggestions] = useState<WorkoutExercise[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,6 +51,8 @@ export function MuscleGroupSuggestions({
         set_count: exercise.set_count,
         note: exercise.note || ''
       });
+      // Call the callback to close the dialog if provided
+      onExerciseAdded?.();
     }
   };
   return (
