@@ -253,7 +253,9 @@ export function ActiveWorkout({
                                 {/* Muscle group header */}
                                 <div className={`flex items-center justify-between py-2 px-3 bg-muted/50 border border-border ${
                                   isFirst ? 'rounded-t-lg' : ''
-                                } ${isLast ? 'rounded-b-lg border-b' : 'border-b-0'}`}>
+                                } ${isLast ? 'rounded-b-lg' : 'border-b-0'} ${
+                                  !isFirst ? 'border-t-0' : ''
+                                }`}>
                                   <div className="flex items-center gap-2">
                                     <h3 className="text-sm font-semibold text-foreground">{muscleGroup.name}</h3>
                                     <Badge variant="secondary" className="text-xs px-1.5 py-0">
