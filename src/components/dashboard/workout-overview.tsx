@@ -181,10 +181,15 @@ export function WorkoutOverview() {
                       strokeWidth={4}
                     />
                     <div>
-                      <h4 className="font-semibold">{workout.note}</h4>
+                      <h4 className="font-bold">{format(new Date(workout.date), 'MMM d, yyyy')}</h4>
                       <p className="text-sm text-muted-foreground">
-                        {client?.name} • {format(new Date(workout.date), 'MMM d, yyyy')}
+                        {client?.name}
                       </p>
+                      {workout.note && (
+                        <p className="text-xs text-muted-foreground italic mt-1">
+                          {workout.note}
+                        </p>
+                      )}
                     </div>
                   </div>
                   
