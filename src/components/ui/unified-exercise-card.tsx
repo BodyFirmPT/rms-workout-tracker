@@ -52,7 +52,7 @@ export function UnifiedExerciseCard({
         isCompleted && "opacity-60"
       )}
     >
-      {/* Exercise name - takes up available space */}
+      {/* Exercise name with sets/reps - takes up available space */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           {isSuggested && (
@@ -68,21 +68,19 @@ export function UnifiedExerciseCard({
           )}>
             {exerciseName}
           </span>
+          <span className={cn(
+            "text-xs font-mono whitespace-nowrap",
+            isSuggested ? "text-muted-foreground/70" : "text-muted-foreground"
+          )}>
+            {setCount} × {repsCount} {repsUnit}
+            {weightCount > 0 && ` @ ${weightCount} ${weightUnit}`}
+          </span>
         </div>
         {note && (
           <div className="text-xs text-muted-foreground truncate mt-0.5">
             {note}
           </div>
         )}
-      </div>
-      
-      {/* Sets x Reps @ Weight - compact format */}
-      <div className={cn(
-        "text-xs font-mono whitespace-nowrap min-w-0",
-        isSuggested ? "text-muted-foreground/70" : "text-muted-foreground"
-      )}>
-        {setCount} × {repsCount} {repsUnit}
-        {weightCount > 0 && ` @ ${weightCount} ${weightUnit}`}
       </div>
       
       {/* Progress - compact */}
