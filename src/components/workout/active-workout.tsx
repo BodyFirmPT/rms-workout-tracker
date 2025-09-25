@@ -165,7 +165,15 @@ export function ActiveWorkout({
                     Add Exercise
                   </Button>}
                 
-                {isStarted && <Button variant="secondary" size="sm" onClick={handleCompleteWorkout} className="bg-success text-success-foreground hover:bg-success/90">
+                {isStarted && <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    onClick={handleCompleteWorkout} 
+                    className={workoutProgress === 100 
+                      ? "bg-success text-success-foreground hover:bg-success/90" 
+                      : "bg-transparent text-white border border-white hover:bg-white hover:text-primary"
+                    }
+                  >
                     <CheckCircle className="h-4 w-4 mr-2" />
                     Complete Workout
                   </Button>}
