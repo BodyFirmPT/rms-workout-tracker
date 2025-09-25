@@ -13,9 +13,10 @@ interface AddExerciseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   workoutId: string;
+  preselectedMuscleGroupId?: string | null;
 }
 
-export function AddExerciseDialog({ open, onOpenChange, workoutId }: AddExerciseDialogProps) {
+export function AddExerciseDialog({ open, onOpenChange, workoutId, preselectedMuscleGroupId }: AddExerciseDialogProps) {
   const [exerciseName, setExerciseName] = useState("");
   const [muscleGroupId, setMuscleGroupId] = useState("");
   const [newMuscleGroup, setNewMuscleGroup] = useState("");
@@ -31,6 +32,14 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId }: AddExercise
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Set preselected muscle group when dialog opens
+  useEffect(() => {
+    if (open && preselectedMuscleGroupId) {
+      setMuscleGroupId(preselectedMuscleGroupId);
+      setShowNewMuscleGroup(false);
+    }
+  }, [open, preselectedMuscleGroupId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

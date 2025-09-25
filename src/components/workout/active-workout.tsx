@@ -1,27 +1,35 @@
 import { useState, useEffect } from "react";
-import { CheckCircle, Plus, StopCircle, Timer } from "lucide-react";
+import { CheckCircle, Plus, StopCircle, Timer, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ExerciseCard } from "@/components/ui/exercise-card";
 import { AddExerciseDialog } from "@/components/workout/add-exercise-dialog";
+import { MuscleGroupSuggestions } from "@/components/workout/muscle-group-suggestions";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { format } from "date-fns";
 
 export function ActiveWorkout() {
   const [showAddExercise, setShowAddExercise] = useState(false);
+  const [selectedMuscleGroupId, setSelectedMuscleGroupId] = useState<string | null>(null);
   const [workoutProgress, setWorkoutProgress] = useState(0);
   
   const { 
     activeWorkout, 
     workoutExercises,
+    muscleGroups,
     completeExerciseSet, 
     completeWorkout, 
     getWorkoutProgress, 
     getClientById,
     getMuscleGroupById,
-    loadWorkoutExercises
+    loadWorkoutExercises,
+    loadData
   } = useWorkoutStore();
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   useEffect(() => {
     if (activeWorkout) {
@@ -62,6 +70,23 @@ export function ActiveWorkout() {
     acc[key].push(exercise);
     return acc;
   }, {} as Record<string, typeof exercises>);
+
+  // Get all default muscle groups
+  const defaultMuscleGroups = muscleGroups.filter(mg => mg.default_group);
+  
+  // Create a map of muscle group ID to exercises for quick lookup
+  const exercisesByMuscleGroupId = exercises.reduce((acc, exercise) => {
+    if (!acc[exercise.muscle_group_id]) {
+      acc[exercise.muscle_group_id] = [];
+    }
+    acc[exercise.muscle_group_id].push(exercise);
+    return acc;
+  }, {} as Record<string, typeof exercises>);
+
+  const handleAddExerciseForMuscleGroup = (muscleGroupId: string) => {
+    setSelectedMuscleGroupId(muscleGroupId);
+    setShowAddExercise(true);
+  };
 
   const handleCompleteSet = (exerciseId: string) => {
     completeExerciseSet(activeWorkout.id, exerciseId);
@@ -132,34 +157,75 @@ export function ActiveWorkout() {
         </CardContent>
       </Card>
 
-      {/* Exercises by Muscle Group */}
-      {Object.entries(exercisesByMuscleGroup).map(([muscleGroup, exercises]) => (
-        <Card key={muscleGroup}>
-          <CardHeader>
-            <CardTitle className="text-lg">{muscleGroup}</CardTitle>
-            <CardDescription>
-              {exercises.length} exercise{exercises.length !== 1 ? 's' : ''}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {exercises.map((exercise) => (
-              <ExerciseCard
-                key={exercise.id}
-                exerciseName={exercise.exercise_name}
-                reps={exercise.reps}
-                completedSets={exercise.completed_sets}
-                totalSets={exercise.set_count}
-                unit={exercise.unit}
-                note={exercise.note}
-                muscleGroup={muscleGroup}
-                isCompleted={exercise.is_completed}
-                onCompleteSet={() => handleCompleteSet(exercise.id)}
-                isActive={true}
-              />
-            ))}
-          </CardContent>
-        </Card>
-      ))}
+      {/* Muscle Groups Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5" />
+            Muscle Groups
+          </CardTitle>
+          <CardDescription>
+            Track your workout across all major muscle groups
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {defaultMuscleGroups.map((muscleGroup) => {
+              const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
+              const hasExercises = groupExercises.length > 0;
+              
+              return (
+                <MuscleGroupSuggestions
+                  key={muscleGroup.id}
+                  muscleGroup={muscleGroup}
+                  clientId={activeWorkout.client_id}
+                  workoutId={activeWorkout.id}
+                  hasExistingExercises={hasExercises}
+                  onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)}
+                />
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Active Exercises by Muscle Group */}
+      {Object.entries(exercisesByMuscleGroup).length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Active Exercises</h2>
+          {Object.entries(exercisesByMuscleGroup).map(([muscleGroupName, exercises]) => (
+            <Card key={muscleGroupName} className="border-accent">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">{muscleGroupName}</CardTitle>
+                <CardDescription>
+                  {exercises.length} exercise{exercises.length !== 1 ? 's' : ''} • {
+                    exercises.reduce((sum, ex) => sum + ex.completed_sets, 0)
+                  } / {
+                    exercises.reduce((sum, ex) => sum + ex.set_count, 0)
+                  } sets completed
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {exercises.map((exercise) => (
+                  <ExerciseCard
+                    key={exercise.id}
+                    exerciseName={exercise.exercise_name}
+                    reps={exercise.reps}
+                    completedSets={exercise.completed_sets}
+                    totalSets={exercise.set_count}
+                    unit={exercise.unit}
+                    note={exercise.note}
+                    muscleGroup={muscleGroupName}
+                    isCompleted={exercise.is_completed}
+                    onCompleteSet={() => handleCompleteSet(exercise.id)}
+                    isActive={true}
+                  />
+                ))}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {exercises.length === 0 && (
         <Card>
@@ -177,8 +243,12 @@ export function ActiveWorkout() {
 
       <AddExerciseDialog
         open={showAddExercise}
-        onOpenChange={setShowAddExercise}
+        onOpenChange={(open) => {
+          setShowAddExercise(open);
+          if (!open) setSelectedMuscleGroupId(null);
+        }}
         workoutId={activeWorkout.id}
+        preselectedMuscleGroupId={selectedMuscleGroupId || undefined}
       />
     </div>
   );

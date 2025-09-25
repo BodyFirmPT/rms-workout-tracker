@@ -34,6 +34,8 @@ interface WorkoutStore {
   getWorkoutProgress: (workoutId: string) => Promise<number>;
   getMuscleGroupById: (id: string) => MuscleGroup | undefined;
   getClientById: (id: string) => Client | undefined;
+  getClientExerciseHistory: (clientId: string, muscleGroupId?: string) => Promise<WorkoutExercise[]>;
+  getUniqueExercisesForClient: (clientId: string, muscleGroupId: string) => Promise<WorkoutExercise[]>;
   loadWorkoutExercises: (workoutId: string) => Promise<void>;
 }
 
@@ -194,5 +196,23 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
 
   getClientById: (id: string) => {
     return get().clients.find(c => c.id === id);
+  },
+  
+  getClientExerciseHistory: async (clientId: string, muscleGroupId?: string) => {
+    try {
+      return await WorkoutService.getClientExerciseHistory(clientId, muscleGroupId);
+    } catch (error) {
+      console.error('Failed to get client exercise history:', error);
+      return [];
+    }
+  },
+
+  getUniqueExercisesForClient: async (clientId: string, muscleGroupId: string) => {
+    try {
+      return await WorkoutService.getUniqueExercisesForClient(clientId, muscleGroupId);
+    } catch (error) {
+      console.error('Failed to get unique exercises for client:', error);
+      return [];
+    }
   },
 }));

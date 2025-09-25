@@ -221,14 +221,47 @@ export class WorkoutService {
     return Math.round((completedSets / totalSets) * 100);
   }
 
-  static async getClientById(id: string): Promise<Client | null> {
-    const { data, error } = await supabase
-      .from('client')
-      .select('*')
-      .eq('id', id)
-      .single();
+  static async getClientExerciseHistory(clientId: string, muscleGroupId?: string): Promise<WorkoutExercise[]> {
+    let query = supabase
+      .from('workout_exercise')
+      .select(`
+        *,
+        workout!inner(client_id)
+      `)
+      .eq('workout.client_id', clientId)
+      .order('created_at', { ascending: false });
+
+    if (muscleGroupId) {
+      query = query.eq('muscle_group_id', muscleGroupId);
+    }
+
+    const { data, error } = await query.limit(50);
     
-    if (error) return null;
-    return data;
+    if (error) throw error;
+    return data || [];
+  }
+
+  static async getUniqueExercisesForClient(clientId: string, muscleGroupId: string): Promise<WorkoutExercise[]> {
+    const { data, error } = await supabase
+      .from('workout_exercise')
+      .select(`
+        *,
+        workout!inner(client_id)
+      `)
+      .eq('workout.client_id', clientId)
+      .eq('muscle_group_id', muscleGroupId)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    // Get unique exercises by name (most recent version of each)
+    const uniqueExercises = new Map();
+    (data || []).forEach(exercise => {
+      if (!uniqueExercises.has(exercise.exercise_name)) {
+        uniqueExercises.set(exercise.exercise_name, exercise);
+      }
+    });
+    
+    return Array.from(uniqueExercises.values()).slice(0, 3); // Return top 3 unique exercises
   }
 }
