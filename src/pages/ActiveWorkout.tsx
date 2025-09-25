@@ -50,8 +50,6 @@ const ActiveWorkout = () => {
                 <h1 className="text-3xl font-bold text-foreground">
                   Workout Details
                 </h1>
-                
-                {viewingWorkout.note}
               </div>
               <Button onClick={handleStartWorkout} size="lg">
                 <Play className="h-4 w-4 mr-2" />
