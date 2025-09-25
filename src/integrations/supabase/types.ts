@@ -91,24 +91,24 @@ export type Database = {
           created_at: string
           date: string
           id: string
-          is_active: boolean | null
           note: string
+          status: string
         }
         Insert: {
           client_id: string
           created_at?: string
           date?: string
           id?: string
-          is_active?: boolean | null
           note: string
+          status?: string
         }
         Update: {
           client_id?: string
           created_at?: string
           date?: string
           id?: string
-          is_active?: boolean | null
           note?: string
+          status?: string
         }
         Relationships: [
           {

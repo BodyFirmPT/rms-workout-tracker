@@ -49,9 +49,15 @@ export function ActiveWorkout({
     loadData();
   }, [loadData]);
 
-  // Determine which workout to display
+  // Determine which workout to display and its status
   const currentWorkout = workoutId ? workouts.find(w => w.id === workoutId) : activeWorkout;
-  const isReadOnlyMode = workoutId && activeWorkout && activeWorkout.id !== workoutId; // Read-only if viewing a different workout than active
+  const workoutStatus = currentWorkout?.status || 'draft';
+  
+  // Determine interaction mode based on status
+  const isCompleted = workoutStatus === 'completed';
+  const isDraft = workoutStatus === 'draft'; 
+  const isStarted = workoutStatus === 'started';
+  const isReadOnlyMode = isCompleted; // Only completed workouts are truly read-only
 
   useEffect(() => {
     if (currentWorkout) {
@@ -113,7 +119,7 @@ export function ActiveWorkout({
   };
 
   const handleCompleteSet = (exerciseId: string, decrement = false) => {
-    if (!isReadOnlyMode) {
+    if (!isCompleted) {
       completeExerciseSet(currentWorkout.id, exerciseId, decrement);
     }
   };
@@ -123,7 +129,7 @@ export function ActiveWorkout({
   };
 
   const handleDeleteExercise = (exerciseId: string) => {
-    if (!isReadOnlyMode) {
+    if (!isCompleted) {
       deleteExercise(currentWorkout.id, exerciseId);
     }
   };
@@ -166,21 +172,26 @@ export function ActiveWorkout({
               </p>
               
               <div className="flex gap-2">
-                {!isReadOnlyMode && <Button variant="secondary" size="sm" onClick={() => setShowAddExercise(true)}>
+                {!isCompleted && <Button variant="secondary" size="sm" onClick={() => setShowAddExercise(true)}>
                     <Plus className="h-4 w-4 mr-2" />
                     Add Exercise
                   </Button>}
                 
-                {/* Start Workout button for non-active workouts */}
-                {isReadOnlyMode && <Button variant="secondary" size="sm" onClick={() => startWorkout(currentWorkout.id)}>
+                {/* Start Workout button for draft/completed workouts */}
+                {(isDraft || isCompleted) && currentWorkout && <Button variant="secondary" size="sm" onClick={() => startWorkout(currentWorkout.id)}>
                     <Timer className="h-4 w-4 mr-2" />
-                    Start This Workout
+                    {isCompleted ? "Start This Workout" : "Start Workout"}
                   </Button>}
                 
-                {!isReadOnlyMode && workoutProgress === 100 && <Button variant="secondary" size="sm" onClick={handleCompleteWorkout} className="bg-success text-success-foreground hover:bg-success/90">
+                {isStarted && workoutProgress === 100 && <Button variant="secondary" size="sm" onClick={handleCompleteWorkout} className="bg-success text-success-foreground hover:bg-success/90">
                     <CheckCircle className="h-4 w-4 mr-2" />
                     Complete Workout
                   </Button>}
+                
+                {/* Status badge */}
+                <Badge variant={workoutStatus === 'completed' ? 'default' : workoutStatus === 'started' ? 'secondary' : 'outline'} className="capitalize">
+                  {workoutStatus}
+                </Badge>
               </div>
             </div>
           </div>
@@ -223,12 +234,17 @@ export function ActiveWorkout({
                   const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
                   const hasExercises = groupExercises.length > 0;
                   
-                  // Only hide muscle groups without exercises if this workout is actively started or in read-only mode
-                  const isWorkoutStarted = activeWorkout && activeWorkout.id === currentWorkout.id;
-                  if (isWorkoutStarted || isReadOnlyMode) {
+                  // Show all muscle groups for draft workouts
+                  // Hide empty muscle groups for started workouts
+                  // Only show muscle groups with exercises for completed workouts
+                  if (isCompleted) {
                     return hasExercises;
+                  } else if (isStarted) {
+                    return hasExercises;
+                  } else {
+                    // Draft - show all muscle groups
+                    return true;
                   }
-                  return true;
                 });
 
                 // Don't render the category if no groups are visible
@@ -266,7 +282,7 @@ export function ActiveWorkout({
                                 isLast={isLast}
                                 hasContent={true}
                                 onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)}
-                                disabled={isReadOnlyMode}
+                                disabled={isCompleted}
                               />
                               
                               {/* Exercise rows */}
@@ -288,10 +304,10 @@ export function ActiveWorkout({
                                     muscleGroup={muscleGroup.name} 
                                     isCompleted={exercise.is_completed} 
                                     variant="added" 
-                                    onCompleteSet={!isReadOnlyMode ? (decrement) => handleCompleteSet(exercise.id, decrement) : undefined} 
-                                    onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined} 
-                                    onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined} 
-                                     disabled={isReadOnlyMode} 
+                                    onCompleteSet={!isCompleted ? (decrement) => handleCompleteSet(exercise.id, decrement) : undefined} 
+                                    onEdit={!isCompleted ? () => handleEditExercise(exercise.id) : undefined} 
+                                    onDelete={!isCompleted ? () => handleDeleteExercise(exercise.id) : undefined} 
+                                     disabled={isCompleted}
                                    />
                                   </div>
                                 ))}
@@ -309,7 +325,7 @@ export function ActiveWorkout({
                                 isLast={isLast}
                                 hasContent={true}
                                 onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)}
-                                disabled={isReadOnlyMode}
+                                disabled={isCompleted}
                               />
                               
                               {/* Content area */}
@@ -322,7 +338,7 @@ export function ActiveWorkout({
                                   clientId={currentWorkout.client_id} 
                                   workoutId={currentWorkout.id} 
                                   hasExistingExercises={false} 
-                                   disabled={isReadOnlyMode} 
+                                   disabled={isCompleted}
                                  />
                                 </div>
                               </div>
@@ -349,8 +365,8 @@ export function ActiveWorkout({
                      isFirst={true}
                      isLast={true}
                      hasContent={true}
-                     onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)}
-                     disabled={isReadOnlyMode}
+                      onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)}
+                      disabled={isCompleted}
                    />
                    
                     {/* Exercise rows */}
@@ -370,10 +386,10 @@ export function ActiveWorkout({
                          muscleGroup={muscleGroupName} 
                          isCompleted={exercise.is_completed} 
                          variant="added" 
-                         onCompleteSet={!isReadOnlyMode ? (decrement) => handleCompleteSet(exercise.id, decrement) : undefined} 
-                         onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined} 
-                         onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined} 
-                          disabled={isReadOnlyMode} 
+                          onCompleteSet={!isCompleted ? (decrement) => handleCompleteSet(exercise.id, decrement) : undefined} 
+                          onEdit={!isCompleted ? () => handleEditExercise(exercise.id) : undefined} 
+                          onDelete={!isCompleted ? () => handleDeleteExercise(exercise.id) : undefined} 
+                           disabled={isCompleted}
                         />
                         </div>
                       ))}
@@ -382,8 +398,8 @@ export function ActiveWorkout({
                );
              })}
 
-            {/* Add custom muscle group card - only show in active mode */}
-            {!isReadOnlyMode && <Card className="border-dashed">
+            {/* Add custom muscle group card - only show in draft and started modes */}
+            {!isCompleted && <Card className="border-dashed">
                 <CardContent className="flex items-center justify-center py-8">
                   <Button variant="ghost" onClick={() => handleAddExerciseForMuscleGroup('')} className="text-muted-foreground hover:text-foreground">
                     <Plus className="h-4 w-4 mr-2" />

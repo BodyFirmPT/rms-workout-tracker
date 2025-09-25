@@ -24,7 +24,7 @@ export interface Workout {
   date: string;
   note: string;
   client_id: string;
-  is_active?: boolean;
+  status: 'draft' | 'started' | 'completed';
   created_at?: string;
   exercises?: WorkoutExercise[];
 }

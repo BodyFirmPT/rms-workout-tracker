@@ -106,7 +106,7 @@ export class WorkoutService {
       .single();
     
     if (error) throw error;
-    return data;
+    return data as Workout;
   }
 
   static async deleteWorkout(id: string): Promise<void> {
@@ -137,7 +137,7 @@ export class WorkoutService {
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return data || [];
+    return (data || []) as Workout[];
   }
 
   static async createWorkout(clientId: string, note: string, date?: string): Promise<Workout> {
@@ -146,26 +146,28 @@ export class WorkoutService {
       .insert({ 
         client_id: clientId, 
         note,
-        date: date || new Date().toISOString().split('T')[0]
+        date: date || new Date().toISOString().split('T')[0],
+        status: 'draft'
       })
       .select()
       .single();
     
     if (error) throw error;
-    return data;
+    return data as Workout;
   }
 
   static async startWorkout(workoutId: string): Promise<void> {
-    // Set all other workouts to inactive
+    // Set all other workouts with 'started' status to 'draft'
     await supabase
       .from('workout')
-      .update({ is_active: false })
+      .update({ status: 'draft' })
+      .eq('status', 'started')
       .neq('id', workoutId);
 
-    // Set this workout to active
+    // Set this workout to started
     const { error } = await supabase
       .from('workout')
-      .update({ is_active: true })
+      .update({ status: 'started' })
       .eq('id', workoutId);
     
     if (error) throw error;
@@ -175,17 +177,17 @@ export class WorkoutService {
     const { data, error } = await supabase
       .from('workout')
       .select('*')
-      .eq('is_active', true)
-      .single();
+      .eq('status', 'started')
+      .maybeSingle();
     
     if (error) return null;
-    return data;
+    return data as Workout | null;
   }
 
   static async completeWorkout(workoutId: string): Promise<void> {
     const { error } = await supabase
       .from('workout')
-      .update({ is_active: false })
+      .update({ status: 'completed' })
       .eq('id', workoutId);
     
     if (error) throw error;
@@ -214,14 +216,14 @@ export class WorkoutService {
       throw exercisesError;
     }
 
-    // Create the new workout
+    // Create the new workout as draft
     const { data: newWorkout, error: createWorkoutError } = await supabase
       .from('workout')
       .insert({
         client_id: clientId,
         note: originalWorkout.note,
         date: date.toISOString().split('T')[0],
-        is_active: false
+        status: 'draft'
       })
       .select()
       .single();
@@ -261,7 +263,7 @@ export class WorkoutService {
       }
     }
 
-    return newWorkout;
+    return newWorkout as Workout;
   }
 
   // Workout Exercises
