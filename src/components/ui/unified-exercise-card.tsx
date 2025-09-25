@@ -52,14 +52,16 @@ export function UnifiedExerciseCard({
         isCompleted && "opacity-60"
       )}
     >
-      {/* Exercise name with sets/reps - takes up available space */}
+      {/* Icon */}
+      {isSuggested ? (
+        <Zap className="h-3 w-3 text-muted-foreground/70 shrink-0" />
+      ) : (
+        <Dumbbell className="h-3 w-3 text-muted-foreground/60 shrink-0" />
+      )}
+      
+      {/* Exercise content - name, details, and note all at same indentation */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          {isSuggested ? (
-            <Zap className="h-3 w-3 text-muted-foreground/70 shrink-0" />
-          ) : (
-            <Dumbbell className="h-3 w-3 text-muted-foreground/60 shrink-0" />
-          )}
           <span className={cn(
             "font-medium truncate",
             isSuggested 
