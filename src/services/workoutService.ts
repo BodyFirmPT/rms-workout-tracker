@@ -225,7 +225,7 @@ export class WorkoutService {
     return data;
   }
 
-  static async completeExerciseSet(exerciseId: string): Promise<WorkoutExercise> {
+  static async completeExerciseSet(exerciseId: string, decrement = false): Promise<WorkoutExercise> {
     const { data: currentExercise, error: fetchError } = await supabase
       .from('workout_exercise')
       .select('*')
@@ -234,14 +234,20 @@ export class WorkoutService {
 
     if (fetchError) throw fetchError;
 
-    // Increment completed sets by 1, or reset to 0 if all sets are completed
     let newCompletedSets: number;
-    if (currentExercise.completed_sets >= currentExercise.set_count) {
-      // All sets completed, reset to 0
-      newCompletedSets = 0;
+    
+    if (decrement) {
+      // Decrement by 1, but don't go below 0
+      newCompletedSets = Math.max(0, currentExercise.completed_sets - 1);
     } else {
-      // Increment by 1
-      newCompletedSets = currentExercise.completed_sets + 1;
+      // Increment completed sets by 1, or reset to 0 if all sets are completed
+      if (currentExercise.completed_sets >= currentExercise.set_count) {
+        // All sets completed, reset to 0
+        newCompletedSets = 0;
+      } else {
+        // Increment by 1
+        newCompletedSets = currentExercise.completed_sets + 1;
+      }
     }
     
     const newIsCompleted = newCompletedSets >= currentExercise.set_count;

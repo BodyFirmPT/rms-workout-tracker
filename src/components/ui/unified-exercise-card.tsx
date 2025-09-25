@@ -14,7 +14,7 @@ interface UnifiedExerciseCardProps {
   isCompleted?: boolean;
   variant: 'suggested' | 'added';
   onAdd?: () => void;
-  onCompleteSet?: () => void;
+  onCompleteSet?: (decrement?: boolean) => void;
   onEdit?: () => void;
   onDelete?: () => void;
   disabled?: boolean;
@@ -128,17 +128,25 @@ export function UnifiedExerciseCard({
               <div className="flex items-center gap-1">
                 {/* Individual set checkmarks */}
                 {Array.from({ length: setCount }).map((_, index) => (
-                  <div
+                  <button
                     key={index}
+                     onClick={() => {
+                       // If this set is completed, uncomplete it by decrementing
+                       if (index < completedSets && onCompleteSet) {
+                         onCompleteSet(true); // Pass true to indicate decrement
+                       }
+                     }}
+                    disabled={disabled || index >= completedSets}
                     className={cn(
                       "w-4 h-4 rounded-full border flex items-center justify-center transition-all duration-200",
                       index < completedSets 
-                        ? "bg-success border-success text-success-foreground" 
-                        : "border-muted-foreground/30 text-muted-foreground"
+                        ? "bg-success border-success text-success-foreground hover:bg-success/80 cursor-pointer" 
+                        : "border-muted-foreground/30 text-muted-foreground cursor-default",
+                      disabled && "opacity-50 cursor-not-allowed"
                     )}
                   >
                     {index < completedSets && <Check className="h-2.5 w-2.5" />}
-                  </div>
+                  </button>
                 ))}
                 
                 {/* Set completion button */}
@@ -146,7 +154,7 @@ export function UnifiedExerciseCard({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={onCompleteSet}
+                    onClick={() => onCompleteSet && onCompleteSet()}
                     className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted ml-1"
                     disabled={disabled}
                   >
@@ -162,7 +170,7 @@ export function UnifiedExerciseCard({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={onCompleteSet}
+                onClick={() => onCompleteSet && onCompleteSet()}
                 className={cn(
                   "h-6 w-6 p-0 rounded-full transition-all duration-200",
                   isCompleted 

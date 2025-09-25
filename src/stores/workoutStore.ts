@@ -31,7 +31,7 @@ interface WorkoutStore {
   createWorkout: (clientId: string, note: string, date?: string) => Promise<string>;
   startWorkout: (workoutId: string) => Promise<void>;
   addExerciseToWorkout: (workoutId: string, exercise: CreateWorkoutExerciseInput) => Promise<void>;
-  completeExerciseSet: (workoutId: string, exerciseId: string) => Promise<void>;
+  completeExerciseSet: (workoutId: string, exerciseId: string, decrement?: boolean) => Promise<void>;
   completeWorkout: () => Promise<void>;
   getWorkoutProgress: (workoutId: string) => Promise<number>;
   getMuscleGroupById: (id: string) => MuscleGroup | undefined;
@@ -183,9 +183,9 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
     }
   },
 
-  completeExerciseSet: async (workoutId: string, exerciseId: string) => {
+  completeExerciseSet: async (workoutId: string, exerciseId: string, decrement = false) => {
     try {
-      const updatedExercise = await WorkoutService.completeExerciseSet(exerciseId);
+      const updatedExercise = await WorkoutService.completeExerciseSet(exerciseId, decrement);
       set((state) => ({
         workoutExercises: {
           ...state.workoutExercises,

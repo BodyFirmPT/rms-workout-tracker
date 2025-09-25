@@ -110,9 +110,9 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
     setShowAddExercise(true);
   };
 
-  const handleCompleteSet = (exerciseId: string) => {
+  const handleCompleteSet = (exerciseId: string, decrement = false) => {
     if (!isReadOnlyMode) {
-      completeExerciseSet(currentWorkout.id, exerciseId);
+      completeExerciseSet(currentWorkout.id, exerciseId, decrement);
     }
   };
 
@@ -252,7 +252,7 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
                           muscleGroup={muscleGroup.name}
                           isCompleted={exercise.is_completed}
                           variant="added"
-                          onCompleteSet={!isReadOnlyMode ? () => handleCompleteSet(exercise.id) : undefined}
+                           onCompleteSet={!isReadOnlyMode ? (decrement) => handleCompleteSet(exercise.id, decrement) : undefined}
                           onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined}
                           onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined}
                           disabled={isReadOnlyMode}
@@ -318,7 +318,7 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
                         muscleGroup={muscleGroupName}
                         isCompleted={exercise.is_completed}
                         variant="added"
-                        onCompleteSet={!isReadOnlyMode ? () => handleCompleteSet(exercise.id) : undefined}
+                        onCompleteSet={!isReadOnlyMode ? (decrement) => handleCompleteSet(exercise.id, decrement) : undefined}
                         onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined}
                         onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined}
                         disabled={isReadOnlyMode}
