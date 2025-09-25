@@ -1,4 +1,4 @@
-import { Check, Plus, Edit, Trash2, Zap } from "lucide-react";
+import { Check, Plus, Edit, Trash2, Zap, Dumbbell } from "lucide-react";
 import { Button } from "./button";
 import { Badge } from "./badge";
 import { cn } from "@/lib/utils";
@@ -55,8 +55,10 @@ export function UnifiedExerciseCard({
       {/* Exercise name with sets/reps - takes up available space */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          {isSuggested && (
+          {isSuggested ? (
             <Zap className="h-3 w-3 text-muted-foreground/70 shrink-0" />
+          ) : (
+            <Dumbbell className="h-3 w-3 text-muted-foreground/60 shrink-0" />
           )}
           <span className={cn(
             "font-medium truncate",

@@ -24,13 +24,13 @@ export function MuscleGroupHeader({
   disabled = false
 }: MuscleGroupHeaderProps) {
   return (
-    <div className={`flex items-center justify-between py-3 px-4 bg-muted/70 border-2 border-border/80 ${
+    <div className={`flex items-center justify-between py-3 px-4 bg-muted border-2 border-border/80 ${
       isFirst ? 'rounded-t-lg' : ''
     } ${isLast && !hasContent ? 'rounded-b-lg' : 'border-b-0'} ${
       !isFirst ? 'border-t-0' : ''
     } shadow-sm`}>
       <div className="flex items-center gap-2">
-        <h3 className="text-sm font-semibold text-foreground">{name}</h3>
+        <h3 className="text-base font-bold text-foreground">{name}</h3>
         {isCustom && (
           <Badge variant="outline" className="text-xs px-1.5 py-0">Custom</Badge>
         )}
