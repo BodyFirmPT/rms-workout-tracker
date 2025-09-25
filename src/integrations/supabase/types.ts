@@ -45,18 +45,21 @@ export type Database = {
       }
       muscle_group: {
         Row: {
+          category: string | null
           created_at: string
           default_group: boolean
           id: string
           name: string
         }
         Insert: {
+          category?: string | null
           created_at?: string
           default_group?: boolean
           id?: string
           name: string
         }
         Update: {
+          category?: string | null
           created_at?: string
           default_group?: boolean
           id?: string

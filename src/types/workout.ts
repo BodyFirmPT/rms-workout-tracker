@@ -15,6 +15,7 @@ export interface MuscleGroup {
   id: string;
   name: string;
   default_group: boolean;
+  category?: string;
   created_at?: string;
 }
 

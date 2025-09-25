@@ -179,44 +179,72 @@ export function ActiveWorkout({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* Default muscle groups */}
-            {defaultMuscleGroups.map(muscleGroup => {
-            const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
-            const hasExercises = groupExercises.length > 0;
-            
-            // Only hide muscle groups without exercises if this workout is actively started or in read-only mode
-            const isWorkoutStarted = activeWorkout && activeWorkout.id === currentWorkout.id;
-            if (isWorkoutStarted || isReadOnlyMode) {
-              if (!hasExercises) return null;
-            }
-            
-            if (hasExercises) {
-              // Show added exercises for this muscle group - table-like layout
-              return <div key={muscleGroup.id} className="space-y-0">
-                    {/* Muscle group header */}
-                    <div className="flex items-center justify-between py-2 px-3 bg-muted/50 border-b-2 border-border rounded-t-lg">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-semibold text-foreground">{muscleGroup.name}</h3>
-                        <Badge variant="secondary" className="text-xs px-1.5 py-0">
-                          {groupExercises.length}
-                        </Badge>
-                      </div>
-                      <Button variant="ghost" size="sm" onClick={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} className="h-6 px-2 text-xs" disabled={isReadOnlyMode}>
-                        <Plus className="h-2.5 w-2.5 mr-1" />
-                        Add
-                      </Button>
-                    </div>
+            {(() => {
+              // Get all default muscle groups grouped by category
+              const categorizedGroups = defaultMuscleGroups.reduce((acc, muscleGroup) => {
+                const category = muscleGroup.category || 'Uncategorized';
+                if (!acc[category]) {
+                  acc[category] = [];
+                }
+                acc[category].push(muscleGroup);
+                return acc;
+              }, {} as Record<string, typeof defaultMuscleGroups>);
+
+              // Order categories: Core, Arms, Legs, then Uncategorized
+              const categoryOrder = ['Core', 'Arms', 'Legs', 'Uncategorized'];
+              const orderedCategories = categoryOrder.filter(cat => categorizedGroups[cat]);
+
+              return orderedCategories.map(categoryName => {
+                const categoryGroups = categorizedGroups[categoryName];
+                
+                return (
+                  <div key={categoryName} className="space-y-2">
+                    {/* Category header */}
+                    <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-3 py-1">
+                      {categoryName}
+                    </h4>
                     
-                    {/* Exercise rows */}
-                    <div className="border border-t-0 rounded-b-lg overflow-hidden">
-                      {groupExercises.map(exercise => <UnifiedExerciseCard key={exercise.id} exerciseName={exercise.exercise_name} repsCount={exercise.reps_count || 1} repsUnit={exercise.reps_unit || "reps"} weightCount={exercise.weight_count || 0} weightUnit={exercise.weight_unit || "lbs"} setCount={exercise.set_count} completedSets={exercise.completed_sets} note={exercise.note || undefined} muscleGroup={muscleGroup.name} isCompleted={exercise.is_completed} variant="added" onCompleteSet={!isReadOnlyMode ? decrement => handleCompleteSet(exercise.id, decrement) : undefined} onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined} onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined} disabled={isReadOnlyMode} />)}
-                    </div>
-                  </div>;
-            } else {
-              // Show muscle group suggestions (only when no active workout)
-              return <MuscleGroupSuggestions key={muscleGroup.id} muscleGroup={muscleGroup} clientId={currentWorkout.client_id} workoutId={currentWorkout.id} hasExistingExercises={false} onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} disabled={isReadOnlyMode} />;
-            }
-          })}
+                    {categoryGroups.map(muscleGroup => {
+                      const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
+                      const hasExercises = groupExercises.length > 0;
+                      
+                      // Only hide muscle groups without exercises if this workout is actively started or in read-only mode
+                      const isWorkoutStarted = activeWorkout && activeWorkout.id === currentWorkout.id;
+                      if (isWorkoutStarted || isReadOnlyMode) {
+                        if (!hasExercises) return null;
+                      }
+                      
+                      if (hasExercises) {
+                        // Show added exercises for this muscle group - table-like layout
+                        return <div key={muscleGroup.id} className="space-y-0">
+                              {/* Muscle group header */}
+                              <div className="flex items-center justify-between py-2 px-3 bg-muted/50 border-b-2 border-border rounded-t-lg">
+                                <div className="flex items-center gap-2">
+                                  <h3 className="text-sm font-semibold text-foreground">{muscleGroup.name}</h3>
+                                  <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                                    {groupExercises.length}
+                                  </Badge>
+                                </div>
+                                <Button variant="ghost" size="sm" onClick={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} className="h-6 px-2 text-xs" disabled={isReadOnlyMode}>
+                                  <Plus className="h-2.5 w-2.5 mr-1" />
+                                  Add
+                                </Button>
+                              </div>
+                              
+                              {/* Exercise rows */}
+                              <div className="border border-t-0 rounded-b-lg overflow-hidden">
+                                {groupExercises.map(exercise => <UnifiedExerciseCard key={exercise.id} exerciseName={exercise.exercise_name} repsCount={exercise.reps_count || 1} repsUnit={exercise.reps_unit || "reps"} weightCount={exercise.weight_count || 0} weightUnit={exercise.weight_unit || "lbs"} setCount={exercise.set_count} completedSets={exercise.completed_sets} note={exercise.note || undefined} muscleGroup={muscleGroup.name} isCompleted={exercise.is_completed} variant="added" onCompleteSet={!isReadOnlyMode ? decrement => handleCompleteSet(exercise.id, decrement) : undefined} onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined} onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined} disabled={isReadOnlyMode} />)}
+                              </div>
+                            </div>;
+                      } else {
+                        // Show muscle group suggestions (only when no active workout)
+                        return <MuscleGroupSuggestions key={muscleGroup.id} muscleGroup={muscleGroup} clientId={currentWorkout.client_id} workoutId={currentWorkout.id} hasExistingExercises={false} onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} disabled={isReadOnlyMode} />;
+                      }
+                    })}
+                  </div>
+                );
+              });
+            })()}
 
             {/* Non-default muscle groups with exercises */}
             {Object.entries(exercisesByMuscleGroup).map(([muscleGroupName, exercises]) => {

@@ -65,10 +65,10 @@ export class WorkoutService {
     return data || [];
   }
 
-  static async addMuscleGroup(name: string, isDefault = false): Promise<MuscleGroup> {
+  static async addMuscleGroup(name: string, isDefault = false, category?: string): Promise<MuscleGroup> {
     const { data, error } = await supabase
       .from('muscle_group')
-      .insert({ name, default_group: isDefault })
+      .insert({ name, default_group: isDefault, category })
       .select()
       .single();
     
@@ -76,7 +76,7 @@ export class WorkoutService {
     return data;
   }
 
-  static async updateMuscleGroup(id: string, updates: Partial<{ name: string; default_group: boolean }>): Promise<MuscleGroup> {
+  static async updateMuscleGroup(id: string, updates: Partial<{ name: string; default_group: boolean; category: string }>): Promise<MuscleGroup> {
     const { data, error } = await supabase
       .from('muscle_group')
       .update(updates)

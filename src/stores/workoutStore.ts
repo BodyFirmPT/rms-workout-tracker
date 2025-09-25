@@ -25,8 +25,8 @@ interface WorkoutStore {
   loadData: () => Promise<void>;
   addTrainer: (name: string) => Promise<void>;
   addClient: (name: string, trainerId: string) => Promise<void>;
-  addMuscleGroup: (name: string, isDefault?: boolean) => Promise<string>;
-  updateMuscleGroup: (id: string, updates: Partial<{ name: string; default_group: boolean }>) => Promise<void>;
+  addMuscleGroup: (name: string, isDefault?: boolean, category?: string) => Promise<string>;
+  updateMuscleGroup: (id: string, updates: Partial<{ name: string; default_group: boolean; category: string }>) => Promise<void>;
   deleteMuscleGroup: (id: string) => Promise<void>;
   createWorkout: (clientId: string, note: string, date?: string) => Promise<string>;
   startWorkout: (workoutId: string) => Promise<void>;
@@ -98,9 +98,9 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
     }
   },
 
-  addMuscleGroup: async (name: string, isDefault = false) => {
+  addMuscleGroup: async (name: string, isDefault = false, category?: string) => {
     try {
-      const muscleGroup = await WorkoutService.addMuscleGroup(name, isDefault);
+      const muscleGroup = await WorkoutService.addMuscleGroup(name, isDefault, category);
       set((state) => ({ 
         muscleGroups: [...state.muscleGroups, muscleGroup] 
       }));
