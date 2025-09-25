@@ -22,10 +22,6 @@ const MuscleGroups = () => {
     loadData();
   }, [loadData]);
 
-  // Separate default and custom muscle groups
-  const defaultMuscleGroups = muscleGroups.filter(mg => mg.default_group);
-  const customMuscleGroups = muscleGroups.filter(mg => !mg.default_group);
-
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -56,165 +52,80 @@ const MuscleGroups = () => {
           </div>
         </div>
 
-        <div className="space-y-6">
-          {/* Header Stats */}
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Groups</CardTitle>
-                <Target className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{muscleGroups.length}</div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Default Groups</CardTitle>
-                <Badge variant="secondary" className="h-4 px-2 text-xs">System</Badge>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{defaultMuscleGroups.length}</div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Custom Groups</CardTitle>
-                <Badge variant="outline" className="h-4 px-2 text-xs">Custom</Badge>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{customMuscleGroups.length}</div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Default Muscle Groups */}
-          {defaultMuscleGroups.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-xs">System</Badge>
-                  Default Muscle Groups
-                </CardTitle>
+        {/* All Muscle Groups */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Muscle Groups</CardTitle>
                 <CardDescription>
-                  Built-in muscle groups used for exercise categorization
+                  Manage all your muscle group categories
                 </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                  {defaultMuscleGroups.map((muscleGroup) => (
-                    <div
-                      key={muscleGroup.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex-1">
-                        <h4 className="font-medium">{muscleGroup.name}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Default group
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setEditingMuscleGroup(muscleGroup)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setDeletingMuscleGroup(muscleGroup)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Custom Muscle Groups */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">Custom</Badge>
-                    Custom Muscle Groups
-                  </CardTitle>
-                  <CardDescription>
-                    Your personalized muscle group categories
-                  </CardDescription>
-                </div>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowCreateDialog(true)}
-                >
+              </div>
+              <Button onClick={() => setShowCreateDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Muscle Group
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Loading muscle groups...</p>
+              </div>
+            ) : muscleGroups.length === 0 ? (
+              <div className="text-center py-12">
+                <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-foreground mb-2">No Muscle Groups</h3>
+                <p className="text-muted-foreground mb-6">
+                  Create muscle group categories to organize exercises
+                </p>
+                <Button onClick={() => setShowCreateDialog(true)}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Custom
+                  Add Your First Muscle Group
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">Loading muscle groups...</p>
-                </div>
-              ) : customMuscleGroups.length === 0 ? (
-                <div className="text-center py-12">
-                  <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-foreground mb-2">No Custom Groups</h3>
-                  <p className="text-muted-foreground mb-6">
-                    Create your own muscle group categories to organize exercises
-                  </p>
-                  <Button onClick={() => setShowCreateDialog(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Your First Custom Group
-                  </Button>
-                </div>
-              ) : (
-                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                  {customMuscleGroups.map((muscleGroup) => (
-                    <div
-                      key={muscleGroup.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex-1">
+            ) : (
+              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                {muscleGroups.map((muscleGroup) => (
+                  <div
+                    key={muscleGroup.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
                         <h4 className="font-medium">{muscleGroup.name}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Custom group
-                        </p>
+                        {muscleGroup.default_group && (
+                          <Badge variant="secondary" className="text-xs">Default</Badge>
+                        )}
                       </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setEditingMuscleGroup(muscleGroup)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setDeletingMuscleGroup(muscleGroup)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {muscleGroup.default_group ? 'System group' : 'Custom group'}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditingMuscleGroup(muscleGroup)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeletingMuscleGroup(muscleGroup)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Dialogs */}
         <CreateMuscleGroupDialog 
