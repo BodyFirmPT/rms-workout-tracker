@@ -177,11 +177,10 @@ export function ActiveWorkout() {
               const hasExercises = groupExercises.length > 0;
               
               if (hasExercises) {
-                // Show added exercises for this muscle group - full width
+                // Show added exercises for this muscle group
                 return (
-                  <div key={muscleGroup.id} className="col-span-full">
-                    <Card className="border-accent">
-                      <CardHeader className="pb-3">
+                  <Card key={muscleGroup.id} className="border-accent bg-accent/20">
+                    <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <CardTitle className="text-base font-medium">{muscleGroup.name}</CardTitle>
@@ -217,8 +216,7 @@ export function ActiveWorkout() {
                         />
                       ))}
                     </CardContent>
-                    </Card>
-                  </div>
+                  </Card>
                 );
               } else {
                 // Show muscle group suggestions
