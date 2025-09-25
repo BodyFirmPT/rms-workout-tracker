@@ -143,10 +143,10 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Timer className="h-5 w-5" />
-                {currentWorkout.note}
+                {format(new Date(currentWorkout.date), 'MMMM d, yyyy')}
               </CardTitle>
               <CardDescription className="text-primary-foreground/80">
-                {client?.name} • {format(new Date(currentWorkout.date), 'MMMM d, yyyy')}
+                {client?.name}{currentWorkout.note && ` • ${currentWorkout.note}`}
               </CardDescription>
             </div>
             <div className="text-right">
