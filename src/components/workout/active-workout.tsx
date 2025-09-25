@@ -44,7 +44,7 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
 
   // Determine which workout to display
   const currentWorkout = workoutId ? workouts.find(w => w.id === workoutId) : activeWorkout;
-  const isViewingMode = !!workoutId; // If workoutId is provided, we're in viewing mode
+  const isReadOnlyMode = workoutId && !activeWorkout; // Read-only if viewing a different workout than active
 
   useEffect(() => {
     if (currentWorkout) {
@@ -108,7 +108,7 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
   };
 
   const handleCompleteSet = (exerciseId: string) => {
-    if (!isViewingMode) {
+    if (!isReadOnlyMode) {
       completeExerciseSet(currentWorkout.id, exerciseId);
     }
   };
@@ -118,7 +118,7 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
   };
 
   const handleDeleteExercise = (exerciseId: string) => {
-    if (!isViewingMode) {
+    if (!isReadOnlyMode) {
       deleteExercise(currentWorkout.id, exerciseId);
     }
   };
@@ -164,7 +164,7 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
               </p>
               
               <div className="flex gap-2">
-                {!isViewingMode && (
+                {!isReadOnlyMode && (
                   <Button
                     variant="secondary"
                     size="sm"
@@ -175,7 +175,7 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
                   </Button>
                 )}
                 
-                {!isViewingMode && workoutProgress === 100 && (
+                {!isReadOnlyMode && workoutProgress === 100 && (
                   <Button
                     variant="secondary" 
                     size="sm"
@@ -227,7 +227,7 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
                           size="sm"
                           onClick={() => handleAddExerciseForMuscleGroup(muscleGroup.id)}
                           className="h-7 px-2 text-xs"
-                          disabled={isViewingMode}
+                          disabled={isReadOnlyMode}
                         >
                           <Plus className="h-3 w-3 mr-1" />
                           Add
@@ -246,9 +246,9 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
                           note={exercise.note}
                           muscleGroup={muscleGroup.name}
                           isCompleted={exercise.is_completed}
-                          onCompleteSet={!isViewingMode ? () => handleCompleteSet(exercise.id) : undefined}
-                          onEdit={!isViewingMode ? () => handleEditExercise(exercise.id) : undefined}
-                          onDelete={!isViewingMode ? () => handleDeleteExercise(exercise.id) : undefined}
+                          onCompleteSet={!isReadOnlyMode ? () => handleCompleteSet(exercise.id) : undefined}
+                          onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined}
+                          onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined}
                           isActive={true}
                         />
                       ))}
@@ -265,7 +265,7 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
                       workoutId={currentWorkout.id}
                       hasExistingExercises={false}
                       onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)}
-                      disabled={isViewingMode}
+                      disabled={isReadOnlyMode}
                     />
                 );
               }
@@ -292,7 +292,7 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
                         size="sm"
                         onClick={() => handleAddExerciseForMuscleGroup(muscleGroup.id)}
                         className="h-7 px-2 text-xs"
-                        disabled={isViewingMode}
+                        disabled={isReadOnlyMode}
                       >
                         <Plus className="h-3 w-3 mr-1" />
                         Add
@@ -311,9 +311,9 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
                         note={exercise.note}
                         muscleGroup={muscleGroupName}
                         isCompleted={exercise.is_completed}
-                        onCompleteSet={!isViewingMode ? () => handleCompleteSet(exercise.id) : undefined}
-                        onEdit={!isViewingMode ? () => handleEditExercise(exercise.id) : undefined}
-                        onDelete={!isViewingMode ? () => handleDeleteExercise(exercise.id) : undefined}
+                        onCompleteSet={!isReadOnlyMode ? () => handleCompleteSet(exercise.id) : undefined}
+                        onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined}
+                        onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined}
                         isActive={true}
                       />
                     ))}
@@ -323,7 +323,7 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
             })}
 
             {/* Add custom muscle group card - only show in active mode */}
-            {!isViewingMode && (
+            {!isReadOnlyMode && (
               <Card className="border-dashed">
                 <CardContent className="flex items-center justify-center py-8">
                   <Button
@@ -341,7 +341,7 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
         </CardContent>
       </Card>
 
-      {exercises.length === 0 && !isViewingMode && (
+      {exercises.length === 0 && !isReadOnlyMode && (
         <Card>
           <CardContent className="text-center py-12">
             <Plus className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -355,7 +355,7 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
         </Card>
       )}
 
-      {!isViewingMode && (
+      {!isReadOnlyMode && (
         <AddExerciseDialog
           open={showAddExercise}
           onOpenChange={(open) => {
