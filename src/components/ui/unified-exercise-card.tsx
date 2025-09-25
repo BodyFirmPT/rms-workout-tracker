@@ -1,4 +1,4 @@
-import { Check, Plus, Edit, Trash2 } from "lucide-react";
+import { Check, Plus, Edit, Trash2, Zap } from "lucide-react";
 import { Button } from "./button";
 import { Badge } from "./badge";
 import { cn } from "@/lib/utils";
@@ -47,19 +47,28 @@ export function UnifiedExerciseCard({
       className={cn(
         "flex items-center gap-3 py-1.5 px-2 text-sm transition-all duration-200 border-b border-border/50",
         isSuggested 
-          ? "bg-muted/20 border-l-2 border-l-muted-foreground/40" 
+          ? "bg-muted/30 border-l-2 border-l-muted-foreground/30 text-muted-foreground" 
           : "hover:bg-muted/30",
         isCompleted && "opacity-60"
       )}
     >
       {/* Exercise name - takes up available space */}
       <div className="flex-1 min-w-0">
-        <span className={cn(
-          "font-medium truncate",
-          isCompleted ? "line-through text-muted-foreground" : "text-foreground"
-        )}>
-          {exerciseName}
-        </span>
+        <div className="flex items-center gap-2">
+          {isSuggested && (
+            <Zap className="h-3 w-3 text-muted-foreground/70 shrink-0" />
+          )}
+          <span className={cn(
+            "font-medium truncate",
+            isSuggested 
+              ? "text-muted-foreground" 
+              : isCompleted 
+                ? "line-through text-muted-foreground" 
+                : "text-foreground"
+          )}>
+            {exerciseName}
+          </span>
+        </div>
         {note && (
           <div className="text-xs text-muted-foreground truncate mt-0.5">
             {note}
@@ -68,7 +77,10 @@ export function UnifiedExerciseCard({
       </div>
       
       {/* Sets x Reps @ Weight - compact format */}
-      <div className="text-xs text-muted-foreground font-mono whitespace-nowrap min-w-0">
+      <div className={cn(
+        "text-xs font-mono whitespace-nowrap min-w-0",
+        isSuggested ? "text-muted-foreground/70" : "text-muted-foreground"
+      )}>
         {setCount} × {repsCount} {repsUnit}
         {weightCount > 0 && ` @ ${weightCount} ${weightUnit}`}
       </div>
@@ -105,11 +117,11 @@ export function UnifiedExerciseCard({
             variant="ghost"
             size="sm"
             onClick={onAdd}
-            className="h-5 px-1.5 text-xs"
+            className="h-5 px-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50"
             disabled={disabled}
           >
             <Plus className="h-2.5 w-2.5 mr-1" />
-            Add
+            Quick Add
           </Button>
         ) : (
           <>
