@@ -51,11 +51,6 @@ export function UnifiedExerciseCard({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <span className="font-medium text-foreground truncate">{exerciseName}</span>
-          {muscleGroup && (
-            <Badge variant="secondary" className="text-xs shrink-0">
-              {muscleGroup}
-            </Badge>
-          )}
         </div>
         <div className="text-xs text-muted-foreground">
           {setCount} set{setCount !== 1 ? 's' : ''} × {reps} {unit}
