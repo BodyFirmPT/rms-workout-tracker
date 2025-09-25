@@ -11,9 +11,11 @@ import { MuscleGroupSuggestions } from "@/components/workout/muscle-group-sugges
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { format } from "date-fns";
 import { CreateWorkoutExerciseInput, WorkoutExercise } from "@/types/workout";
+
 interface ActiveWorkoutProps {
   workoutId?: string; // For viewing specific workouts
 }
+
 export function ActiveWorkout({
   workoutId
 }: ActiveWorkoutProps) {
@@ -22,6 +24,7 @@ export function ActiveWorkout({
   const [editingExercise, setEditingExercise] = useState<WorkoutExercise | null>(null);
   const [selectedMuscleGroupId, setSelectedMuscleGroupId] = useState<string | null>(null);
   const [workoutProgress, setWorkoutProgress] = useState(0);
+
   const {
     activeWorkout,
     workouts,
@@ -39,6 +42,7 @@ export function ActiveWorkout({
     addExerciseToWorkout,
     getClientExerciseHistory
   } = useWorkoutStore();
+
   useEffect(() => {
     loadData();
   }, [loadData]);
@@ -52,6 +56,7 @@ export function ActiveWorkout({
       loadWorkoutExercises(currentWorkout.id);
     }
   }, [currentWorkout, loadWorkoutExercises]);
+
   useEffect(() => {
     const updateProgress = async () => {
       if (currentWorkout) {
@@ -61,6 +66,7 @@ export function ActiveWorkout({
     };
     updateProgress();
   }, [currentWorkout, workoutExercises, getWorkoutProgress]);
+
   if (!currentWorkout) {
     return <div className="text-center py-12">
         <Timer className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -72,6 +78,7 @@ export function ActiveWorkout({
         </p>
       </div>;
   }
+
   const client = getClientById(currentWorkout.client_id);
   const exercises = workoutExercises[currentWorkout.id] || [];
 
@@ -97,23 +104,28 @@ export function ActiveWorkout({
     acc[exercise.muscle_group_id].push(exercise);
     return acc;
   }, {} as Record<string, typeof exercises>);
+
   const handleAddExerciseForMuscleGroup = (muscleGroupId: string) => {
     setSelectedMuscleGroupId(muscleGroupId || null);
     setShowAddExercise(true);
   };
+
   const handleCompleteSet = (exerciseId: string, decrement = false) => {
     if (!isReadOnlyMode) {
       completeExerciseSet(currentWorkout.id, exerciseId, decrement);
     }
   };
+
   const handleCompleteWorkout = () => {
     completeWorkout();
   };
+
   const handleDeleteExercise = (exerciseId: string) => {
     if (!isReadOnlyMode) {
       deleteExercise(currentWorkout.id, exerciseId);
     }
   };
+
   const handleEditExercise = (exerciseId: string) => {
     const exercise = exercises.find(ex => ex.id === exerciseId);
     if (exercise) {
@@ -121,6 +133,7 @@ export function ActiveWorkout({
       setShowEditExercise(true);
     }
   };
+
   return <div className="space-y-6">
       {/* Workout Header */}
       <Card className="bg-primary-gradient text-primary-foreground shadow-primary">
@@ -178,7 +191,7 @@ export function ActiveWorkout({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-6">
             {(() => {
               // Get all default muscle groups grouped by category
               const categorizedGroups = defaultMuscleGroups.reduce((acc, muscleGroup) => {
@@ -197,50 +210,69 @@ export function ActiveWorkout({
               return orderedCategories.map(categoryName => {
                 const categoryGroups = categorizedGroups[categoryName];
                 
+                // Filter visible groups for this category
+                const visibleGroups = categoryGroups.filter(muscleGroup => {
+                  const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
+                  const hasExercises = groupExercises.length > 0;
+                  
+                  // Only hide muscle groups without exercises if this workout is actively started or in read-only mode
+                  const isWorkoutStarted = activeWorkout && activeWorkout.id === currentWorkout.id;
+                  if (isWorkoutStarted || isReadOnlyMode) {
+                    return hasExercises;
+                  }
+                  return true;
+                });
+
+                // Don't render the category if no groups are visible
+                if (visibleGroups.length === 0) {
+                  return null;
+                }
+                
                 return (
-                  <div key={categoryName} className="space-y-2">
-                    {/* Category header */}
-                    <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-3 py-1">
-                      {categoryName}
-                    </h4>
+                  <div key={categoryName} className="space-y-3">
+                    {/* Category header - more prominent */}
+                    <div className="flex items-center gap-2 py-2 px-3 bg-primary/5 border-l-4 border-primary rounded-r-md">
+                      <h4 className="text-sm font-semibold text-primary uppercase tracking-wider">
+                        {categoryName}
+                      </h4>
+                      <Badge variant="secondary" className="text-xs px-1.5 py-0 bg-primary/10 text-primary border-primary/20">
+                        {visibleGroups.length} groups
+                      </Badge>
+                    </div>
                     
-                    {categoryGroups.map(muscleGroup => {
-                      const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
-                      const hasExercises = groupExercises.length > 0;
-                      
-                      // Only hide muscle groups without exercises if this workout is actively started or in read-only mode
-                      const isWorkoutStarted = activeWorkout && activeWorkout.id === currentWorkout.id;
-                      if (isWorkoutStarted || isReadOnlyMode) {
-                        if (!hasExercises) return null;
-                      }
-                      
-                      if (hasExercises) {
-                        // Show added exercises for this muscle group - table-like layout
-                        return <div key={muscleGroup.id} className="space-y-0">
-                              {/* Muscle group header */}
-                              <div className="flex items-center justify-between py-2 px-3 bg-muted/50 border-b-2 border-border rounded-t-lg">
-                                <div className="flex items-center gap-2">
-                                  <h3 className="text-sm font-semibold text-foreground">{muscleGroup.name}</h3>
-                                  <Badge variant="secondary" className="text-xs px-1.5 py-0">
-                                    {groupExercises.length}
-                                  </Badge>
+                    <div className="space-y-2">
+                      {visibleGroups.map(muscleGroup => {
+                        const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
+                        const hasExercises = groupExercises.length > 0;
+                        
+                        if (hasExercises) {
+                          // Show added exercises for this muscle group - table-like layout
+                          return <div key={muscleGroup.id} className="space-y-0">
+                                {/* Muscle group header */}
+                                <div className="flex items-center justify-between py-2 px-3 bg-muted/50 border-b-2 border-border rounded-t-lg">
+                                  <div className="flex items-center gap-2">
+                                    <h3 className="text-sm font-semibold text-foreground">{muscleGroup.name}</h3>
+                                    <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                                      {groupExercises.length}
+                                    </Badge>
+                                  </div>
+                                  <Button variant="ghost" size="sm" onClick={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} className="h-6 px-2 text-xs" disabled={isReadOnlyMode}>
+                                    <Plus className="h-2.5 w-2.5 mr-1" />
+                                    Add
+                                  </Button>
                                 </div>
-                                <Button variant="ghost" size="sm" onClick={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} className="h-6 px-2 text-xs" disabled={isReadOnlyMode}>
-                                  <Plus className="h-2.5 w-2.5 mr-1" />
-                                  Add
-                                </Button>
-                              </div>
-                              
-                              {/* Exercise rows */}
-                              <div className="border border-t-0 rounded-b-lg overflow-hidden">
-                                {groupExercises.map(exercise => <UnifiedExerciseCard key={exercise.id} exerciseName={exercise.exercise_name} repsCount={exercise.reps_count || 1} repsUnit={exercise.reps_unit || "reps"} weightCount={exercise.weight_count || 0} weightUnit={exercise.weight_unit || "lbs"} setCount={exercise.set_count} completedSets={exercise.completed_sets} note={exercise.note || undefined} muscleGroup={muscleGroup.name} isCompleted={exercise.is_completed} variant="added" onCompleteSet={!isReadOnlyMode ? decrement => handleCompleteSet(exercise.id, decrement) : undefined} onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined} onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined} disabled={isReadOnlyMode} />)}
-                              </div>
-                            </div>;
-                      } else {
-                        // Show muscle group suggestions (only when no active workout)
-                        return <MuscleGroupSuggestions key={muscleGroup.id} muscleGroup={muscleGroup} clientId={currentWorkout.client_id} workoutId={currentWorkout.id} hasExistingExercises={false} onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} disabled={isReadOnlyMode} />;
-                      }
-                    })}
+                                
+                                {/* Exercise rows */}
+                                <div className="border border-t-0 rounded-b-lg overflow-hidden">
+                                  {groupExercises.map(exercise => <UnifiedExerciseCard key={exercise.id} exerciseName={exercise.exercise_name} repsCount={exercise.reps_count || 1} repsUnit={exercise.reps_unit || "reps"} weightCount={exercise.weight_count || 0} weightUnit={exercise.weight_unit || "lbs"} setCount={exercise.set_count} completedSets={exercise.completed_sets} note={exercise.note || undefined} muscleGroup={muscleGroup.name} isCompleted={exercise.is_completed} variant="added" onCompleteSet={!isReadOnlyMode ? decrement => handleCompleteSet(exercise.id, decrement) : undefined} onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined} onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined} disabled={isReadOnlyMode} />)}
+                                </div>
+                              </div>;
+                        } else {
+                          // Show muscle group suggestions (only when no active workout)
+                          return <MuscleGroupSuggestions key={muscleGroup.id} muscleGroup={muscleGroup} clientId={currentWorkout.client_id} workoutId={currentWorkout.id} hasExistingExercises={false} onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} disabled={isReadOnlyMode} />;
+                        }
+                      })}
+                    </div>
                   </div>
                 );
               });
