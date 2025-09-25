@@ -122,7 +122,42 @@ export function UnifiedExerciseCard({
                 <Trash2 className="h-3 w-3" />
               </Button>
             )}
-            {onCompleteSet && (
+            
+            {/* Multiple sets - show individual set controls */}
+            {onCompleteSet && setCount > 1 && (
+              <div className="flex items-center gap-1">
+                {/* Individual set checkmarks */}
+                {Array.from({ length: setCount }).map((_, index) => (
+                  <div
+                    key={index}
+                    className={cn(
+                      "w-4 h-4 rounded-full border flex items-center justify-center transition-all duration-200",
+                      index < completedSets 
+                        ? "bg-success border-success text-success-foreground" 
+                        : "border-muted-foreground/30 text-muted-foreground"
+                    )}
+                  >
+                    {index < completedSets && <Check className="h-2.5 w-2.5" />}
+                  </div>
+                ))}
+                
+                {/* Set completion button */}
+                {completedSets < setCount && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onCompleteSet}
+                    className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted ml-1"
+                    disabled={disabled}
+                  >
+                    Set {completedSets + 1}/{setCount}
+                  </Button>
+                )}
+              </div>
+            )}
+            
+            {/* Single set - show single check button */}
+            {onCompleteSet && setCount === 1 && (
               <Button
                 variant="ghost"
                 size="sm"
