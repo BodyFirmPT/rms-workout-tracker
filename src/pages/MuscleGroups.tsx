@@ -93,15 +93,12 @@ const MuscleGroups = () => {
                     className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2">
                         <h4 className="font-medium">{muscleGroup.name}</h4>
                         {muscleGroup.default_group && (
                           <Badge variant="secondary" className="text-xs">Default</Badge>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {muscleGroup.default_group ? 'System group' : 'Custom group'}
-                      </p>
                     </div>
                     <div className="flex gap-2">
                       <Button
