@@ -45,75 +45,120 @@ export function UnifiedExerciseCard({
   return (
     <div 
       className={cn(
-        "flex items-center justify-between p-3 rounded-lg text-sm transition-all duration-200",
+        "flex items-center gap-3 py-1.5 px-2 text-sm transition-all duration-200 border-b border-border/50",
         isSuggested 
-          ? "bg-muted/30 border-2 border-dashed border-muted-foreground/30" 
-          : "bg-background border border-border",
-        "hover:shadow-sm"
+          ? "bg-muted/20 border-l-2 border-l-muted-foreground/40" 
+          : "hover:bg-muted/30",
+        isCompleted && "opacity-60"
       )}
     >
+      {/* Exercise name - takes up available space */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="font-medium text-foreground truncate">{exerciseName}</span>
-        </div>
-        <div className="text-xs text-muted-foreground">
-          {setCount} set{setCount !== 1 ? 's' : ''} × {repsCount} {repsUnit}
-          {weightCount > 0 && ` @ ${weightCount} ${weightUnit}`}
-          {note && ` • ${note}`}
-          {!isSuggested && (
-            <>
-              {' • '}
-              <span className={cn(
-                "font-medium",
-                isCompleted ? "text-success" : "text-foreground"
-              )}>
-                {completedSets}/{setCount} completed
-              </span>
-            </>
-          )}
-        </div>
-        
-        {/* Progress visualization for added exercises */}
-        {!isSuggested && setCount > 1 && (
-          <div className="mt-2 flex gap-1">
-            {Array.from({ length: setCount }).map((_, index) => (
-              <div
-                key={index}
-                className={cn(
-                  "flex-1 h-1 rounded-full transition-colors",
-                  index < completedSets 
-                    ? "bg-success" 
-                    : "bg-muted"
-                )}
-              />
-            ))}
+        <span className={cn(
+          "font-medium truncate",
+          isCompleted ? "line-through text-muted-foreground" : "text-foreground"
+        )}>
+          {exerciseName}
+        </span>
+        {note && (
+          <div className="text-xs text-muted-foreground truncate mt-0.5">
+            {note}
           </div>
         )}
       </div>
       
-      <div className="flex items-center gap-1 ml-3 shrink-0">
+      {/* Sets x Reps @ Weight - compact format */}
+      <div className="text-xs text-muted-foreground font-mono whitespace-nowrap min-w-0">
+        {setCount} × {repsCount} {repsUnit}
+        {weightCount > 0 && ` @ ${weightCount} ${weightUnit}`}
+      </div>
+      
+      {/* Progress - compact */}
+      {!isSuggested && (
+        <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono whitespace-nowrap">
+          <span className={cn(
+            "font-medium",
+            isCompleted ? "text-success" : "text-foreground"
+          )}>
+            {completedSets}/{setCount}
+          </span>
+          {setCount > 1 && (
+            <div className="flex gap-0.5 ml-1">
+              {Array.from({ length: setCount }).map((_, index) => (
+                <div
+                  key={index}
+                  className={cn(
+                    "w-1.5 h-1.5 rounded-full",
+                    index < completedSets ? "bg-success" : "bg-muted"
+                  )}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      
+      {/* Actions - compact buttons */}
+      <div className="flex items-center gap-0.5 shrink-0">
         {isSuggested ? (
           <Button
             variant="ghost"
             size="sm"
             onClick={onAdd}
-            className="h-6 px-2 text-xs"
+            className="h-5 px-1.5 text-xs"
             disabled={disabled}
           >
-            <Plus className="h-3 w-3 mr-1" />
+            <Plus className="h-2.5 w-2.5 mr-1" />
             Add
           </Button>
         ) : (
           <>
+            {/* Completion control - prioritize this */}
+            {onCompleteSet && (
+              <>
+                {setCount > 1 ? (
+                  // Multiple sets - show next set button
+                  completedSets < setCount && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onCompleteSet && onCompleteSet()}
+                      className="h-5 px-1.5 text-xs"
+                      disabled={disabled}
+                    >
+                      <Check className="h-2.5 w-2.5 mr-1" />
+                      {completedSets + 1}
+                    </Button>
+                  )
+                ) : (
+                  // Single set - show check button
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onCompleteSet && onCompleteSet()}
+                    className={cn(
+                      "h-5 w-5 p-0 rounded-full",
+                      isCompleted 
+                        ? "bg-success text-success-foreground hover:bg-success/80" 
+                        : "hover:bg-muted"
+                    )}
+                    disabled={disabled}
+                  >
+                    <Check className="h-2.5 w-2.5" />
+                  </Button>
+                )}
+              </>
+            )}
+            
             {onEdit && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onEdit}
-                className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground"
                 disabled={disabled}
               >
-                <Edit className="h-3 w-3" />
+                <Edit className="h-2.5 w-2.5" />
               </Button>
             )}
             {onDelete && (
@@ -121,70 +166,10 @@ export function UnifiedExerciseCard({
                 variant="ghost"
                 size="sm"
                 onClick={onDelete}
-                className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive"
                 disabled={disabled}
               >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            )}
-            
-            {/* Multiple sets - show individual set controls */}
-            {onCompleteSet && setCount > 1 && (
-              <div className="flex items-center gap-1">
-                {/* Individual set checkmarks */}
-                {Array.from({ length: setCount }).map((_, index) => (
-                  <button
-                    key={index}
-                     onClick={() => {
-                       // If this set is completed, uncomplete it by decrementing
-                       if (index < completedSets && onCompleteSet) {
-                         onCompleteSet(true); // Pass true to indicate decrement
-                       }
-                     }}
-                    disabled={disabled || index >= completedSets}
-                    className={cn(
-                      "w-4 h-4 rounded-full border flex items-center justify-center transition-all duration-200",
-                      index < completedSets 
-                        ? "bg-success border-success text-success-foreground hover:bg-success/80 cursor-pointer" 
-                        : "border-muted-foreground/30 text-muted-foreground cursor-default",
-                      disabled && "opacity-50 cursor-not-allowed"
-                    )}
-                  >
-                    {index < completedSets && <Check className="h-2.5 w-2.5" />}
-                  </button>
-                ))}
-                
-                {/* Set completion button */}
-                {completedSets < setCount && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onCompleteSet && onCompleteSet()}
-                    className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted ml-1"
-                    disabled={disabled}
-                  >
-                    <Check className="h-2.5 w-2.5 mr-1" />
-                    Set {completedSets + 1}/{setCount}
-                  </Button>
-                )}
-              </div>
-            )}
-            
-            {/* Single set - show single check button */}
-            {onCompleteSet && setCount === 1 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onCompleteSet && onCompleteSet()}
-                className={cn(
-                  "h-6 w-6 p-0 rounded-full transition-all duration-200",
-                  isCompleted 
-                    ? "bg-success text-success-foreground hover:bg-success/80" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-                disabled={disabled}
-              >
-                <Check className="h-3 w-3" />
+                <Trash2 className="h-2.5 w-2.5" />
               </Button>
             )}
           </>

@@ -56,35 +56,34 @@ export function MuscleGroupSuggestions({
       });
     }
   };
-  return <Card className={`${hasExistingExercises ? 'bg-accent/50' : ''}`}>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-base font-medium">{muscleGroup.name}</CardTitle>
-            {muscleGroup.default_group}
-          </div>
-          <Button variant="outline" size="sm" onClick={onAddExercise} className="h-7 px-2 text-xs" disabled={disabled}>
-            <Plus className="h-3 w-3 mr-1" />
-            Add
-          </Button>
+  return <div className="space-y-0">
+      {/* Muscle group header - compact */}
+      <div className="flex items-center justify-between py-2 px-3 bg-muted/30 border-b border-border rounded-t-lg">
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-medium text-foreground">{muscleGroup.name}</h3>
+          {muscleGroup.default_group}
         </div>
-      </CardHeader>
+        <Button variant="ghost" size="sm" onClick={onAddExercise} className="h-6 px-2 text-xs" disabled={disabled}>
+          <Plus className="h-2.5 w-2.5 mr-1" />
+          Add
+        </Button>
+      </div>
       
-      {suggestions.length > 0 && <CardContent className="pt-0 space-y-2">
-          <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
-            <History className="h-3 w-3" />
-            Recent exercises for this client:
+      {suggestions.length > 0 && <div className="border border-t-0 rounded-b-lg overflow-hidden">
+          <div className="px-3 py-1.5 text-xs text-muted-foreground bg-muted/10 border-b border-border/30">
+            <History className="h-2.5 w-2.5 inline mr-1" />
+            Recent exercises:
           </div>
           
-          <div className="space-y-2">
+          <div>
             {suggestions.map((exercise, index) => <UnifiedExerciseCard key={index} exerciseName={exercise.exercise_name} repsCount={exercise.reps_count || 1} repsUnit={exercise.reps_unit || "reps"} weightCount={exercise.weight_count || 0} weightUnit={exercise.weight_unit || "lbs"} setCount={exercise.set_count} note={exercise.note || undefined} variant="suggested" onAdd={() => handleCopyExercise(exercise)} disabled={disabled} />)}
           </div>
-        </CardContent>}
+        </div>}
       
-      {!loading && suggestions.length === 0 && !hasExistingExercises && <CardContent className="pt-0">
-          <div className="text-xs text-muted-foreground text-center py-2">
+      {!loading && suggestions.length === 0 && !hasExistingExercises && <div className="border border-t-0 rounded-b-lg">
+          <div className="text-xs text-muted-foreground text-center py-3 px-3">
             No previous exercises for this muscle group
           </div>
-        </CardContent>}
-    </Card>;
+        </div>}
+    </div>;
 }

@@ -190,24 +190,27 @@ export function ActiveWorkout({
             }
             
             if (hasExercises) {
-              // Show added exercises for this muscle group
-              return <Card key={muscleGroup.id}>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <CardTitle className="text-base font-medium">{muscleGroup.name}</CardTitle>
-                          
-                        </div>
-                        <Button variant="outline" size="sm" onClick={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} className="h-7 px-2 text-xs" disabled={isReadOnlyMode}>
-                          <Plus className="h-3 w-3 mr-1" />
-                          Add
-                        </Button>
+              // Show added exercises for this muscle group - table-like layout
+              return <div key={muscleGroup.id} className="space-y-0">
+                    {/* Muscle group header */}
+                    <div className="flex items-center justify-between py-2 px-3 bg-muted/50 border-b-2 border-border rounded-t-lg">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-semibold text-foreground">{muscleGroup.name}</h3>
+                        <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                          {groupExercises.length}
+                        </Badge>
                       </div>
-                    </CardHeader>
-                    <CardContent className="pt-0 space-y-3">
+                      <Button variant="ghost" size="sm" onClick={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} className="h-6 px-2 text-xs" disabled={isReadOnlyMode}>
+                        <Plus className="h-2.5 w-2.5 mr-1" />
+                        Add
+                      </Button>
+                    </div>
+                    
+                    {/* Exercise rows */}
+                    <div className="border border-t-0 rounded-b-lg overflow-hidden">
                       {groupExercises.map(exercise => <UnifiedExerciseCard key={exercise.id} exerciseName={exercise.exercise_name} repsCount={exercise.reps_count || 1} repsUnit={exercise.reps_unit || "reps"} weightCount={exercise.weight_count || 0} weightUnit={exercise.weight_unit || "lbs"} setCount={exercise.set_count} completedSets={exercise.completed_sets} note={exercise.note || undefined} muscleGroup={muscleGroup.name} isCompleted={exercise.is_completed} variant="added" onCompleteSet={!isReadOnlyMode ? decrement => handleCompleteSet(exercise.id, decrement) : undefined} onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined} onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined} disabled={isReadOnlyMode} />)}
-                    </CardContent>
-                  </Card>;
+                    </div>
+                  </div>;
             } else {
               // Show muscle group suggestions (only when no active workout)
               return <MuscleGroupSuggestions key={muscleGroup.id} muscleGroup={muscleGroup} clientId={currentWorkout.client_id} workoutId={currentWorkout.id} hasExistingExercises={false} onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} disabled={isReadOnlyMode} />;
@@ -218,26 +221,27 @@ export function ActiveWorkout({
             {Object.entries(exercisesByMuscleGroup).map(([muscleGroupName, exercises]) => {
             const muscleGroup = muscleGroups.find(mg => mg.name === muscleGroupName);
             if (!muscleGroup || muscleGroup.default_group) return null;
-            return <Card key={muscleGroupName}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-base font-medium">{muscleGroupName}</CardTitle>
-                        <Badge variant="outline" className="text-xs">Custom</Badge>
-                        <Badge variant="secondary" className="text-xs">
-                          {exercises.length} exercise{exercises.length !== 1 ? 's' : ''}
-                        </Badge>
-                      </div>
-                      <Button variant="outline" size="sm" onClick={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} className="h-7 px-2 text-xs" disabled={isReadOnlyMode}>
-                        <Plus className="h-3 w-3 mr-1" />
-                        Add
-                      </Button>
+            return <div key={muscleGroupName} className="space-y-0">
+                  {/* Custom muscle group header */}
+                  <div className="flex items-center justify-between py-2 px-3 bg-muted/50 border-b-2 border-border rounded-t-lg">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-semibold text-foreground">{muscleGroupName}</h3>
+                      <Badge variant="outline" className="text-xs px-1.5 py-0">Custom</Badge>
+                      <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                        {exercises.length}
+                      </Badge>
                     </div>
-                  </CardHeader>
-                  <CardContent className="pt-0 space-y-3">
+                    <Button variant="ghost" size="sm" onClick={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} className="h-6 px-2 text-xs" disabled={isReadOnlyMode}>
+                      <Plus className="h-2.5 w-2.5 mr-1" />
+                      Add
+                    </Button>
+                  </div>
+                  
+                  {/* Exercise rows */}
+                  <div className="border border-t-0 rounded-b-lg overflow-hidden">
                     {exercises.map(exercise => <UnifiedExerciseCard key={exercise.id} exerciseName={exercise.exercise_name} repsCount={exercise.reps_count || 1} repsUnit={exercise.reps_unit || "reps"} weightCount={exercise.weight_count || 0} weightUnit={exercise.weight_unit || "lbs"} setCount={exercise.set_count} completedSets={exercise.completed_sets} note={exercise.note || undefined} muscleGroup={muscleGroupName} isCompleted={exercise.is_completed} variant="added" onCompleteSet={!isReadOnlyMode ? decrement => handleCompleteSet(exercise.id, decrement) : undefined} onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined} onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined} disabled={isReadOnlyMode} />)}
-                  </CardContent>
-                </Card>;
+                  </div>
+                </div>;
           })}
 
             {/* Add custom muscle group card - only show in active mode */}
