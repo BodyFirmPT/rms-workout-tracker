@@ -33,22 +33,28 @@ export interface WorkoutExercise {
   workout_id: string;
   muscle_group_id: string;
   exercise_name: string;
-  reps: string;
-  unit: string;
-  count: number;
+  reps_count: number;
+  reps_unit: string;
+  weight_count: number;
+  weight_unit: string;
   note: string;
   set_count: number;
   completed_sets: number;
   is_completed: boolean;
   created_at?: string;
+  // Keep old fields for migration compatibility
+  reps?: string;
+  unit?: string;
+  count?: number;
 }
 
 export interface CreateWorkoutExerciseInput {
   muscle_group_id: string;
   exercise_name: string;
-  reps: string;
-  unit: string;
-  count: number;
+  reps_count: number;
+  reps_unit: string;
+  weight_count: number;
+  weight_unit: string;
   note?: string;
   set_count: number;
 }

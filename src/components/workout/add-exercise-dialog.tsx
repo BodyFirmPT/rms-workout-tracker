@@ -20,9 +20,10 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, preselectedMu
   const [exerciseName, setExerciseName] = useState("");
   const [muscleGroupId, setMuscleGroupId] = useState("");
   const [newMuscleGroup, setNewMuscleGroup] = useState("");
-  const [reps, setReps] = useState("");
-  const [unit, setUnit] = useState("reps");
-  const [count, setCount] = useState(1);
+  const [repsCount, setRepsCount] = useState(1);
+  const [repsUnit, setRepsUnit] = useState("reps");
+  const [weightCount, setWeightCount] = useState(0);
+  const [weightUnit, setWeightUnit] = useState("lbs");
   const [sets, setSets] = useState(1);
   const [note, setNote] = useState("");
   const [showNewMuscleGroup, setShowNewMuscleGroup] = useState(false);
@@ -57,9 +58,10 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, preselectedMu
     const exercise: CreateWorkoutExerciseInput = {
       muscle_group_id: finalMuscleGroupId,
       exercise_name: exerciseName.trim(),
-      reps,
-      unit,
-      count,
+      reps_count: repsCount,
+      reps_unit: repsUnit,
+      weight_count: weightCount,
+      weight_unit: weightUnit,
       set_count: sets,
       note: note.trim(),
     };
@@ -70,9 +72,10 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, preselectedMu
     setExerciseName("");
     setMuscleGroupId("");
     setNewMuscleGroup("");
-    setReps("");
-    setUnit("reps");
-    setCount(1);
+    setRepsCount(1);
+    setRepsUnit("reps");
+    setWeightCount(0);
+    setWeightUnit("lbs");
     setSets(1);
     setNote("");
     setShowNewMuscleGroup(false);
@@ -144,26 +147,26 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, preselectedMu
           
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="reps">Reps/Duration</Label>
+              <Label htmlFor="reps-count">Reps/Duration</Label>
               <Input
-                id="reps"
-                value={reps}
-                onChange={(e) => setReps(e.target.value)}
-                placeholder="e.g., 12, 30 sec"
+                id="reps-count"
+                type="number"
+                value={repsCount}
+                onChange={(e) => setRepsCount(Number(e.target.value))}
+                placeholder="e.g., 12, 30"
+                min="1"
                 required
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="unit">Unit</Label>
-              <Select value={unit} onValueChange={setUnit}>
+              <Label htmlFor="reps-unit">Unit</Label>
+              <Select value={repsUnit} onValueChange={setRepsUnit}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="reps">Reps</SelectItem>
-                  <SelectItem value="lbs">Pounds (lbs)</SelectItem>
-                  <SelectItem value="kg">Kilograms (kg)</SelectItem>
                   <SelectItem value="seconds">Seconds</SelectItem>
                   <SelectItem value="minutes">Minutes</SelectItem>
                 </SelectContent>
@@ -173,28 +176,42 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, preselectedMu
           
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="count">Weight/Count</Label>
+              <Label htmlFor="weight-count">Weight</Label>
               <Input
-                id="count"
+                id="weight-count"
                 type="number"
-                value={count}
-                onChange={(e) => setCount(Number(e.target.value))}
+                value={weightCount}
+                onChange={(e) => setWeightCount(Number(e.target.value))}
                 min="0"
                 step="0.5"
+                placeholder="e.g., 15"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="sets">Sets</Label>
-              <Input
-                id="sets"
-                type="number"
-                value={sets}
-                onChange={(e) => setSets(Number(e.target.value))}
-                min="1"
-                max="10"
-              />
+              <Label htmlFor="weight-unit">Weight Unit</Label>
+              <Select value={weightUnit} onValueChange={setWeightUnit}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="lbs">Pounds (lbs)</SelectItem>
+                  <SelectItem value="kg">Kilograms (kg)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="sets">Sets</Label>
+            <Input
+              id="sets"
+              type="number"
+              value={sets}
+              onChange={(e) => setSets(Number(e.target.value))}
+              min="1"
+              max="10"
+            />
           </div>
           
           <div className="space-y-2">

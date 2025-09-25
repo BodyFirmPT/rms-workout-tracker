@@ -37,9 +37,10 @@ export function EditExerciseDialog({
   const [exerciseName, setExerciseName] = useState("");
   const [muscleGroupId, setMuscleGroupId] = useState("");
   const [newMuscleGroup, setNewMuscleGroup] = useState("");
-  const [reps, setReps] = useState("");
-  const [unit, setUnit] = useState("reps");
-  const [count, setCount] = useState("");
+  const [repsCount, setRepsCount] = useState(1);
+  const [repsUnit, setRepsUnit] = useState("reps");
+  const [weightCount, setWeightCount] = useState(0);
+  const [weightUnit, setWeightUnit] = useState("lbs");
   const [sets, setSets] = useState("3");
   const [note, setNote] = useState("");
   const [isCreatingNewMuscleGroup, setIsCreatingNewMuscleGroup] = useState(false);
@@ -55,9 +56,10 @@ export function EditExerciseDialog({
     if (exercise) {
       setExerciseName(exercise.exercise_name);
       setMuscleGroupId(exercise.muscle_group_id);
-      setReps(exercise.reps);
-      setUnit(exercise.unit);
-      setCount(exercise.count?.toString() || "");
+      setRepsCount(exercise.reps_count || 1);
+      setRepsUnit(exercise.reps_unit || "reps");
+      setWeightCount(exercise.weight_count || 0);
+      setWeightUnit(exercise.weight_unit || "lbs");
       setSets(exercise.set_count.toString());
       setNote(exercise.note || "");
       setIsCreatingNewMuscleGroup(false);
@@ -68,7 +70,7 @@ export function EditExerciseDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!exercise || !exerciseName.trim() || !reps.trim() || !sets.trim()) {
+    if (!exercise || !exerciseName.trim() || !sets.trim()) {
       return;
     }
 
@@ -84,11 +86,12 @@ export function EditExerciseDialog({
       await updateExercise(workoutId, exercise.id, {
         exercise_name: exerciseName.trim(),
         muscle_group_id: finalMuscleGroupId,
-        reps: reps.trim(),
-        unit,
-        count: count ? parseInt(count) : null,
+        reps_count: repsCount,
+        reps_unit: repsUnit,
+        weight_count: weightCount,
+        weight_unit: weightUnit,
         set_count: parseInt(sets),
-        note: note.trim() || null,
+        note: note.trim() || undefined,
       });
 
       // Reset and close
@@ -169,18 +172,19 @@ export function EditExerciseDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="reps">Reps/Duration</Label>
+              <Label htmlFor="reps-count">Reps/Duration</Label>
               <Input
-                id="reps"
-                value={reps}
-                onChange={(e) => setReps(e.target.value)}
-                placeholder="e.g., 10, 30 sec"
+                id="reps-count"
+                type="number"
+                value={repsCount}
+                onChange={(e) => setRepsCount(Number(e.target.value))}
+                min="1"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="unit">Unit</Label>
-              <Select value={unit} onValueChange={setUnit}>
+              <Label htmlFor="reps-unit">Unit</Label>
+              <Select value={repsUnit} onValueChange={setRepsUnit}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -195,15 +199,31 @@ export function EditExerciseDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="count">Count/Weight (optional)</Label>
+              <Label htmlFor="weight-count">Weight</Label>
               <Input
-                id="count"
+                id="weight-count"
                 type="number"
-                value={count}
-                onChange={(e) => setCount(e.target.value)}
-                placeholder="e.g., 25 lbs"
+                value={weightCount}
+                onChange={(e) => setWeightCount(Number(e.target.value))}
+                min="0"
+                step="0.5"
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="weight-unit">Weight Unit</Label>
+              <Select value={weightUnit} onValueChange={setWeightUnit}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="lbs">Pounds (lbs)</SelectItem>
+                  <SelectItem value="kg">Kilograms (kg)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
               <Label htmlFor="sets">Sets</Label>
               <Input
@@ -234,7 +254,7 @@ export function EditExerciseDialog({
             </Button>
             <Button 
               type="submit" 
-              disabled={!exerciseName.trim() || !reps.trim() || !sets.trim() || 
+              disabled={!exerciseName.trim() || !sets.trim() || 
                        (!muscleGroupId && (!isCreatingNewMuscleGroup || !newMuscleGroup.trim()))}
             >
               Update Exercise

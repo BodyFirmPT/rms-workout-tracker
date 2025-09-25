@@ -128,8 +128,12 @@ export type Database = {
           muscle_group_id: string
           note: string | null
           reps: string
+          reps_count: number
+          reps_unit: string
           set_count: number
           unit: string
+          weight_count: number
+          weight_unit: string
           workout_id: string
         }
         Insert: {
@@ -142,8 +146,12 @@ export type Database = {
           muscle_group_id: string
           note?: string | null
           reps: string
+          reps_count: number
+          reps_unit?: string
           set_count: number
           unit: string
+          weight_count: number
+          weight_unit?: string
           workout_id: string
         }
         Update: {
@@ -156,8 +164,12 @@ export type Database = {
           muscle_group_id?: string
           note?: string | null
           reps?: string
+          reps_count?: number
+          reps_unit?: string
           set_count?: number
           unit?: string
+          weight_count?: number
+          weight_unit?: string
           workout_id?: string
         }
         Relationships: [

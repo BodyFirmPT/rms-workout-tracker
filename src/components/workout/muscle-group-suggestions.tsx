@@ -47,9 +47,10 @@ export function MuscleGroupSuggestions({
       await addExerciseToWorkout(workoutId, {
         muscle_group_id: exercise.muscle_group_id,
         exercise_name: exercise.exercise_name,
-        reps: exercise.reps,
-        unit: exercise.unit,
-        count: exercise.count,
+        reps_count: exercise.reps_count || 1,
+        reps_unit: exercise.reps_unit || "reps",
+        weight_count: exercise.weight_count || 0,
+        weight_unit: exercise.weight_unit || "lbs",
         set_count: exercise.set_count,
         note: exercise.note || ''
       });
@@ -76,7 +77,7 @@ export function MuscleGroupSuggestions({
           </div>
           
           <div className="space-y-2">
-            {suggestions.map((exercise, index) => <UnifiedExerciseCard key={index} exerciseName={exercise.exercise_name} reps={exercise.reps} unit={exercise.unit} setCount={exercise.set_count} note={exercise.note || undefined} variant="suggested" onAdd={() => handleCopyExercise(exercise)} disabled={disabled} />)}
+            {suggestions.map((exercise, index) => <UnifiedExerciseCard key={index} exerciseName={exercise.exercise_name} repsCount={exercise.reps_count || 1} repsUnit={exercise.reps_unit || "reps"} weightCount={exercise.weight_count || 0} weightUnit={exercise.weight_unit || "lbs"} setCount={exercise.set_count} note={exercise.note || undefined} variant="suggested" onAdd={() => handleCopyExercise(exercise)} disabled={disabled} />)}
           </div>
         </CardContent>}
       

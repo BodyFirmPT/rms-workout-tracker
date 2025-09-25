@@ -199,7 +199,7 @@ export function ActiveWorkout({
                       </div>
                     </CardHeader>
                     <CardContent className="pt-0 space-y-3">
-                      {groupExercises.map(exercise => <UnifiedExerciseCard key={exercise.id} exerciseName={exercise.exercise_name} reps={exercise.reps} unit={exercise.unit} setCount={exercise.set_count} completedSets={exercise.completed_sets} note={exercise.note || undefined} muscleGroup={muscleGroup.name} isCompleted={exercise.is_completed} variant="added" onCompleteSet={!isReadOnlyMode ? decrement => handleCompleteSet(exercise.id, decrement) : undefined} onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined} onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined} disabled={isReadOnlyMode} />)}
+                      {groupExercises.map(exercise => <UnifiedExerciseCard key={exercise.id} exerciseName={exercise.exercise_name} repsCount={exercise.reps_count || 1} repsUnit={exercise.reps_unit || "reps"} weightCount={exercise.weight_count || 0} weightUnit={exercise.weight_unit || "lbs"} setCount={exercise.set_count} completedSets={exercise.completed_sets} note={exercise.note || undefined} muscleGroup={muscleGroup.name} isCompleted={exercise.is_completed} variant="added" onCompleteSet={!isReadOnlyMode ? decrement => handleCompleteSet(exercise.id, decrement) : undefined} onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined} onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined} disabled={isReadOnlyMode} />)}
                     </CardContent>
                   </Card>;
             } else {
@@ -229,7 +229,7 @@ export function ActiveWorkout({
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0 space-y-3">
-                    {exercises.map(exercise => <UnifiedExerciseCard key={exercise.id} exerciseName={exercise.exercise_name} reps={exercise.reps} unit={exercise.unit} setCount={exercise.set_count} completedSets={exercise.completed_sets} note={exercise.note || undefined} muscleGroup={muscleGroupName} isCompleted={exercise.is_completed} variant="added" onCompleteSet={!isReadOnlyMode ? decrement => handleCompleteSet(exercise.id, decrement) : undefined} onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined} onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined} disabled={isReadOnlyMode} />)}
+                    {exercises.map(exercise => <UnifiedExerciseCard key={exercise.id} exerciseName={exercise.exercise_name} repsCount={exercise.reps_count || 1} repsUnit={exercise.reps_unit || "reps"} weightCount={exercise.weight_count || 0} weightUnit={exercise.weight_unit || "lbs"} setCount={exercise.set_count} completedSets={exercise.completed_sets} note={exercise.note || undefined} muscleGroup={muscleGroupName} isCompleted={exercise.is_completed} variant="added" onCompleteSet={!isReadOnlyMode ? decrement => handleCompleteSet(exercise.id, decrement) : undefined} onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined} onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined} disabled={isReadOnlyMode} />)}
                   </CardContent>
                 </Card>;
           })}

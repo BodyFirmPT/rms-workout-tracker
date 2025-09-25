@@ -237,9 +237,14 @@ export class WorkoutService {
         workout_id: newWorkout.id,
         muscle_group_id: exercise.muscle_group_id,
         exercise_name: exercise.exercise_name,
-        reps: exercise.reps,
-        unit: exercise.unit,
-        count: exercise.count,
+        reps_count: exercise.reps_count,
+        reps_unit: exercise.reps_unit,
+        weight_count: exercise.weight_count,
+        weight_unit: exercise.weight_unit,
+        // Keep old fields for compatibility
+        reps: exercise.reps_count.toString(),
+        unit: exercise.reps_unit,
+        count: exercise.weight_count,
         note: exercise.note || '',
         set_count: exercise.set_count,
         completed_sets: 0, // Reset completion status
@@ -278,9 +283,14 @@ export class WorkoutService {
         workout_id: workoutId,
         muscle_group_id: exercise.muscle_group_id,
         exercise_name: exercise.exercise_name,
-        reps: exercise.reps,
-        unit: exercise.unit,
-        count: exercise.count,
+        reps_count: exercise.reps_count,
+        reps_unit: exercise.reps_unit,
+        weight_count: exercise.weight_count,
+        weight_unit: exercise.weight_unit,
+        // Keep old fields for compatibility
+        reps: exercise.reps_count.toString(),
+        unit: exercise.reps_unit,
+        count: exercise.weight_count,
         note: exercise.note || '',
         set_count: exercise.set_count,
         completed_sets: 0,
@@ -399,9 +409,21 @@ export class WorkoutService {
   }
 
   static async updateExercise(exerciseId: string, updates: Partial<CreateWorkoutExerciseInput>): Promise<WorkoutExercise> {
+    // Ensure backwards compatibility by updating old fields alongside new ones
+    const updateData: any = { ...updates };
+    
+    if (updates.reps_count !== undefined && updates.reps_unit !== undefined) {
+      updateData.reps = updates.reps_count.toString();
+      updateData.unit = updates.reps_unit;
+    }
+    
+    if (updates.weight_count !== undefined) {
+      updateData.count = updates.weight_count;
+    }
+
     const { data, error } = await supabase
       .from('workout_exercise')
-      .update(updates)
+      .update(updateData)
       .eq('id', exerciseId)
       .select()
       .single();

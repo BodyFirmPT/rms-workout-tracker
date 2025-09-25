@@ -5,8 +5,10 @@ import { cn } from "@/lib/utils";
 
 interface UnifiedExerciseCardProps {
   exerciseName: string;
-  reps: string;
-  unit: string;
+  repsCount: number;
+  repsUnit: string;
+  weightCount: number;
+  weightUnit: string;
   setCount: number;
   completedSets?: number;
   note?: string;
@@ -22,8 +24,10 @@ interface UnifiedExerciseCardProps {
 
 export function UnifiedExerciseCard({
   exerciseName,
-  reps,
-  unit,
+  repsCount,
+  repsUnit,
+  weightCount,
+  weightUnit,
   setCount,
   completedSets = 0,
   note,
@@ -53,7 +57,8 @@ export function UnifiedExerciseCard({
           <span className="font-medium text-foreground truncate">{exerciseName}</span>
         </div>
         <div className="text-xs text-muted-foreground">
-          {setCount} set{setCount !== 1 ? 's' : ''} × {reps} {unit}
+          {setCount} set{setCount !== 1 ? 's' : ''} × {repsCount} {repsUnit}
+          {weightCount > 0 && ` @ ${weightCount} ${weightUnit}`}
           {note && ` • ${note}`}
           {!isSuggested && (
             <>
