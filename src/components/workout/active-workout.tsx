@@ -183,6 +183,12 @@ export function ActiveWorkout({
             {defaultMuscleGroups.map(muscleGroup => {
             const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
             const hasExercises = groupExercises.length > 0;
+            
+            // If workout is started/active or completed, only show muscle groups with exercises
+            if (activeWorkout || isReadOnlyMode) {
+              if (!hasExercises) return null;
+            }
+            
             if (hasExercises) {
               // Show added exercises for this muscle group
               return <Card key={muscleGroup.id}>
@@ -203,7 +209,7 @@ export function ActiveWorkout({
                     </CardContent>
                   </Card>;
             } else {
-              // Show muscle group suggestions
+              // Show muscle group suggestions (only when no active workout)
               return <MuscleGroupSuggestions key={muscleGroup.id} muscleGroup={muscleGroup} clientId={currentWorkout.client_id} workoutId={currentWorkout.id} hasExistingExercises={false} onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} disabled={isReadOnlyMode} />;
             }
           })}
