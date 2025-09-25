@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import ClientDetails from "./pages/ClientDetails";
 import ActiveWorkout from "./pages/ActiveWorkout";
 import MuscleGroups from "./pages/MuscleGroups";
 import NotFound from "./pages/NotFound";
@@ -18,6 +19,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/client/:clientId" element={<ClientDetails />} />
           <Route path="/workout/:id?" element={<ActiveWorkout />} />
           <Route path="/muscle-groups" element={<MuscleGroups />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

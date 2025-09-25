@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -15,15 +15,23 @@ import { CreateClientDialog } from "./create-client-dialog";
 interface CreateWorkoutDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultClientId?: string;
 }
 
-export function CreateWorkoutDialog({ open, onOpenChange }: CreateWorkoutDialogProps) {
+export function CreateWorkoutDialog({ open, onOpenChange, defaultClientId }: CreateWorkoutDialogProps) {
   const [note, setNote] = useState("");
   const [date, setDate] = useState<Date>(new Date());
-  const [clientId, setClientId] = useState("");
+  const [clientId, setClientId] = useState(defaultClientId || "");
   const [showCreateClient, setShowCreateClient] = useState(false);
   
   const { clients, createWorkout } = useWorkoutStore();
+
+  // Update clientId when defaultClientId changes
+  useEffect(() => {
+    if (defaultClientId) {
+      setClientId(defaultClientId);
+    }
+  }, [defaultClientId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +42,7 @@ export function CreateWorkoutDialog({ open, onOpenChange }: CreateWorkoutDialogP
     // Reset form
     setNote("");
     setDate(new Date());
-    setClientId("");
+    setClientId(defaultClientId || "");
     onOpenChange(false);
     
     // TODO: Navigate to workout detail page

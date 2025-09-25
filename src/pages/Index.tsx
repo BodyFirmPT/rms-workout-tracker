@@ -1,4 +1,4 @@
-import { WorkoutOverview } from "@/components/dashboard/workout-overview";
+import { ClientSelector } from "@/components/dashboard/client-selector";
 
 const Index = () => {
   return (
@@ -9,11 +9,11 @@ const Index = () => {
             Workout Tracker
           </h1>
           <p className="text-lg text-muted-foreground">
-            Track your training sessions and monitor progress
+            Select a client to view their training sessions and create new workouts
           </p>
         </div>
         
-        <WorkoutOverview />
+        <ClientSelector />
       </div>
     </div>
   );
