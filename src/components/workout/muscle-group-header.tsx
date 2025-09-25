@@ -24,7 +24,11 @@ export function MuscleGroupHeader({
   disabled = false
 }: MuscleGroupHeaderProps) {
   return (
-    <div className="flex items-center justify-between py-3 px-4 bg-muted/80 border-b border-border">{/* Always has bottom border for separation */}
+    <div className={`flex items-center justify-between py-2 px-3 bg-muted/50 border border-border ${
+      isFirst ? 'rounded-t-lg' : ''
+    } ${isLast && !hasContent ? 'rounded-b-lg' : 'border-b-0'} ${
+      !isFirst ? 'border-t-0' : ''
+    }`}>
       <div className="flex items-center gap-2">
         <h3 className="text-sm font-semibold text-foreground">{name}</h3>
         {isCustom && (

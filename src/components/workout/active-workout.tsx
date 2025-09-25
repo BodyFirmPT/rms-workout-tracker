@@ -241,7 +241,7 @@ export function ActiveWorkout({
                       </Badge>
                     </div>
                     
-                    <div className="space-y-4">
+                    <div className="space-y-0">
                       {visibleGroups.map((muscleGroup, index) => {
                         const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
                         const hasExercises = groupExercises.length > 0;
@@ -251,19 +251,21 @@ export function ActiveWorkout({
                         if (hasExercises) {
                           // Show added exercises for this muscle group - table-like layout
                           return (
-                            <div key={muscleGroup.id} className="border-2 border-border rounded-lg overflow-hidden shadow-sm">
+                            <div key={muscleGroup.id} className="space-y-0">
                               <MuscleGroupHeader
                                 name={muscleGroup.name}
                                 exerciseCount={groupExercises.length}
-                                isFirst={true}
-                                isLast={false}
+                                isFirst={isFirst}
+                                isLast={isLast}
                                 hasContent={true}
                                 onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)}
                                 disabled={isReadOnlyMode}
                               />
                               
                               {/* Exercise rows */}
-                              <div className="pl-4 pr-2 pb-2">
+                              <div className={`border border-t-0 border-border overflow-hidden ${
+                                isLast ? 'rounded-b-lg' : ''
+                              }`}>
                                 {groupExercises.map(exercise => (
                                   <UnifiedExerciseCard 
                                     key={exercise.id} 
@@ -290,19 +292,21 @@ export function ActiveWorkout({
                         } else {
                           // Show muscle group suggestions (only when no active workflow)
                           return (
-                            <div key={muscleGroup.id} className="border-2 border-border rounded-lg overflow-hidden shadow-sm">
+                            <div key={muscleGroup.id} className="space-y-0">
                               <MuscleGroupHeader
                                 name={muscleGroup.name}
                                 exerciseCount={0}
-                                isFirst={true}
-                                isLast={false}
+                                isFirst={isFirst}
+                                isLast={isLast}
                                 hasContent={true}
                                 onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)}
                                 disabled={isReadOnlyMode}
                               />
                               
                               {/* Content area */}
-                              <div className="pl-4 pr-2 pb-2">
+                              <div className={`border border-t-0 border-border overflow-hidden ${
+                                isLast ? 'rounded-b-lg' : ''
+                              }`}>
                                 <MuscleGroupSuggestions 
                                   muscleGroup={muscleGroup} 
                                   clientId={currentWorkout.client_id} 
@@ -326,20 +330,20 @@ export function ActiveWorkout({
                const muscleGroup = muscleGroups.find(mg => mg.name === muscleGroupName);
                if (!muscleGroup || muscleGroup.default_group) return null;
                return (
-                 <div key={muscleGroupName} className="border-2 border-border rounded-lg overflow-hidden shadow-sm">
+                 <div key={muscleGroupName} className="space-y-0">
                    <MuscleGroupHeader
                      name={muscleGroupName}
                      exerciseCount={exercises.length}
                      isCustom={true}
                      isFirst={true}
-                     isLast={false}
+                     isLast={true}
                      hasContent={true}
                      onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)}
                      disabled={isReadOnlyMode}
                    />
                    
                    {/* Exercise rows */}
-                   <div className="pl-4 pr-2 pb-2">
+                   <div className="border border-t-0 rounded-b-lg border-border overflow-hidden">
                      {exercises.map(exercise => (
                        <UnifiedExerciseCard 
                          key={exercise.id} 
