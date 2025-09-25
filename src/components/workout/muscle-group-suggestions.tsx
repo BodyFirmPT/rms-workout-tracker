@@ -108,8 +108,8 @@ export function MuscleGroupSuggestions({
                   className="h-6 px-2 text-xs"
                   disabled={disabled}
                 >
-                  <Copy className="h-3 w-3 mr-1" />
-                  Copy
+                  <Plus className="h-3 w-3 mr-1" />
+                  Add
                 </Button>
               </div>
             ))}
