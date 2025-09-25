@@ -33,7 +33,7 @@ interface WorkoutStore {
   addExerciseToWorkout: (workoutId: string, exercise: CreateWorkoutExerciseInput) => Promise<void>;
   completeExerciseSet: (workoutId: string, exerciseId: string, decrement?: boolean) => Promise<void>;
   completeWorkout: () => Promise<void>;
-  duplicateWorkout: (workoutId: string, clientId: string, date: Date) => Promise<void>;
+  duplicateWorkout: (workoutId: string, clientId: string, date: Date) => Promise<Workout>;
   getWorkoutProgress: (workoutId: string) => Promise<number>;
   getMuscleGroupById: (id: string) => MuscleGroup | undefined;
   getClientById: (id: string) => Client | undefined;
@@ -218,6 +218,7 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
       set((state) => ({
         workouts: [...state.workouts, newWorkout]
       }));
+      return newWorkout;
     } catch (error) {
       console.error('Error duplicating workout:', error);
       throw error;

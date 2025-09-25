@@ -41,7 +41,8 @@ export function ActiveWorkout({
     deleteExercise,
     updateExercise,
     addExerciseToWorkout,
-    getClientExerciseHistory
+    getClientExerciseHistory,
+    startWorkout
   } = useWorkoutStore();
 
   useEffect(() => {
@@ -50,7 +51,7 @@ export function ActiveWorkout({
 
   // Determine which workout to display
   const currentWorkout = workoutId ? workouts.find(w => w.id === workoutId) : activeWorkout;
-  const isReadOnlyMode = workoutId && !activeWorkout; // Read-only if viewing a different workout than active
+  const isReadOnlyMode = workoutId && activeWorkout && activeWorkout.id !== workoutId; // Read-only if viewing a different workout than active
 
   useEffect(() => {
     if (currentWorkout) {
@@ -168,6 +169,12 @@ export function ActiveWorkout({
                 {!isReadOnlyMode && <Button variant="secondary" size="sm" onClick={() => setShowAddExercise(true)}>
                     <Plus className="h-4 w-4 mr-2" />
                     Add Exercise
+                  </Button>}
+                
+                {/* Start Workout button for non-active workouts */}
+                {isReadOnlyMode && <Button variant="secondary" size="sm" onClick={() => startWorkout(currentWorkout.id)}>
+                    <Timer className="h-4 w-4 mr-2" />
+                    Start This Workout
                   </Button>}
                 
                 {!isReadOnlyMode && workoutProgress === 100 && <Button variant="secondary" size="sm" onClick={handleCompleteWorkout} className="bg-success text-success-foreground hover:bg-success/90">

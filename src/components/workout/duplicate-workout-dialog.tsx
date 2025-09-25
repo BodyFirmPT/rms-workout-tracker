@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -21,6 +22,7 @@ export function DuplicateWorkoutDialog({ open, onOpenChange, workout }: Duplicat
   const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   
   const { clients, duplicateWorkout } = useWorkoutStore();
 
@@ -32,11 +34,14 @@ export function DuplicateWorkoutDialog({ open, onOpenChange, workout }: Duplicat
 
     setIsLoading(true);
     try {
-      await duplicateWorkout(workout.id, selectedClientId, selectedDate);
+      const newWorkout = await duplicateWorkout(workout.id, selectedClientId, selectedDate);
       toast.success("Workout duplicated successfully");
       onOpenChange(false);
       setSelectedClientId("");
       setSelectedDate(undefined);
+      
+      // Navigate to the duplicated workout
+      navigate(`/workout/${newWorkout.id}`);
     } catch (error) {
       toast.error("Failed to duplicate workout");
     } finally {
