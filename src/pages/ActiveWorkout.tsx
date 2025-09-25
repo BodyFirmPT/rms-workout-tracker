@@ -66,9 +66,9 @@ const ActiveWorkout = () => {
   return <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="mb-6">
-          <Button variant="ghost" onClick={() => navigate("/")} className="mb-4">
+          <Button variant="ghost" onClick={() => navigate(`/client/${currentWorkout.client_id}`)} className="mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
+            Back to Client
           </Button>
           
           <div className="flex items-center justify-between">
