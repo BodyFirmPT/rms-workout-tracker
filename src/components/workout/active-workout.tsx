@@ -165,7 +165,7 @@ export function ActiveWorkout({
                     Add Exercise
                   </Button>}
                 
-                {isStarted && workoutProgress === 100 && <Button variant="secondary" size="sm" onClick={handleCompleteWorkout} className="bg-success text-success-foreground hover:bg-success/90">
+                {isStarted && <Button variant="secondary" size="sm" onClick={handleCompleteWorkout} className="bg-success text-success-foreground hover:bg-success/90">
                     <CheckCircle className="h-4 w-4 mr-2" />
                     Complete Workout
                   </Button>}
