@@ -12,18 +12,17 @@ import { MuscleGroupHeader } from "@/components/workout/muscle-group-header";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { format } from "date-fns";
 import { CreateWorkoutExerciseInput, WorkoutExercise } from "@/types/workout";
-
 interface ActiveWorkoutProps {
   workoutId: string; // Always required now
 }
-
-export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
+export function ActiveWorkout({
+  workoutId
+}: ActiveWorkoutProps) {
   const [showAddExercise, setShowAddExercise] = useState(false);
   const [showEditExercise, setShowEditExercise] = useState(false);
   const [editingExercise, setEditingExercise] = useState<WorkoutExercise | null>(null);
   const [selectedMuscleGroupId, setSelectedMuscleGroupId] = useState<string | null>(null);
   const [workoutProgress, setWorkoutProgress] = useState(0);
-
   const {
     workouts,
     workoutExercises,
@@ -41,7 +40,6 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
     getClientExerciseHistory,
     startWorkout
   } = useWorkoutStore();
-
   useEffect(() => {
     loadData();
   }, [loadData]);
@@ -49,10 +47,10 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
   // Find the workout by ID
   const currentWorkout = workouts.find(w => w.id === workoutId);
   const workoutStatus = currentWorkout?.status || 'draft';
-  
+
   // Determine interaction mode based on status
   const isCompleted = workoutStatus === 'completed';
-  const isDraft = workoutStatus === 'draft'; 
+  const isDraft = workoutStatus === 'draft';
   const isStarted = workoutStatus === 'started';
   const isReadOnlyMode = isCompleted; // Only completed workouts are truly read-only
 
@@ -61,7 +59,6 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
       loadWorkoutExercises(currentWorkout.id);
     }
   }, [currentWorkout, loadWorkoutExercises]);
-
   useEffect(() => {
     const updateProgress = async () => {
       if (currentWorkout) {
@@ -71,7 +68,6 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
     };
     updateProgress();
   }, [currentWorkout, workoutExercises, getWorkoutProgress]);
-
   if (!currentWorkout) {
     return <div className="text-center py-12">
         <Timer className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -83,7 +79,6 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
         </p>
       </div>;
   }
-
   const client = getClientById(currentWorkout.client_id);
   const exercises = workoutExercises[currentWorkout.id] || [];
 
@@ -109,30 +104,25 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
     acc[exercise.muscle_group_id].push(exercise);
     return acc;
   }, {} as Record<string, typeof exercises>);
-
   const handleAddExerciseForMuscleGroup = (muscleGroupId: string) => {
     setSelectedMuscleGroupId(muscleGroupId || null);
     setShowAddExercise(true);
   };
-
   const handleCompleteSet = (exerciseId: string, decrement = false) => {
     if (!isCompleted) {
       completeExerciseSet(currentWorkout.id, exerciseId, decrement);
     }
   };
-
   const handleCompleteWorkout = () => {
     if (currentWorkout) {
       completeWorkout(currentWorkout.id);
     }
   };
-
   const handleDeleteExercise = (exerciseId: string) => {
     if (!isCompleted) {
       deleteExercise(currentWorkout.id, exerciseId);
     }
   };
-
   const handleEditExercise = (exerciseId: string) => {
     const exercise = exercises.find(ex => ex.id === exerciseId);
     if (exercise) {
@@ -140,12 +130,9 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
       setShowEditExercise(true);
     }
   };
-
   return <div className="space-y-6">
       {/* Workout Header */}
-      <Card className={`text-primary-foreground shadow-primary ${
-        isCompleted ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' : 'bg-primary-gradient'
-      }`}>
+      <Card className={`text-primary-foreground shadow-primary ${isCompleted ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' : 'bg-primary-gradient'}`}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -184,9 +171,7 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
                   </Button>}
                 
                 {/* Status badge */}
-                <Badge variant={workoutStatus === 'completed' ? 'default' : workoutStatus === 'started' ? 'secondary' : 'outline'} className="capitalize">
-                  {workoutStatus}
-                </Badge>
+                
               </div>
             </div>
           </div>
@@ -207,48 +192,45 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
         <CardContent>
           <div className="space-y-6">
             {(() => {
-              // Get all default muscle groups grouped by category
-              const categorizedGroups = defaultMuscleGroups.reduce((acc, muscleGroup) => {
-                const category = muscleGroup.category || 'Uncategorized';
-                if (!acc[category]) {
-                  acc[category] = [];
+            // Get all default muscle groups grouped by category
+            const categorizedGroups = defaultMuscleGroups.reduce((acc, muscleGroup) => {
+              const category = muscleGroup.category || 'Uncategorized';
+              if (!acc[category]) {
+                acc[category] = [];
+              }
+              acc[category].push(muscleGroup);
+              return acc;
+            }, {} as Record<string, typeof defaultMuscleGroups>);
+
+            // Order categories: Core, Arms, Legs, then Uncategorized
+            const categoryOrder = ['Core', 'Arms', 'Legs', 'Uncategorized'];
+            const orderedCategories = categoryOrder.filter(cat => categorizedGroups[cat]);
+            return orderedCategories.map(categoryName => {
+              const categoryGroups = categorizedGroups[categoryName];
+
+              // Filter visible groups for this category
+              const visibleGroups = categoryGroups.filter(muscleGroup => {
+                const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
+                const hasExercises = groupExercises.length > 0;
+
+                // Show all muscle groups for draft workouts
+                // Hide empty muscle groups for started workouts
+                // Only show muscle groups with exercises for completed workouts
+                if (isCompleted) {
+                  return hasExercises;
+                } else if (isStarted) {
+                  return hasExercises;
+                } else {
+                  // Draft - show all muscle groups
+                  return true;
                 }
-                acc[category].push(muscleGroup);
-                return acc;
-              }, {} as Record<string, typeof defaultMuscleGroups>);
+              });
 
-              // Order categories: Core, Arms, Legs, then Uncategorized
-              const categoryOrder = ['Core', 'Arms', 'Legs', 'Uncategorized'];
-              const orderedCategories = categoryOrder.filter(cat => categorizedGroups[cat]);
-
-              return orderedCategories.map(categoryName => {
-                const categoryGroups = categorizedGroups[categoryName];
-                
-                // Filter visible groups for this category
-                const visibleGroups = categoryGroups.filter(muscleGroup => {
-                  const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
-                  const hasExercises = groupExercises.length > 0;
-                  
-                  // Show all muscle groups for draft workouts
-                  // Hide empty muscle groups for started workouts
-                  // Only show muscle groups with exercises for completed workouts
-                  if (isCompleted) {
-                    return hasExercises;
-                  } else if (isStarted) {
-                    return hasExercises;
-                  } else {
-                    // Draft - show all muscle groups
-                    return true;
-                  }
-                });
-
-                // Don't render the category if no groups are visible
-                if (visibleGroups.length === 0) {
-                  return null;
-                }
-                
-                return (
-                  <div key={categoryName} className="space-y-3">
+              // Don't render the category if no groups are visible
+              if (visibleGroups.length === 0) {
+                return null;
+              }
+              return <div key={categoryName} className="space-y-3">
                     {/* Category header - more prominent */}
                     <div className="flex items-center gap-2 py-2 px-3 bg-primary/5 border-l-4 border-primary rounded-r-md">
                       <h4 className="text-sm font-semibold text-primary uppercase tracking-wider">
@@ -261,137 +243,56 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
                     
                     <div className="space-y-0">
                       {visibleGroups.map((muscleGroup, index) => {
-                        const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
-                        const hasExercises = groupExercises.length > 0;
-                        const isFirst = index === 0;
-                        const isLast = index === visibleGroups.length - 1;
-                        
-                        if (hasExercises) {
-                          // Show added exercises for this muscle group - table-like layout
-                          return (
-                            <div key={muscleGroup.id} className="space-y-0">
-                              <MuscleGroupHeader
-                                name={muscleGroup.name}
-                                exerciseCount={groupExercises.length}
-                                isFirst={isFirst}
-                                isLast={isLast}
-                                hasContent={true}
-                                onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)}
-                                disabled={isCompleted}
-                              />
+                    const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
+                    const hasExercises = groupExercises.length > 0;
+                    const isFirst = index === 0;
+                    const isLast = index === visibleGroups.length - 1;
+                    if (hasExercises) {
+                      // Show added exercises for this muscle group - table-like layout
+                      return <div key={muscleGroup.id} className="space-y-0">
+                              <MuscleGroupHeader name={muscleGroup.name} exerciseCount={groupExercises.length} isFirst={isFirst} isLast={isLast} hasContent={true} onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} disabled={isCompleted} />
                               
                               {/* Exercise rows */}
-                              <div className={`border-2 border-t-0 border-border/80 overflow-hidden ${
-                                isLast ? 'rounded-b-lg' : ''
-                              }`}>
-                                {groupExercises.map(exercise => (
-                                  <div className="ml-4 border-l-2 border-primary/20">
-                                    <UnifiedExerciseCard
-                                    key={exercise.id} 
-                                    exerciseName={exercise.exercise_name} 
-                                    repsCount={exercise.reps_count || 1} 
-                                    repsUnit={exercise.reps_unit || "reps"} 
-                                    weightCount={exercise.weight_count || 0} 
-                                    weightUnit={exercise.weight_unit || "lbs"} 
-                                    setCount={exercise.set_count} 
-                                    completedSets={exercise.completed_sets} 
-                                    note={exercise.note || undefined} 
-                                    muscleGroup={muscleGroup.name} 
-                                    isCompleted={exercise.is_completed} 
-                                    variant="added" 
-                                    onCompleteSet={!isCompleted ? (decrement) => handleCompleteSet(exercise.id, decrement) : undefined} 
-                                    onEdit={!isCompleted ? () => handleEditExercise(exercise.id) : undefined} 
-                                    onDelete={!isCompleted ? () => handleDeleteExercise(exercise.id) : undefined} 
-                                     disabled={isCompleted}
-                                   />
-                                  </div>
-                                ))}
+                              <div className={`border-2 border-t-0 border-border/80 overflow-hidden ${isLast ? 'rounded-b-lg' : ''}`}>
+                                {groupExercises.map(exercise => <div className="ml-4 border-l-2 border-primary/20">
+                                    <UnifiedExerciseCard key={exercise.id} exerciseName={exercise.exercise_name} repsCount={exercise.reps_count || 1} repsUnit={exercise.reps_unit || "reps"} weightCount={exercise.weight_count || 0} weightUnit={exercise.weight_unit || "lbs"} setCount={exercise.set_count} completedSets={exercise.completed_sets} note={exercise.note || undefined} muscleGroup={muscleGroup.name} isCompleted={exercise.is_completed} variant="added" onCompleteSet={!isCompleted ? decrement => handleCompleteSet(exercise.id, decrement) : undefined} onEdit={!isCompleted ? () => handleEditExercise(exercise.id) : undefined} onDelete={!isCompleted ? () => handleDeleteExercise(exercise.id) : undefined} disabled={isCompleted} />
+                                  </div>)}
                               </div>
-                            </div>
-                          );
-                        } else {
-                          // Show muscle group suggestions (only when no active workflow)
-                          return (
-                            <div key={muscleGroup.id} className="space-y-0">
-                              <MuscleGroupHeader
-                                name={muscleGroup.name}
-                                exerciseCount={0}
-                                isFirst={isFirst}
-                                isLast={isLast}
-                                hasContent={true}
-                                onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)}
-                                disabled={isCompleted}
-                              />
+                            </div>;
+                    } else {
+                      // Show muscle group suggestions (only when no active workflow)
+                      return <div key={muscleGroup.id} className="space-y-0">
+                              <MuscleGroupHeader name={muscleGroup.name} exerciseCount={0} isFirst={isFirst} isLast={isLast} hasContent={true} onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} disabled={isCompleted} />
                               
                               {/* Content area */}
-                              <div className={`border-2 border-t-0 border-border/80 overflow-hidden ${
-                                isLast ? 'rounded-b-lg' : ''
-                              }`}>
+                              <div className={`border-2 border-t-0 border-border/80 overflow-hidden ${isLast ? 'rounded-b-lg' : ''}`}>
                                 <div className="ml-4 border-l-2 border-primary/20">
-                                  <MuscleGroupSuggestions
-                                  muscleGroup={muscleGroup} 
-                                  clientId={currentWorkout.client_id} 
-                                  workoutId={currentWorkout.id} 
-                                  hasExistingExercises={false} 
-                                   disabled={isCompleted}
-                                 />
+                                  <MuscleGroupSuggestions muscleGroup={muscleGroup} clientId={currentWorkout.client_id} workoutId={currentWorkout.id} hasExistingExercises={false} disabled={isCompleted} />
                                 </div>
                               </div>
-                            </div>
-                          );
-                        }
-                      })}
+                            </div>;
+                    }
+                  })}
                     </div>
-                  </div>
-                );
-              });
-            })()}
+                  </div>;
+            });
+          })()}
 
              {/* Non-default muscle groups with exercises */}
              {Object.entries(exercisesByMuscleGroup).map(([muscleGroupName, exercises]) => {
-               const muscleGroup = muscleGroups.find(mg => mg.name === muscleGroupName);
-               if (!muscleGroup || muscleGroup.default_group) return null;
-               return (
-                 <div key={muscleGroupName} className="space-y-0">
-                   <MuscleGroupHeader
-                     name={muscleGroupName}
-                     exerciseCount={exercises.length}
-                     isCustom={true}
-                     isFirst={true}
-                     isLast={true}
-                     hasContent={true}
-                      onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)}
-                      disabled={isCompleted}
-                   />
+            const muscleGroup = muscleGroups.find(mg => mg.name === muscleGroupName);
+            if (!muscleGroup || muscleGroup.default_group) return null;
+            return <div key={muscleGroupName} className="space-y-0">
+                   <MuscleGroupHeader name={muscleGroupName} exerciseCount={exercises.length} isCustom={true} isFirst={true} isLast={true} hasContent={true} onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} disabled={isCompleted} />
                    
                     {/* Exercise rows */}
                     <div className="border-2 border-t-0 rounded-b-lg border-border/80 overflow-hidden">
-                      {exercises.map(exercise => (
-                        <div className="ml-4 border-l-2 border-primary/20">
-                          <UnifiedExerciseCard
-                         key={exercise.id} 
-                         exerciseName={exercise.exercise_name} 
-                         repsCount={exercise.reps_count || 1} 
-                         repsUnit={exercise.reps_unit || "reps"} 
-                         weightCount={exercise.weight_count || 0} 
-                         weightUnit={exercise.weight_unit || "lbs"} 
-                         setCount={exercise.set_count} 
-                         completedSets={exercise.completed_sets} 
-                         note={exercise.note || undefined} 
-                         muscleGroup={muscleGroupName} 
-                         isCompleted={exercise.is_completed} 
-                         variant="added" 
-                          onCompleteSet={!isCompleted ? (decrement) => handleCompleteSet(exercise.id, decrement) : undefined} 
-                          onEdit={!isCompleted ? () => handleEditExercise(exercise.id) : undefined} 
-                          onDelete={!isCompleted ? () => handleDeleteExercise(exercise.id) : undefined} 
-                           disabled={isCompleted}
-                        />
-                        </div>
-                      ))}
+                      {exercises.map(exercise => <div className="ml-4 border-l-2 border-primary/20">
+                          <UnifiedExerciseCard key={exercise.id} exerciseName={exercise.exercise_name} repsCount={exercise.reps_count || 1} repsUnit={exercise.reps_unit || "reps"} weightCount={exercise.weight_count || 0} weightUnit={exercise.weight_unit || "lbs"} setCount={exercise.set_count} completedSets={exercise.completed_sets} note={exercise.note || undefined} muscleGroup={muscleGroupName} isCompleted={exercise.is_completed} variant="added" onCompleteSet={!isCompleted ? decrement => handleCompleteSet(exercise.id, decrement) : undefined} onEdit={!isCompleted ? () => handleEditExercise(exercise.id) : undefined} onDelete={!isCompleted ? () => handleDeleteExercise(exercise.id) : undefined} disabled={isCompleted} />
+                        </div>)}
                     </div>
-                 </div>
-               );
-             })}
+                 </div>;
+          })}
 
             {/* Add custom muscle group card - only show in draft and started modes */}
             {!isCompleted && <Card className="border-dashed">
