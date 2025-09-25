@@ -21,13 +21,13 @@ export function WorkoutOverview() {
   const [workoutProgresses, setWorkoutProgresses] = useState<{ [id: string]: number }>({});
   const { 
     workouts, 
-    activeWorkout, 
     clients, 
     startWorkout, 
     getWorkoutProgress, 
     getClientById,
     loadData,
-    loading
+    loading,
+    getStartedWorkout
   } = useWorkoutStore();
 
   useEffect(() => {
@@ -37,8 +37,9 @@ export function WorkoutOverview() {
   useEffect(() => {
     const loadProgresses = async () => {
       const progresses: { [id: string]: number } = {};
-      if (activeWorkout) {
-        progresses[activeWorkout.id] = await getWorkoutProgress(activeWorkout.id);
+      const startedWorkout = getStartedWorkout();
+      if (startedWorkout) {
+        progresses[startedWorkout.id] = await getWorkoutProgress(startedWorkout.id);
       }
       for (const workout of workouts.slice(-5)) {
         progresses[workout.id] = await getWorkoutProgress(workout.id);
@@ -46,10 +47,10 @@ export function WorkoutOverview() {
       setWorkoutProgresses(progresses);
     };
     
-    if (workouts.length > 0 || activeWorkout) {
+    if (workouts.length > 0) {
       loadProgresses();
     }
-  }, [workouts, activeWorkout, getWorkoutProgress]);
+  }, [workouts, getWorkoutProgress, getStartedWorkout]);
 
   const recentWorkouts = workouts
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -61,7 +62,7 @@ export function WorkoutOverview() {
 
   const handleStartWorkout = (workoutId: string) => {
     startWorkout(workoutId);
-    navigate("/workout");
+    navigate(`/workout/${workoutId}`);
   };
 
   return (
@@ -119,7 +120,9 @@ export function WorkoutOverview() {
       </div>
 
       {/* Active Workout */}
-      {activeWorkout && (
+      {(() => {
+        const startedWorkout = getStartedWorkout();
+        return startedWorkout && (
         <Card className="bg-primary-gradient text-primary-foreground shadow-primary">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -129,11 +132,11 @@ export function WorkoutOverview() {
                   Active Workout
                 </CardTitle>
                 <CardDescription className="text-primary-foreground/80">
-                  {getClientById(activeWorkout.client_id)?.name} • {activeWorkout.note}
+                  {getClientById(startedWorkout.client_id)?.name} • {startedWorkout.note}
                 </CardDescription>
               </div>
               <ProgressRing 
-                progress={workoutProgresses[activeWorkout.id] || 0} 
+                progress={workoutProgresses[startedWorkout.id] || 0} 
                 size={60}
                 strokeWidth={6}
               />
@@ -143,16 +146,17 @@ export function WorkoutOverview() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm opacity-90">
-                  {format(new Date(activeWorkout.date), 'MMM d')}
+                  {format(new Date(startedWorkout.date), 'MMM d')}
                 </p>
               </div>
-              <Button variant="secondary" size="sm" onClick={() => navigate("/workout")}>
+              <Button variant="secondary" size="sm" onClick={() => navigate(`/workout/${startedWorkout.id}`)}>
                 Continue
               </Button>
             </div>
           </CardContent>
         </Card>
-      )}
+      );
+      })()}
 
       {/* Recent Workouts */}
       <Card>
@@ -251,24 +255,24 @@ export function WorkoutOverview() {
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                    {progress === 100 ? (
-                      <div className="px-3 py-1.5 bg-success/10 text-success text-sm font-medium rounded-md flex items-center gap-2">
-                        <Target className="h-3 w-3" />
-                        Completed
-                      </div>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleStartWorkout(workout.id);
-                        }}
-                      >
-                        <Timer className="h-4 w-4 mr-2" />
-                        Start
-                      </Button>
-                    )}
+                     {workout.status === 'completed' ? (
+                       <div className="px-3 py-1.5 bg-success/10 text-success text-sm font-medium rounded-md flex items-center gap-2">
+                         <Target className="h-3 w-3" />
+                         Completed
+                       </div>
+                     ) : (
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           handleStartWorkout(workout.id);
+                         }}
+                       >
+                         <Timer className="h-4 w-4 mr-2" />
+                         Start
+                       </Button>
+                     )}
                   </div>
                 </div>
               );

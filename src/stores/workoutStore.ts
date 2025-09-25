@@ -15,7 +15,6 @@ interface WorkoutStore {
   clients: Client[];
   muscleGroups: MuscleGroup[];
   workouts: Workout[];
-  activeWorkout: Workout | null;
   workoutExercises: { [workoutId: string]: WorkoutExercise[] };
   
   // Loading states
@@ -32,7 +31,7 @@ interface WorkoutStore {
   startWorkout: (workoutId: string) => Promise<void>;
   addExerciseToWorkout: (workoutId: string, exercise: CreateWorkoutExerciseInput) => Promise<void>;
   completeExerciseSet: (workoutId: string, exerciseId: string, decrement?: boolean) => Promise<void>;
-  completeWorkout: () => Promise<void>;
+  completeWorkout: (workoutId: string) => Promise<void>;
   duplicateWorkout: (workoutId: string, clientId: string, date: Date) => Promise<Workout>;
   getWorkoutProgress: (workoutId: string) => Promise<number>;
   getMuscleGroupById: (id: string) => MuscleGroup | undefined;
@@ -44,6 +43,7 @@ interface WorkoutStore {
   deleteWorkout: (id: string) => Promise<void>;
   updateWorkout: (id: string, updates: Partial<{ note: string; date: string }>) => Promise<void>;
   updateExercise: (workoutId: string, exerciseId: string, updates: Partial<CreateWorkoutExerciseInput>) => Promise<void>;
+  getStartedWorkout: () => Workout | undefined;
 }
 
 export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
@@ -51,27 +51,24 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
   clients: [],
   muscleGroups: [],
   workouts: [],
-  activeWorkout: null,
   workoutExercises: {},
   loading: false,
 
   loadData: async () => {
     set({ loading: true });
     try {
-      const [trainers, clients, muscleGroups, workouts, activeWorkout] = await Promise.all([
+      const [trainers, clients, muscleGroups, workouts] = await Promise.all([
         WorkoutService.getTrainers(),
         WorkoutService.getClients(),
         WorkoutService.getMuscleGroups(),
-        WorkoutService.getWorkouts(),
-        WorkoutService.getActiveWorkout()
+        WorkoutService.getWorkouts()
       ]);
 
       set({ 
         trainers, 
         clients, 
         muscleGroups, 
-        workouts, 
-        activeWorkout,
+        workouts,
         loading: false 
       });
     } catch (error) {
@@ -149,8 +146,12 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
   startWorkout: async (workoutId: string) => {
     try {
       await WorkoutService.startWorkout(workoutId);
-      const activeWorkout = await WorkoutService.getActiveWorkout();
-      set({ activeWorkout });
+      // Update the workout status in the local state
+      set((state) => ({
+        workouts: state.workouts.map(w =>
+          w.id === workoutId ? { ...w, status: 'started' as const } : w
+        )
+      }));
     } catch (error) {
       console.error('Failed to start workout:', error);
     }
@@ -200,19 +201,15 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
     }
   },
 
-  completeWorkout: async () => {
+  completeWorkout: async (workoutId: string) => {
     try {
-      const activeWorkout = get().activeWorkout;
-      if (activeWorkout) {
-        await WorkoutService.completeWorkout(activeWorkout.id);
-        const completedWorkout = { ...activeWorkout, status: 'completed' as const };
-        set((state) => ({ 
-          activeWorkout: completedWorkout,
-          workouts: state.workouts.map(w => 
-            w.id === activeWorkout.id ? completedWorkout : w
-          )
-        }));
-      }
+      await WorkoutService.completeWorkout(workoutId);
+      // Update the workout status in the local state
+      set((state) => ({
+        workouts: state.workouts.map(w =>
+          w.id === workoutId ? { ...w, status: 'completed' as const } : w
+        )
+      }));
     } catch (error) {
       console.error('Failed to complete workout:', error);
     }
@@ -272,9 +269,7 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
       set((state) => ({
         workouts: state.workouts.map(w => 
           w.id === id ? updatedWorkout : w
-        ),
-        // Update active workout if it's the one being updated
-        activeWorkout: state.activeWorkout?.id === id ? updatedWorkout : state.activeWorkout
+        )
       }));
     } catch (error) {
       console.error('Failed to update workout:', error);
@@ -285,9 +280,7 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
     try {
       await WorkoutService.deleteWorkout(id);
       set((state) => ({
-        workouts: state.workouts.filter(w => w.id !== id),
-        // Clear active workout if it's the one being deleted
-        activeWorkout: state.activeWorkout?.id === id ? null : state.activeWorkout
+        workouts: state.workouts.filter(w => w.id !== id)
       }));
     } catch (error) {
       console.error('Failed to delete workout:', error);
@@ -322,5 +315,9 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
     } catch (error) {
       console.error('Failed to update exercise:', error);
     }
+  },
+
+  getStartedWorkout: () => {
+    return get().workouts.find(w => w.status === 'started');
   },
 }));

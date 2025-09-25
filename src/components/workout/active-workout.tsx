@@ -14,12 +14,10 @@ import { format } from "date-fns";
 import { CreateWorkoutExerciseInput, WorkoutExercise } from "@/types/workout";
 
 interface ActiveWorkoutProps {
-  workoutId?: string; // For viewing specific workouts
+  workoutId: string; // Always required now
 }
 
-export function ActiveWorkout({
-  workoutId
-}: ActiveWorkoutProps) {
+export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
   const [showAddExercise, setShowAddExercise] = useState(false);
   const [showEditExercise, setShowEditExercise] = useState(false);
   const [editingExercise, setEditingExercise] = useState<WorkoutExercise | null>(null);
@@ -27,7 +25,6 @@ export function ActiveWorkout({
   const [workoutProgress, setWorkoutProgress] = useState(0);
 
   const {
-    activeWorkout,
     workouts,
     workoutExercises,
     muscleGroups,
@@ -49,8 +46,8 @@ export function ActiveWorkout({
     loadData();
   }, [loadData]);
 
-  // Determine which workout to display and its status
-  const currentWorkout = workoutId ? workouts.find(w => w.id === workoutId) : activeWorkout;
+  // Find the workout by ID
+  const currentWorkout = workouts.find(w => w.id === workoutId);
   const workoutStatus = currentWorkout?.status || 'draft';
   
   // Determine interaction mode based on status
@@ -79,10 +76,10 @@ export function ActiveWorkout({
     return <div className="text-center py-12">
         <Timer className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
         <h2 className="text-2xl font-semibold text-foreground mb-2">
-          {workoutId ? "Workout Not Found" : "No Active Workout"}
+          Workout Not Found
         </h2>
         <p className="text-muted-foreground">
-          {workoutId ? "This workout could not be found" : "Start a workout to begin tracking your exercises"}
+          This workout could not be found
         </p>
       </div>;
   }
@@ -125,7 +122,9 @@ export function ActiveWorkout({
   };
 
   const handleCompleteWorkout = () => {
-    completeWorkout();
+    if (currentWorkout) {
+      completeWorkout(currentWorkout.id);
+    }
   };
 
   const handleDeleteExercise = (exerciseId: string) => {
