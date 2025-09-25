@@ -234,9 +234,17 @@ export class WorkoutService {
 
     if (fetchError) throw fetchError;
 
-    // Toggle completion: if already completed, uncomplete it; if not, complete it
-    const newCompletedSets = currentExercise.is_completed ? 0 : currentExercise.set_count;
-    const newIsCompleted = !currentExercise.is_completed;
+    // Increment completed sets by 1, or reset to 0 if all sets are completed
+    let newCompletedSets: number;
+    if (currentExercise.completed_sets >= currentExercise.set_count) {
+      // All sets completed, reset to 0
+      newCompletedSets = 0;
+    } else {
+      // Increment by 1
+      newCompletedSets = currentExercise.completed_sets + 1;
+    }
+    
+    const newIsCompleted = newCompletedSets >= currentExercise.set_count;
 
     const { data, error } = await supabase
       .from('workout_exercise')

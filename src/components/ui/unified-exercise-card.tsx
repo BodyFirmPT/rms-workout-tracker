@@ -150,6 +150,7 @@ export function UnifiedExerciseCard({
                     className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted ml-1"
                     disabled={disabled}
                   >
+                    <Check className="h-2.5 w-2.5 mr-1" />
                     Set {completedSets + 1}/{setCount}
                   </Button>
                 )}
