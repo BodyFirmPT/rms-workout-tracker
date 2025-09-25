@@ -251,17 +251,24 @@ export function WorkoutOverview() {
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleStartWorkout(workout.id);
-                      }}
-                    >
-                      <Timer className="h-4 w-4 mr-2" />
-                      Start
-                    </Button>
+                    {progress === 100 ? (
+                      <div className="px-3 py-1.5 bg-success/10 text-success text-sm font-medium rounded-md flex items-center gap-2">
+                        <Target className="h-3 w-3" />
+                        Completed
+                      </div>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleStartWorkout(workout.id);
+                        }}
+                      >
+                        <Timer className="h-4 w-4 mr-2" />
+                        Start
+                      </Button>
+                    )}
                   </div>
                 </div>
               );
