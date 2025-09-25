@@ -241,15 +241,19 @@ export function ActiveWorkout({
                     </div>
                     
                     <div className="space-y-0">
-                      {visibleGroups.map(muscleGroup => {
+                      {visibleGroups.map((muscleGroup, index) => {
                         const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
                         const hasExercises = groupExercises.length > 0;
+                        const isFirst = index === 0;
+                        const isLast = index === visibleGroups.length - 1;
                         
                         if (hasExercises) {
                           // Show added exercises for this muscle group - table-like layout
                           return <div key={muscleGroup.id} className="space-y-0">
                                 {/* Muscle group header */}
-                                <div className="flex items-center justify-between py-2 px-3 bg-muted/50 border-b-2 border-border rounded-t-lg">
+                                <div className={`flex items-center justify-between py-2 px-3 bg-muted/50 border border-border ${
+                                  isFirst ? 'rounded-t-lg' : ''
+                                } ${isLast ? 'rounded-b-lg border-b' : 'border-b-0'}`}>
                                   <div className="flex items-center gap-2">
                                     <h3 className="text-sm font-semibold text-foreground">{muscleGroup.name}</h3>
                                     <Badge variant="secondary" className="text-xs px-1.5 py-0">
@@ -263,12 +267,14 @@ export function ActiveWorkout({
                                 </div>
                                 
                                 {/* Exercise rows */}
-                                <div className="border border-t-0 rounded-b-lg overflow-hidden">
+                                <div className={`border border-t-0 border-border overflow-hidden ${
+                                  isLast ? 'rounded-b-lg' : ''
+                                }`}>
                                   {groupExercises.map(exercise => <UnifiedExerciseCard key={exercise.id} exerciseName={exercise.exercise_name} repsCount={exercise.reps_count || 1} repsUnit={exercise.reps_unit || "reps"} weightCount={exercise.weight_count || 0} weightUnit={exercise.weight_unit || "lbs"} setCount={exercise.set_count} completedSets={exercise.completed_sets} note={exercise.note || undefined} muscleGroup={muscleGroup.name} isCompleted={exercise.is_completed} variant="added" onCompleteSet={!isReadOnlyMode ? decrement => handleCompleteSet(exercise.id, decrement) : undefined} onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined} onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined} disabled={isReadOnlyMode} />)}
                                 </div>
                               </div>;
                         } else {
-                          // Show muscle group suggestions (only when no active workout)
+                          // Show muscle group suggestions (only when no active workflow)
                           return <MuscleGroupSuggestions key={muscleGroup.id} muscleGroup={muscleGroup} clientId={currentWorkout.client_id} workoutId={currentWorkout.id} hasExistingExercises={false} onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} disabled={isReadOnlyMode} />;
                         }
                       })}
