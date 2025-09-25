@@ -26,6 +26,8 @@ interface WorkoutStore {
   addTrainer: (name: string) => Promise<void>;
   addClient: (name: string, trainerId: string) => Promise<void>;
   addMuscleGroup: (name: string, isDefault?: boolean) => Promise<string>;
+  updateMuscleGroup: (id: string, updates: Partial<{ name: string; default_group: boolean }>) => Promise<void>;
+  deleteMuscleGroup: (id: string) => Promise<void>;
   createWorkout: (clientId: string, note: string, date?: string) => Promise<string>;
   startWorkout: (workoutId: string) => Promise<void>;
   addExerciseToWorkout: (workoutId: string, exercise: CreateWorkoutExerciseInput) => Promise<void>;
@@ -103,6 +105,30 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
     } catch (error) {
       console.error('Failed to add muscle group:', error);
       return '';
+    }
+  },
+
+  updateMuscleGroup: async (id: string, updates: Partial<{ name: string; default_group: boolean }>) => {
+    try {
+      const updatedMuscleGroup = await WorkoutService.updateMuscleGroup(id, updates);
+      set((state) => ({
+        muscleGroups: state.muscleGroups.map(mg => 
+          mg.id === id ? updatedMuscleGroup : mg
+        )
+      }));
+    } catch (error) {
+      console.error('Failed to update muscle group:', error);
+    }
+  },
+
+  deleteMuscleGroup: async (id: string) => {
+    try {
+      await WorkoutService.deleteMuscleGroup(id);
+      set((state) => ({
+        muscleGroups: state.muscleGroups.filter(mg => mg.id !== id)
+      }));
+    } catch (error) {
+      console.error('Failed to delete muscle group:', error);
     }
   },
 

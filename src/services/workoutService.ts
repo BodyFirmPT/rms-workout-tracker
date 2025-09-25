@@ -76,6 +76,27 @@ export class WorkoutService {
     return data;
   }
 
+  static async updateMuscleGroup(id: string, updates: Partial<{ name: string; default_group: boolean }>): Promise<MuscleGroup> {
+    const { data, error } = await supabase
+      .from('muscle_group')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+
+  static async deleteMuscleGroup(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('muscle_group')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  }
+
   static async getMuscleGroupById(id: string): Promise<MuscleGroup | null> {
     const { data, error } = await supabase
       .from('muscle_group')

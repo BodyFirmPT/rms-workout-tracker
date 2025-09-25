@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Calendar, Clock, Play, Plus, Target, Users } from "lucide-react";
+import { Calendar, Clock, Play, Plus, Target, Users, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgressRing } from "@/components/ui/progress-ring";
@@ -59,6 +59,18 @@ export function WorkoutOverview() {
 
   return (
     <div className="space-y-6">
+      {/* Navigation */}
+      <div className="flex justify-end">
+        <Button 
+          variant="outline" 
+          onClick={() => navigate("/muscle-groups")}
+          className="flex items-center gap-2"
+        >
+          <Settings className="h-4 w-4" />
+          Manage Muscle Groups
+        </Button>
+      </div>
+
       {/* Header Stats */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
