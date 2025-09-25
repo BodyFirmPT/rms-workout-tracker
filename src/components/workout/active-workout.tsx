@@ -6,10 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { UnifiedExerciseCard } from "@/components/ui/unified-exercise-card";
 import { AddExerciseDialog } from "@/components/workout/add-exercise-dialog";
+import { EditExerciseDialog } from "@/components/workout/edit-exercise-dialog";
 import { MuscleGroupSuggestions } from "@/components/workout/muscle-group-suggestions";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { format } from "date-fns";
-import { CreateWorkoutExerciseInput } from "@/types/workout";
+import { CreateWorkoutExerciseInput, WorkoutExercise } from "@/types/workout";
 
 interface ActiveWorkoutProps {
   workoutId?: string; // For viewing specific workouts
@@ -17,6 +18,8 @@ interface ActiveWorkoutProps {
 
 export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
   const [showAddExercise, setShowAddExercise] = useState(false);
+  const [showEditExercise, setShowEditExercise] = useState(false);
+  const [editingExercise, setEditingExercise] = useState<WorkoutExercise | null>(null);
   const [selectedMuscleGroupId, setSelectedMuscleGroupId] = useState<string | null>(null);
   const [workoutProgress, setWorkoutProgress] = useState(0);
   
@@ -124,9 +127,11 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
   };
 
   const handleEditExercise = (exerciseId: string) => {
-    // For now, we'll open the add exercise dialog with the exercise data pre-filled
-    // In a real app, you'd want a separate edit dialog
-    setShowAddExercise(true);
+    const exercise = exercises.find(ex => ex.id === exerciseId);
+    if (exercise) {
+      setEditingExercise(exercise);
+      setShowEditExercise(true);
+    }
   };
 
   return (
@@ -358,15 +363,26 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
       )}
 
       {!isReadOnlyMode && (
-        <AddExerciseDialog
-          open={showAddExercise}
-          onOpenChange={(open) => {
-            setShowAddExercise(open);
-            if (!open) setSelectedMuscleGroupId(null);
-          }}
-          workoutId={currentWorkout.id}
-          preselectedMuscleGroupId={selectedMuscleGroupId || undefined}
-        />
+        <>
+          <AddExerciseDialog
+            open={showAddExercise}
+            onOpenChange={(open) => {
+              setShowAddExercise(open);
+              if (!open) setSelectedMuscleGroupId(null);
+            }}
+            workoutId={currentWorkout.id}
+            preselectedMuscleGroupId={selectedMuscleGroupId || undefined}
+          />
+          <EditExerciseDialog
+            open={showEditExercise}
+            onOpenChange={(open) => {
+              setShowEditExercise(open);
+              if (!open) setEditingExercise(null);
+            }}
+            exercise={editingExercise}
+            workoutId={currentWorkout.id}
+          />
+        </>
       )}
     </div>
   );
