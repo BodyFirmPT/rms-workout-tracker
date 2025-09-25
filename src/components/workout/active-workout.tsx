@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ExerciseCard } from "@/components/ui/exercise-card";
+import { UnifiedExerciseCard } from "@/components/ui/unified-exercise-card";
 import { AddExerciseDialog } from "@/components/workout/add-exercise-dialog";
 import { MuscleGroupSuggestions } from "@/components/workout/muscle-group-suggestions";
 import { useWorkoutStore } from "@/stores/workoutStore";
@@ -236,20 +236,21 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
                     </CardHeader>
                     <CardContent className="pt-0 space-y-3">
                       {groupExercises.map((exercise) => (
-                        <ExerciseCard
+                        <UnifiedExerciseCard
                           key={exercise.id}
                           exerciseName={exercise.exercise_name}
                           reps={exercise.reps}
-                          completedSets={exercise.completed_sets}
-                          totalSets={exercise.set_count}
                           unit={exercise.unit}
-                          note={exercise.note}
+                          setCount={exercise.set_count}
+                          completedSets={exercise.completed_sets}
+                          note={exercise.note || undefined}
                           muscleGroup={muscleGroup.name}
                           isCompleted={exercise.is_completed}
+                          variant="added"
                           onCompleteSet={!isReadOnlyMode ? () => handleCompleteSet(exercise.id) : undefined}
                           onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined}
                           onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined}
-                          isActive={true}
+                          disabled={isReadOnlyMode}
                         />
                       ))}
                     </CardContent>
@@ -301,20 +302,21 @@ export function ActiveWorkout({ workoutId }: ActiveWorkoutProps) {
                   </CardHeader>
                   <CardContent className="pt-0 space-y-3">
                     {exercises.map((exercise) => (
-                      <ExerciseCard
+                      <UnifiedExerciseCard
                         key={exercise.id}
                         exerciseName={exercise.exercise_name}
                         reps={exercise.reps}
-                        completedSets={exercise.completed_sets}
-                        totalSets={exercise.set_count}
                         unit={exercise.unit}
-                        note={exercise.note}
+                        setCount={exercise.set_count}
+                        completedSets={exercise.completed_sets}
+                        note={exercise.note || undefined}
                         muscleGroup={muscleGroupName}
                         isCompleted={exercise.is_completed}
+                        variant="added"
                         onCompleteSet={!isReadOnlyMode ? () => handleCompleteSet(exercise.id) : undefined}
                         onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined}
                         onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined}
-                        isActive={true}
+                        disabled={isReadOnlyMode}
                       />
                     ))}
                   </CardContent>

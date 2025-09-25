@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Plus, Copy, History } from "lucide-react";
+import { Plus, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { UnifiedExerciseCard } from "@/components/ui/unified-exercise-card";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { MuscleGroup, WorkoutExercise } from "@/types/workout";
 
@@ -90,28 +91,17 @@ export function MuscleGroupSuggestions({
           
           <div className="space-y-2">
             {suggestions.map((exercise, index) => (
-              <div 
-                key={index} 
-                className="flex items-center justify-between p-2 bg-background rounded border text-sm"
-              >
-                <div className="flex-1">
-                  <div className="font-medium">{exercise.exercise_name}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {exercise.set_count} sets × {exercise.reps} {exercise.unit}
-                    {exercise.note && ` • ${exercise.note}`}
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleCopyExercise(exercise)}
-                  className="h-6 px-2 text-xs"
-                  disabled={disabled}
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  Add
-                </Button>
-              </div>
+              <UnifiedExerciseCard
+                key={index}
+                exerciseName={exercise.exercise_name}
+                reps={exercise.reps}
+                unit={exercise.unit}
+                setCount={exercise.set_count}
+                note={exercise.note || undefined}
+                variant="suggested"
+                onAdd={() => handleCopyExercise(exercise)}
+                disabled={disabled}
+              />
             ))}
           </div>
         </CardContent>

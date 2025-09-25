@@ -226,23 +226,23 @@ export class WorkoutService {
   }
 
   static async completeExerciseSet(exerciseId: string): Promise<WorkoutExercise> {
-    // Get current exercise
-    const { data: exercise, error: fetchError } = await supabase
+    const { data: currentExercise, error: fetchError } = await supabase
       .from('workout_exercise')
       .select('*')
       .eq('id', exerciseId)
       .single();
-    
+
     if (fetchError) throw fetchError;
 
-    const newCompletedSets = Math.min(exercise.completed_sets + 1, exercise.set_count);
-    const isCompleted = newCompletedSets >= exercise.set_count;
+    // Toggle completion: if already completed, uncomplete it; if not, complete it
+    const newCompletedSets = currentExercise.is_completed ? 0 : currentExercise.set_count;
+    const newIsCompleted = !currentExercise.is_completed;
 
     const { data, error } = await supabase
       .from('workout_exercise')
       .update({ 
         completed_sets: newCompletedSets,
-        is_completed: isCompleted
+        is_completed: newIsCompleted
       })
       .eq('id', exerciseId)
       .select()
