@@ -29,7 +29,7 @@ export function CreateWorkoutDialog({ open, onOpenChange }: CreateWorkoutDialogP
     e.preventDefault();
     if (!clientId) return;
 
-    const workoutId = createWorkout(clientId, note.trim(), date.toISOString().split('T')[0]);
+    const workoutId = createWorkout(clientId, note.trim(), format(date, 'yyyy-MM-dd'));
     
     // Reset form
     setNote("");
