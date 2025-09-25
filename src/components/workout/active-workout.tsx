@@ -129,7 +129,7 @@ export function ActiveWorkout({
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Timer className="h-5 w-5" />
-                {format(new Date(currentWorkout.date), 'MMMM d, yyyy')}
+                {format(new Date(currentWorkout.date + 'T00:00:00'), 'MMMM d, yyyy')}
               </CardTitle>
               <CardDescription className="text-primary-foreground/80">
                 {client?.name}{currentWorkout.note && ` • ${currentWorkout.note}`}
