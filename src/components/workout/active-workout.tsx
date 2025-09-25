@@ -263,11 +263,12 @@ export function ActiveWorkout({
                               />
                               
                               {/* Exercise rows */}
-                              <div className={`border border-t-0 border-border overflow-hidden ${
+                              <div className={`border-2 border-t-0 border-border/80 overflow-hidden ${
                                 isLast ? 'rounded-b-lg' : ''
                               }`}>
                                 {groupExercises.map(exercise => (
-                                  <UnifiedExerciseCard 
+                                  <div className="ml-4 border-l-2 border-primary/20">
+                                    <UnifiedExerciseCard
                                     key={exercise.id} 
                                     exerciseName={exercise.exercise_name} 
                                     repsCount={exercise.reps_count || 1} 
@@ -283,8 +284,9 @@ export function ActiveWorkout({
                                     onCompleteSet={!isReadOnlyMode ? (decrement) => handleCompleteSet(exercise.id, decrement) : undefined} 
                                     onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined} 
                                     onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined} 
-                                    disabled={isReadOnlyMode} 
-                                  />
+                                     disabled={isReadOnlyMode} 
+                                   />
+                                  </div>
                                 ))}
                               </div>
                             </div>
@@ -304,16 +306,18 @@ export function ActiveWorkout({
                               />
                               
                               {/* Content area */}
-                              <div className={`border border-t-0 border-border overflow-hidden ${
+                              <div className={`border-2 border-t-0 border-border/80 overflow-hidden ${
                                 isLast ? 'rounded-b-lg' : ''
                               }`}>
-                                <MuscleGroupSuggestions 
+                                <div className="ml-4 border-l-2 border-primary/20">
+                                  <MuscleGroupSuggestions
                                   muscleGroup={muscleGroup} 
                                   clientId={currentWorkout.client_id} 
                                   workoutId={currentWorkout.id} 
                                   hasExistingExercises={false} 
-                                  disabled={isReadOnlyMode} 
-                                />
+                                   disabled={isReadOnlyMode} 
+                                 />
+                                </div>
                               </div>
                             </div>
                           );
@@ -342,10 +346,11 @@ export function ActiveWorkout({
                      disabled={isReadOnlyMode}
                    />
                    
-                   {/* Exercise rows */}
-                   <div className="border border-t-0 rounded-b-lg border-border overflow-hidden">
-                     {exercises.map(exercise => (
-                       <UnifiedExerciseCard 
+                    {/* Exercise rows */}
+                    <div className="border-2 border-t-0 rounded-b-lg border-border/80 overflow-hidden">
+                      {exercises.map(exercise => (
+                        <div className="ml-4 border-l-2 border-primary/20">
+                          <UnifiedExerciseCard
                          key={exercise.id} 
                          exerciseName={exercise.exercise_name} 
                          repsCount={exercise.reps_count || 1} 
@@ -361,10 +366,11 @@ export function ActiveWorkout({
                          onCompleteSet={!isReadOnlyMode ? (decrement) => handleCompleteSet(exercise.id, decrement) : undefined} 
                          onEdit={!isReadOnlyMode ? () => handleEditExercise(exercise.id) : undefined} 
                          onDelete={!isReadOnlyMode ? () => handleDeleteExercise(exercise.id) : undefined} 
-                         disabled={isReadOnlyMode} 
-                       />
-                     ))}
-                   </div>
+                          disabled={isReadOnlyMode} 
+                        />
+                        </div>
+                      ))}
+                    </div>
                  </div>
                );
              })}
