@@ -248,7 +248,7 @@ export default function ClientDetails() {
                   const progress = workoutProgresses[workout.id] || 0;
                   
                   return (
-                    <div key={workout.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                    <div key={workout.id} className="group flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                       <div
                         className="flex items-center gap-4 flex-1 cursor-pointer"
                         onClick={() => handleViewWorkout(workout.id)}
@@ -276,7 +276,7 @@ export default function ClientDetails() {
                             e.stopPropagation();
                             setDuplicatingWorkout(workout);
                           }}
-                          className="text-muted-foreground hover:text-foreground"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
@@ -287,7 +287,7 @@ export default function ClientDetails() {
                             e.stopPropagation();
                             setEditingWorkout(workout);
                           }}
-                          className="text-muted-foreground hover:text-foreground"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -298,7 +298,7 @@ export default function ClientDetails() {
                             e.stopPropagation();
                             setDeletingWorkout(workout);
                           }}
-                          className="text-destructive hover:text-destructive"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
