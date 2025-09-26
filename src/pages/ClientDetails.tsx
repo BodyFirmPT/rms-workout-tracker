@@ -268,7 +268,7 @@ export default function ClientDetails() {
                         </div>
                       </div>
                       
-                      <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
+                      <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
                         <Button
                           variant="ghost"
                           size="sm"
