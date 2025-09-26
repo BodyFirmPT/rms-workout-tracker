@@ -83,8 +83,8 @@ export function ClientSelector() {
       {/* Client Selection */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="min-w-[300px]">
               <CardTitle>Select a Client</CardTitle>
               <CardDescription>
                 Choose a client to view their workouts and training progress
