@@ -81,7 +81,7 @@ export function UnifiedExerciseCard({
           </span>
         </div>
         {note && (
-          <div className="text-xs text-muted-foreground truncate mt-0.5">
+          <div className="text-xs text-muted-foreground mt-0.5 break-words">
             {note}
           </div>
         )}
