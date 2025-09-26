@@ -61,9 +61,9 @@ export function UnifiedExerciseCard({
       
       {/* Exercise content - name, details, and note all at same indentation */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-baseline gap-2">
           <span className={cn(
-            "font-medium truncate",
+            "font-medium break-words",
             isSuggested 
               ? "text-muted-foreground" 
               : isCompleted 
@@ -73,7 +73,7 @@ export function UnifiedExerciseCard({
             {exerciseName}
           </span>
           <span className={cn(
-            "text-xs font-mono whitespace-nowrap",
+            "text-xs font-mono",
             isSuggested ? "text-muted-foreground/70" : "text-muted-foreground"
           )}>
             {setCount} × {repsCount} {repsUnit}
