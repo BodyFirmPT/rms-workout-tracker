@@ -276,7 +276,7 @@ export default function ClientDetails() {
                             e.stopPropagation();
                             setDuplicatingWorkout(workout);
                           }}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
+                          className="hidden group-hover:inline-flex text-muted-foreground hover:text-foreground"
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
@@ -287,7 +287,7 @@ export default function ClientDetails() {
                             e.stopPropagation();
                             setEditingWorkout(workout);
                           }}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
+                          className="hidden group-hover:inline-flex text-muted-foreground hover:text-foreground"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -298,7 +298,7 @@ export default function ClientDetails() {
                             e.stopPropagation();
                             setDeletingWorkout(workout);
                           }}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                          className="hidden group-hover:inline-flex text-destructive hover:text-destructive"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
