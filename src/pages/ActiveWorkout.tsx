@@ -71,8 +71,8 @@ const ActiveWorkout = () => {
             Back to Client
           </Button>
           
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="min-w-[300px]">
               <h1 className="text-3xl font-bold text-foreground">
                 {currentWorkout.status === 'completed' ? 'Completed Workout' : 
                  currentWorkout.status === 'started' ? 'Active Workout' : 'Workout Details'}
