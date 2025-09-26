@@ -248,53 +248,27 @@ export default function ClientDetails() {
                   const progress = workoutProgresses[workout.id] || 0;
                   
                   return (
-                    <div key={workout.id} className="group relative p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                      {/* Main content - responsive layout */}
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                        <div
-                          className="flex items-center gap-4 flex-1 cursor-pointer"
-                          onClick={() => handleViewWorkout(workout.id)}
-                        >
-                          <ProgressRing 
-                            progress={progress} 
-                            size={48}
-                            strokeWidth={4}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-bold">{format(new Date(workout.date + 'T00:00:00'), 'MMM d, yyyy')}</h4>
-                            {workout.note && (
-                              <p className="text-xs text-muted-foreground italic mt-1">
-                                {workout.note}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {/* Status/Start button - always visible */}
-                        <div className="flex justify-end sm:justify-start sm:mr-28">
-                          {workout.status === 'completed' ? (
-                            <div className="px-3 py-1.5 bg-success/10 text-success text-sm font-medium rounded-md flex items-center gap-2">
-                              <Target className="h-3 w-3" />
-                              Completed
-                            </div>
-                          ) : (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleStartWorkout(workout.id);
-                              }}
-                            >
-                              <Timer className="h-4 w-4 mr-2" />
-                              Start
-                            </Button>
+                    <div key={workout.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div
+                        className="flex items-center gap-4 flex-1 cursor-pointer"
+                        onClick={() => handleViewWorkout(workout.id)}
+                      >
+                        <ProgressRing 
+                          progress={progress} 
+                          size={48}
+                          strokeWidth={4}
+                        />
+                        <div>
+                          <h4 className="font-bold">{format(new Date(workout.date + 'T00:00:00'), 'MMM d, yyyy')}</h4>
+                          {workout.note && (
+                            <p className="text-xs text-muted-foreground italic mt-1">
+                              {workout.note}
+                            </p>
                           )}
                         </div>
                       </div>
                       
-                      {/* Action buttons - hover only on desktop, always visible on mobile */}
-                      <div className="flex items-center gap-2 justify-end mt-3 sm:mt-0 sm:absolute sm:top-4 sm:right-4 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-2">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -328,6 +302,24 @@ export default function ClientDetails() {
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
+                         {workout.status === 'completed' ? (
+                           <div className="px-3 py-1.5 bg-success/10 text-success text-sm font-medium rounded-md flex items-center gap-2">
+                             <Target className="h-3 w-3" />
+                             Completed
+                           </div>
+                         ) : (
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={(e) => {
+                               e.stopPropagation();
+                               handleStartWorkout(workout.id);
+                             }}
+                           >
+                             <Timer className="h-4 w-4 mr-2" />
+                             Start
+                           </Button>
+                         )}
                       </div>
                     </div>
                   );
