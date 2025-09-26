@@ -223,8 +223,8 @@ export function WorkoutOverview() {
                       </div>
                     </div>
                     
-                    {/* Status/Start button - always visible */}
-                    <div className="flex justify-end sm:justify-start">
+                        {/* Status/Start button - always visible */}
+                        <div className="flex justify-end sm:justify-start sm:mr-28">
                       {workout.status === 'completed' ? (
                         <div className="px-3 py-1.5 bg-success/10 text-success text-sm font-medium rounded-md flex items-center gap-2">
                           <Target className="h-3 w-3" />
