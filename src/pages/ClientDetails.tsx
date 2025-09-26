@@ -129,16 +129,6 @@ export default function ClientDetails() {
 
         <div className="space-y-6">
           {/* Navigation */}
-          <div className="flex justify-end">
-            <Button 
-              variant="outline" 
-              onClick={() => navigate("/muscle-groups")}
-              className="flex items-center gap-2"
-            >
-              <Settings className="h-4 w-4" />
-              Manage Muscle Groups
-            </Button>
-          </div>
 
           {/* Client Stats */}
           <div className="grid gap-4 md:grid-cols-3">
