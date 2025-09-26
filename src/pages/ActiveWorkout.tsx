@@ -52,7 +52,7 @@ const ActiveWorkout = () => {
   // Show loading state while determining workout
   if (!currentWorkout) {
     return <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-6xl">
           <div className="text-center py-12">
             <Timer className="h-16 w-16 text-muted-foreground mx-auto mb-4 animate-spin" />
           </div>
@@ -64,7 +64,7 @@ const ActiveWorkout = () => {
   const showStartButton = currentWorkout.status === 'draft' || currentWorkout.status === 'completed';
   
   return <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-6xl">
         <div className="mb-6">
           <Button variant="ghost" onClick={() => navigate(`/client/${currentWorkout.client_id}`)} className="mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
