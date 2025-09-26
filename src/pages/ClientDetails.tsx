@@ -212,8 +212,8 @@ export default function ClientDetails() {
           {/* Recent Workouts */}
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="min-w-[300px]">
                   <CardTitle>Recent Workouts</CardTitle>
                   <CardDescription>
                     Latest training sessions for {client?.name}
