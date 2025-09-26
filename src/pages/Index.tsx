@@ -9,8 +9,8 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="min-w-[300px]">
             <h1 className="text-4xl font-bold text-foreground mb-2">
               Workout Tracker
             </h1>
