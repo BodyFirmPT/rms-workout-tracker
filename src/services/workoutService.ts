@@ -422,6 +422,46 @@ export class WorkoutService {
     return Array.from(uniqueExercises.values()).slice(0, 3); // Return top 3 unique exercises
   }
 
+  static async getRecentExercisesForMuscleGroup(clientId: string, muscleGroupId: string, limit = 5): Promise<WorkoutExercise[]> {
+    // Get all exercises for this muscle group from all clients
+    const { data, error } = await supabase
+      .from('workout_exercise')
+      .select(`
+        *,
+        workout!inner(client_id)
+      `)
+      .eq('muscle_group_id', muscleGroupId)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    // Separate exercises by client and get unique exercises by name
+    const currentClientExercises = new Map();
+    const otherClientExercises = new Map();
+    
+    (data || []).forEach(exercise => {
+      const exerciseName = exercise.exercise_name;
+      
+      if (exercise.workout.client_id === clientId) {
+        if (!currentClientExercises.has(exerciseName)) {
+          currentClientExercises.set(exerciseName, exercise);
+        }
+      } else {
+        if (!otherClientExercises.has(exerciseName) && !currentClientExercises.has(exerciseName)) {
+          otherClientExercises.set(exerciseName, exercise);
+        }
+      }
+    });
+    
+    // Combine with current client exercises first
+    const result = [
+      ...Array.from(currentClientExercises.values()),
+      ...Array.from(otherClientExercises.values())
+    ];
+    
+    return result.slice(0, limit);
+  }
+
   static async deleteExercise(exerciseId: string): Promise<void> {
     const { error } = await supabase
       .from('workout_exercise')

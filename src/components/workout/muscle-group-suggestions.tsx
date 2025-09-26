@@ -22,14 +22,14 @@ export function MuscleGroupSuggestions({
   const [suggestions, setSuggestions] = useState<WorkoutExercise[]>([]);
   const [loading, setLoading] = useState(true);
   const {
-    getUniqueExercisesForClient,
+    getRecentExercisesForMuscleGroup,
     addExerciseToWorkout
   } = useWorkoutStore();
   useEffect(() => {
     const loadSuggestions = async () => {
       setLoading(true);
       try {
-        const exercises = await getUniqueExercisesForClient(clientId, muscleGroup.id);
+        const exercises = await getRecentExercisesForMuscleGroup(clientId, muscleGroup.id, 5);
         setSuggestions(exercises);
       } catch (error) {
         console.error('Failed to load exercise suggestions:', error);
@@ -38,7 +38,7 @@ export function MuscleGroupSuggestions({
       }
     };
     loadSuggestions();
-  }, [clientId, muscleGroup.id, getUniqueExercisesForClient]);
+  }, [clientId, muscleGroup.id, getRecentExercisesForMuscleGroup]);
   const handleCopyExercise = async (exercise: WorkoutExercise) => {
     if (!disabled) {
       await addExerciseToWorkout(workoutId, {
