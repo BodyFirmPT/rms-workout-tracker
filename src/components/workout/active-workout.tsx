@@ -145,7 +145,7 @@ export function ActiveWorkout({
   return <div className="space-y-3 sm:space-y-6">
       {/* Sticky Progress Header - Full Width */}
       <div 
-        className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 -mx-2 sm:-mx-4 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           showStickyHeader 
             ? 'translate-y-0 opacity-100' 
             : '-translate-y-full opacity-0 pointer-events-none'
