@@ -143,32 +143,34 @@ export function ActiveWorkout({
     }
   };
   return <div className="space-y-3 sm:space-y-6">
-      {/* Sticky Progress Header */}
+      {/* Sticky Progress Header - Full Width */}
       <div 
-        className={`sticky top-0 z-50 transition-all duration-300 ${
+        className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 -mx-2 sm:-mx-4 ${
           showStickyHeader 
             ? 'translate-y-0 opacity-100' 
             : '-translate-y-full opacity-0 pointer-events-none'
         } ${isCompleted ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' : 'bg-primary-gradient'} shadow-lg`}
       >
-        <div className="flex items-center justify-between px-3 sm:px-4 py-3">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="text-right min-w-[60px]">
-              <div className="text-lg sm:text-xl font-bold text-primary-foreground">{workoutProgress}%</div>
+        <div className="container mx-auto max-w-6xl">
+          <div className="flex items-center justify-between px-3 sm:px-4 py-3">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="text-right min-w-[60px]">
+                <div className="text-lg sm:text-xl font-bold text-primary-foreground">{workoutProgress}%</div>
+              </div>
+              <Progress value={workoutProgress} className="flex-1 max-w-md bg-primary-foreground/20 [&>div]:bg-primary-foreground" />
             </div>
-            <Progress value={workoutProgress} className="flex-1 max-w-md bg-primary-foreground/20 [&>div]:bg-primary-foreground" />
+            {isStarted && (
+              <Button 
+                variant="secondary"
+                size="sm" 
+                onClick={handleCompleteWorkout}
+                className="ml-2 shrink-0"
+              >
+                <CheckCircle className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Complete</span>
+              </Button>
+            )}
           </div>
-          {isStarted && (
-            <Button 
-              variant="secondary"
-              size="sm" 
-              onClick={handleCompleteWorkout}
-              className="ml-2 shrink-0"
-            >
-              <CheckCircle className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Complete</span>
-            </Button>
-          )}
         </div>
       </div>
 
