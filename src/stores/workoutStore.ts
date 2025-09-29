@@ -8,6 +8,7 @@ import {
   CreateWorkoutExerciseInput 
 } from '@/types/workout';
 import { WorkoutService } from '@/services/workoutService';
+import { toast } from '@/hooks/use-toast';
 
 interface WorkoutStore {
   // Data
@@ -213,8 +214,35 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
   },
 
   completeExerciseSet: async (workoutId: string, exerciseId: string, decrement = false) => {
+    // Get the current exercise state before optimistic update
+    const currentExercises = get().workoutExercises[workoutId] || [];
+    const currentExercise = currentExercises.find(ex => ex.id === exerciseId);
+    
+    if (!currentExercise) return;
+
+    // Optimistically update the UI
+    const optimisticExercise = {
+      ...currentExercise,
+      completed_sets: decrement 
+        ? Math.max(0, currentExercise.completed_sets - 1)
+        : Math.min(currentExercise.set_count, currentExercise.completed_sets + 1),
+      is_completed: !decrement && currentExercise.completed_sets + 1 >= currentExercise.set_count
+    };
+
+    set((state) => ({
+      workoutExercises: {
+        ...state.workoutExercises,
+        [workoutId]: currentExercises.map(ex =>
+          ex.id === exerciseId ? optimisticExercise : ex
+        )
+      }
+    }));
+
     try {
+      // Make the actual API call
       const updatedExercise = await WorkoutService.completeExerciseSet(exerciseId, decrement);
+      
+      // Update with the actual response from the server
       set((state) => ({
         workoutExercises: {
           ...state.workoutExercises,
@@ -225,11 +253,7 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
       }));
 
       // Check if all exercises are now completed and auto-complete workout
-      const currentExercises = get().workoutExercises[workoutId] || [];
-      const updatedExercises = currentExercises.map(ex => 
-        ex.id === exerciseId ? updatedExercise : ex
-      );
-      
+      const updatedExercises = get().workoutExercises[workoutId] || [];
       const allExercisesCompleted = updatedExercises.length > 0 && 
         updatedExercises.every(ex => ex.completed_sets >= ex.set_count);
       
@@ -241,6 +265,20 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
       }
     } catch (error) {
       console.error('Failed to complete exercise set:', error);
+      
+      // Revert to the original state on error
+      set((state) => ({
+        workoutExercises: {
+          ...state.workoutExercises,
+          [workoutId]: currentExercises
+        }
+      }));
+      
+      toast({
+        title: "Error",
+        description: "Failed to update exercise set. Please try again.",
+        variant: "destructive",
+      });
     }
   },
 
