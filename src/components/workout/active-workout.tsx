@@ -131,6 +131,29 @@ export function ActiveWorkout({
     }
   };
   return <div className="space-y-3 sm:space-y-6">
+      {/* Sticky Progress Header */}
+      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border shadow-sm">
+        <div className="flex items-center justify-between px-3 sm:px-4 py-2">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="text-right min-w-[60px]">
+              <div className="text-lg sm:text-xl font-bold text-foreground">{workoutProgress}%</div>
+            </div>
+            <Progress value={workoutProgress} className="flex-1 max-w-md" />
+          </div>
+          {isStarted && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleCompleteWorkout}
+              className="ml-2 shrink-0"
+            >
+              <CheckCircle className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Complete</span>
+            </Button>
+          )}
+        </div>
+      </div>
+
       {/* Workout Header */}
       <Card className={`text-primary-foreground shadow-primary ${isCompleted ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' : 'bg-primary-gradient'}`}>
         <CardHeader>
