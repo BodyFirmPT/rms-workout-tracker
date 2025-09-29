@@ -157,7 +157,7 @@ export function ActiveWorkout({
               <div className="text-right min-w-[60px]">
                 <div className="text-lg sm:text-xl font-bold text-primary-foreground">{workoutProgress}%</div>
               </div>
-              <Progress value={workoutProgress} className="flex-1 max-w-md bg-primary-foreground/20 [&>div]:bg-primary-foreground" />
+              <Progress value={workoutProgress} className="flex-1 bg-primary-foreground/20 [&>div]:bg-primary-foreground" />
             </div>
             {isStarted && (
               <Button 
