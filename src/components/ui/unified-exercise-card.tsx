@@ -2,6 +2,7 @@ import { Check, Plus, Edit, Trash2, Zap, Dumbbell } from "lucide-react";
 import { Button } from "./button";
 import { Badge } from "./badge";
 import { cn } from "@/lib/utils";
+import { ExerciseTimer } from "@/components/workout/exercise-timer";
 
 interface UnifiedExerciseCardProps {
   exerciseName: string;
@@ -41,6 +42,7 @@ export function UnifiedExerciseCard({
   disabled = false
 }: UnifiedExerciseCardProps) {
   const isSuggested = variant === 'suggested';
+  const isTimedExercise = !isSuggested && (repsUnit.toLowerCase() === 'sec' || repsUnit.toLowerCase() === 'seconds');
   
   return (
     <div 
@@ -112,6 +114,14 @@ export function UnifiedExerciseCard({
         </div>
       )}
       
+      {/* Timer for timed exercises */}
+      {isTimedExercise && (
+        <ExerciseTimer 
+          duration={repsCount} 
+          onComplete={() => onCompleteSet?.()}
+        />
+      )}
+      
       {/* Actions - compact buttons */}
       <div className="flex items-center gap-0.5 shrink-0">
         {isSuggested ? (
@@ -127,8 +137,8 @@ export function UnifiedExerciseCard({
           </Button>
         ) : (
           <>
-            {/* Completion control - prioritize this */}
-            {onCompleteSet && (
+            {/* Completion control - prioritize this (hide for timed exercises since timer handles it) */}
+            {onCompleteSet && !isTimedExercise && (
               <>
                 {setCount > 1 ? (
                   // Multiple sets - show completion controls
