@@ -23,6 +23,7 @@ export function ActiveWorkout({
   const [editingExercise, setEditingExercise] = useState<WorkoutExercise | null>(null);
   const [selectedMuscleGroupId, setSelectedMuscleGroupId] = useState<string | null>(null);
   const [workoutProgress, setWorkoutProgress] = useState(0);
+  const [showStickyHeader, setShowStickyHeader] = useState(false);
   const {
     workouts,
     workoutExercises,
@@ -68,6 +69,17 @@ export function ActiveWorkout({
     };
     updateProgress();
   }, [currentWorkout, workoutExercises, getWorkoutProgress]);
+
+  // Scroll detection for sticky header
+  useEffect(() => {
+    const handleScroll = () => {
+      // Show sticky header when scrolled past 200px (approximate height of the header card)
+      setShowStickyHeader(window.scrollY > 200);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   if (!currentWorkout) {
     return <div className="text-center py-12">
         <Timer className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -132,17 +144,23 @@ export function ActiveWorkout({
   };
   return <div className="space-y-3 sm:space-y-6">
       {/* Sticky Progress Header */}
-      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border shadow-sm">
-        <div className="flex items-center justify-between px-3 sm:px-4 py-2">
+      <div 
+        className={`sticky top-0 z-50 transition-all duration-300 ${
+          showStickyHeader 
+            ? 'translate-y-0 opacity-100' 
+            : '-translate-y-full opacity-0 pointer-events-none'
+        } ${isCompleted ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' : 'bg-primary-gradient'} shadow-lg`}
+      >
+        <div className="flex items-center justify-between px-3 sm:px-4 py-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <div className="text-right min-w-[60px]">
-              <div className="text-lg sm:text-xl font-bold text-foreground">{workoutProgress}%</div>
+              <div className="text-lg sm:text-xl font-bold text-primary-foreground">{workoutProgress}%</div>
             </div>
-            <Progress value={workoutProgress} className="flex-1 max-w-md" />
+            <Progress value={workoutProgress} className="flex-1 max-w-md bg-primary-foreground/20 [&>div]:bg-primary-foreground" />
           </div>
           {isStarted && (
             <Button 
-              variant="ghost" 
+              variant="secondary"
               size="sm" 
               onClick={handleCompleteWorkout}
               className="ml-2 shrink-0"
