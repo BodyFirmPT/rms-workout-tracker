@@ -1,8 +1,14 @@
-import { Check, Plus, Edit, Trash2, Zap, Dumbbell } from "lucide-react";
+import { Check, Plus, Edit, Trash2, Zap, Dumbbell, MoreVertical } from "lucide-react";
 import { Button } from "./button";
 import { Badge } from "./badge";
 import { cn } from "@/lib/utils";
 import { ExerciseTimer } from "@/components/workout/exercise-timer";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface UnifiedExerciseCardProps {
   exerciseName: string;
@@ -21,6 +27,7 @@ interface UnifiedExerciseCardProps {
   onEdit?: () => void;
   onDelete?: () => void;
   disabled?: boolean;
+  workoutStarted?: boolean;
 }
 
 export function UnifiedExerciseCard({
@@ -39,7 +46,8 @@ export function UnifiedExerciseCard({
   onCompleteSet,
   onEdit,
   onDelete,
-  disabled = false
+  disabled = false,
+  workoutStarted = false
 }: UnifiedExerciseCardProps) {
   const isSuggested = variant === 'suggested';
   const isTimedExercise = !isSuggested && (repsUnit.toLowerCase() === 'sec' || repsUnit.toLowerCase() === 'seconds');
@@ -188,27 +196,66 @@ export function UnifiedExerciseCard({
               </>
             )}
             
-            {onEdit && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onEdit}
-                className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground"
-                disabled={disabled}
-              >
-                <Edit className="h-2.5 w-2.5" />
-              </Button>
-            )}
-            {onDelete && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onDelete}
-                className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive"
-                disabled={disabled}
-              >
-                <Trash2 className="h-2.5 w-2.5" />
-              </Button>
+            {/* Edit and Delete actions */}
+            {(onEdit || onDelete) && (
+              workoutStarted ? (
+                // Hide behind menu when workout is started
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground"
+                      disabled={disabled}
+                    >
+                      <MoreVertical className="h-3 w-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {onEdit && (
+                      <DropdownMenuItem onClick={onEdit}>
+                        <Edit className="h-3 w-3 mr-2" />
+                        Edit
+                      </DropdownMenuItem>
+                    )}
+                    {onDelete && (
+                      <DropdownMenuItem 
+                        onClick={onDelete}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="h-3 w-3 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                // Show buttons directly when workout is not started
+                <>
+                  {onEdit && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={onEdit}
+                      className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground"
+                      disabled={disabled}
+                    >
+                      <Edit className="h-2.5 w-2.5" />
+                    </Button>
+                  )}
+                  {onDelete && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={onDelete}
+                      className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive"
+                      disabled={disabled}
+                    >
+                      <Trash2 className="h-2.5 w-2.5" />
+                    </Button>
+                  )}
+                </>
+              )
             )}
           </>
         )}
