@@ -1,14 +1,15 @@
 import { useState, useEffect, useRef } from "react";
-import { Play, Pause, RotateCcw } from "lucide-react";
+import { Play, Pause, RotateCcw, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface ExerciseTimerProps {
   duration: number; // in seconds
   onComplete?: () => void;
+  onReset?: () => void;
 }
 
-export function ExerciseTimer({ duration, onComplete }: ExerciseTimerProps) {
+export function ExerciseTimer({ duration, onComplete, onReset }: ExerciseTimerProps) {
   const [timeRemaining, setTimeRemaining] = useState(duration);
   const [isRunning, setIsRunning] = useState(false);
   const [hasCompleted, setHasCompleted] = useState(false);
@@ -78,7 +79,13 @@ export function ExerciseTimer({ duration, onComplete }: ExerciseTimerProps) {
   const handleReset = () => {
     setIsRunning(false);
     setTimeRemaining(duration);
+    const wasCompleted = hasCompleted;
     setHasCompleted(false);
+    
+    // If it was completed, call onReset to uncheck the exercise
+    if (wasCompleted && onReset) {
+      onReset();
+    }
   };
 
   const formatTime = (seconds: number) => {
@@ -129,19 +136,32 @@ export function ExerciseTimer({ duration, onComplete }: ExerciseTimerProps) {
       </div>
       
       <div className="flex gap-1">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleToggle}
-          className="h-9 w-9 p-0 border-2 border-primary text-primary hover:bg-primary/10 rounded-full"
-          title={isRunning ? "Pause" : "Start"}
-        >
-          {isRunning ? (
-            <Pause className="h-5 w-5" strokeWidth={3} />
-          ) : (
-            <Play className="h-5 w-5" strokeWidth={3} />
-          )}
-        </Button>
+        {hasCompleted ? (
+          // Show green check when completed
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 w-9 p-0 border-2 border-success bg-success text-success-foreground hover:bg-success/80 rounded-full"
+            disabled
+          >
+            <Check className="h-5 w-5 font-bold" strokeWidth={3} />
+          </Button>
+        ) : (
+          // Show play/pause when not completed
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleToggle}
+            className="h-9 w-9 p-0 border-2 border-primary text-primary hover:bg-primary/10 rounded-full"
+            title={isRunning ? "Pause" : "Start"}
+          >
+            {isRunning ? (
+              <Pause className="h-5 w-5" strokeWidth={3} />
+            ) : (
+              <Play className="h-5 w-5" strokeWidth={3} />
+            )}
+          </Button>
+        )}
         
         {(timeRemaining !== duration || hasCompleted) && (
           <Button

@@ -127,6 +127,7 @@ export function UnifiedExerciseCard({
         <ExerciseTimer 
           duration={repsCount} 
           onComplete={() => onCompleteSet?.()}
+          onReset={() => onCompleteSet?.(true)}
         />
       )}
       
