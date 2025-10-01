@@ -156,11 +156,11 @@ export function UnifiedExerciseCard({
                         variant="outline"
                         size="sm"
                         onClick={() => onCompleteSet && onCompleteSet(true)}
-                        className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground border-2 sm:h-6 sm:w-6"
+                        className="h-8 w-8 p-0 border-2 border-primary text-primary hover:bg-primary/10"
                         disabled={disabled}
                         title="Undo last set"
                       >
-                        <span className="text-base sm:text-xs font-bold">-</span>
+                        <span className="text-base font-bold">-</span>
                       </Button>
                     )}
                     {completedSets < setCount && (
@@ -168,10 +168,10 @@ export function UnifiedExerciseCard({
                         variant="outline"
                         size="sm"
                         onClick={() => onCompleteSet && onCompleteSet()}
-                        className="h-8 px-3 text-sm font-semibold border-2 border-primary sm:h-6 sm:px-2 sm:text-xs"
+                        className="h-8 px-3 text-sm font-semibold border-2 border-primary text-primary hover:bg-primary/10"
                         disabled={disabled}
                       >
-                        <Check className="h-4 w-4 mr-1 sm:h-3 sm:w-3" />
+                        <Check className="h-4 w-4 mr-1" />
                         {completedSets + 1}
                       </Button>
                     )}
@@ -183,14 +183,14 @@ export function UnifiedExerciseCard({
                     size="sm"
                     onClick={() => onCompleteSet && onCompleteSet()}
                     className={cn(
-                      "h-9 w-9 p-0 rounded-full border-2 sm:h-7 sm:w-7",
+                      "h-9 w-9 p-0 rounded-full border-2",
                       isCompleted 
                         ? "bg-success border-success text-success-foreground hover:bg-success/80" 
-                        : "border-primary hover:bg-primary/10"
+                        : "border-primary text-primary hover:bg-primary/10"
                     )}
                     disabled={disabled}
                   >
-                    <Check className="h-5 w-5 sm:h-3.5 sm:w-3.5 font-bold" strokeWidth={3} />
+                    <Check className="h-5 w-5 font-bold" strokeWidth={3} />
                   </Button>
                 )}
               </>
