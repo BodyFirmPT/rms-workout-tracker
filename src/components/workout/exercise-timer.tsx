@@ -136,17 +136,7 @@ export function ExerciseTimer({ duration, onComplete, onReset }: ExerciseTimerPr
       </div>
       
       <div className="flex gap-1">
-        {hasCompleted ? (
-          // Show green check when completed
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 w-9 p-0 border-2 border-success bg-success text-success-foreground hover:bg-success/80 rounded-full"
-            disabled
-          >
-            <Check className="h-5 w-5 font-bold" strokeWidth={3} />
-          </Button>
-        ) : (
+        {!hasCompleted && (
           // Show play/pause when not completed
           <Button
             variant="outline"
@@ -172,6 +162,18 @@ export function ExerciseTimer({ duration, onComplete, onReset }: ExerciseTimerPr
             title="Reset"
           >
             <RotateCcw className="h-5 w-5" strokeWidth={3} />
+          </Button>
+        )}
+        
+        {hasCompleted && (
+          // Show green check when completed (last position)
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 w-9 p-0 border-2 border-success bg-success text-success-foreground hover:bg-success/80 rounded-full"
+            disabled
+          >
+            <Check className="h-5 w-5 font-bold" strokeWidth={3} />
           </Button>
         )}
       </div>
