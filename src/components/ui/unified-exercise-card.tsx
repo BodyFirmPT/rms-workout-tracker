@@ -150,28 +150,28 @@ export function UnifiedExerciseCard({
               <>
                 {setCount > 1 ? (
                   // Multiple sets - show completion controls
-                  <div className="flex items-center gap-0.5">
+                  <div className="flex items-center gap-1">
                     {completedSets > 0 && (
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
                         onClick={() => onCompleteSet && onCompleteSet(true)}
-                        className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground"
+                        className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground border-2 sm:h-6 sm:w-6"
                         disabled={disabled}
                         title="Undo last set"
                       >
-                        <span className="text-xs">-</span>
+                        <span className="text-base sm:text-xs font-bold">-</span>
                       </Button>
                     )}
                     {completedSets < setCount && (
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
                         onClick={() => onCompleteSet && onCompleteSet()}
-                        className="h-5 px-1.5 text-xs"
+                        className="h-8 px-3 text-sm font-semibold border-2 border-primary sm:h-6 sm:px-2 sm:text-xs"
                         disabled={disabled}
                       >
-                        <Check className="h-2.5 w-2.5 mr-1" />
+                        <Check className="h-4 w-4 mr-1 sm:h-3 sm:w-3" />
                         {completedSets + 1}
                       </Button>
                     )}
@@ -179,18 +179,18 @@ export function UnifiedExerciseCard({
                 ) : (
                   // Single set - show check button
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={() => onCompleteSet && onCompleteSet()}
                     className={cn(
-                      "h-5 w-5 p-0 rounded-full",
+                      "h-9 w-9 p-0 rounded-full border-2 sm:h-7 sm:w-7",
                       isCompleted 
-                        ? "bg-success text-success-foreground hover:bg-success/80" 
-                        : "hover:bg-muted"
+                        ? "bg-success border-success text-success-foreground hover:bg-success/80" 
+                        : "border-primary hover:bg-primary/10"
                     )}
                     disabled={disabled}
                   >
-                    <Check className="h-2.5 w-2.5" />
+                    <Check className="h-5 w-5 sm:h-3.5 sm:w-3.5 font-bold" strokeWidth={3} />
                   </Button>
                 )}
               </>
