@@ -90,27 +90,27 @@ export function ExerciseTimer({ duration, onComplete }: ExerciseTimerProps) {
   const progress = ((duration - timeRemaining) / duration) * 100;
 
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-2">
       <div className="relative">
-        <svg className="w-8 h-8 -rotate-90">
+        <svg className="w-10 h-10 -rotate-90">
           <circle
-            cx="16"
-            cy="16"
-            r="14"
+            cx="20"
+            cy="20"
+            r="17"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="2.5"
             fill="none"
             className="text-muted/50"
           />
           <circle
-            cx="16"
-            cy="16"
-            r="14"
+            cx="20"
+            cy="20"
+            r="17"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="2.5"
             fill="none"
-            strokeDasharray={`${2 * Math.PI * 14}`}
-            strokeDashoffset={`${2 * Math.PI * 14 * (1 - progress / 100)}`}
+            strokeDasharray={`${2 * Math.PI * 17}`}
+            strokeDashoffset={`${2 * Math.PI * 17 * (1 - progress / 100)}`}
             className={cn(
               "transition-all duration-1000",
               hasCompleted ? "text-success" : "text-primary"
@@ -120,7 +120,7 @@ export function ExerciseTimer({ duration, onComplete }: ExerciseTimerProps) {
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
           <span className={cn(
-            "text-[10px] font-mono font-medium",
+            "text-[11px] font-mono font-medium",
             hasCompleted ? "text-success" : "text-foreground"
           )}>
             {formatTime(timeRemaining)}
@@ -128,30 +128,30 @@ export function ExerciseTimer({ duration, onComplete }: ExerciseTimerProps) {
         </div>
       </div>
       
-      <div className="flex gap-0.5">
+      <div className="flex gap-1">
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={handleToggle}
-          className="h-5 w-5 p-0"
+          className="h-9 w-9 p-0 border-2 border-primary text-primary hover:bg-primary/10 rounded-full"
           title={isRunning ? "Pause" : "Start"}
         >
           {isRunning ? (
-            <Pause className="h-2.5 w-2.5" />
+            <Pause className="h-5 w-5" strokeWidth={3} />
           ) : (
-            <Play className="h-2.5 w-2.5" />
+            <Play className="h-5 w-5" strokeWidth={3} />
           )}
         </Button>
         
         {(timeRemaining !== duration || hasCompleted) && (
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={handleReset}
-            className="h-5 w-5 p-0"
+            className="h-9 w-9 p-0 border-2 border-primary text-primary hover:bg-primary/10 rounded-full"
             title="Reset"
           >
-            <RotateCcw className="h-2.5 w-2.5" />
+            <RotateCcw className="h-5 w-5" strokeWidth={3} />
           </Button>
         )}
       </div>
