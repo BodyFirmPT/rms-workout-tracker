@@ -131,7 +131,7 @@ export function UnifiedExerciseCard({
       )}
       
       {/* Actions - compact buttons */}
-      <div className="flex items-center gap-0.5 shrink-0">
+      <div className={cn("flex items-center shrink-0", isTimedExercise ? "gap-1 ml-1" : "gap-0.5")}>
         {isSuggested ? (
           <Button
             variant="ghost"

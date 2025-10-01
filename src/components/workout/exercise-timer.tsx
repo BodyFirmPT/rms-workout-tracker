@@ -90,7 +90,7 @@ export function ExerciseTimer({ duration, onComplete }: ExerciseTimerProps) {
   const progress = ((duration - timeRemaining) / duration) * 100;
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1">
       <div className="relative">
         <svg className="w-10 h-10 -rotate-90">
           <circle
