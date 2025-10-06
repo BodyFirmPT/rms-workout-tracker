@@ -202,23 +202,23 @@ export function ActiveWorkout({
                 {exercises.length} exercises • {exercises.reduce((sum, ex) => sum + ex.completed_sets, 0)} / {exercises.reduce((sum, ex) => sum + ex.set_count, 0)} sets completed
               </p>
               
-              <div className="flex gap-2">
-                {!isCompleted && <Button variant="secondary" size="sm" onClick={() => setShowAddExercise(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Exercise
+              <div className="flex gap-1 sm:gap-2">
+                {!isCompleted && <Button variant="secondary" size="sm" onClick={() => setShowAddExercise(true)} className="text-xs sm:text-sm px-2 sm:px-3">
+                    <Plus className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+                    <span className="hidden xs:inline">Add Exercise</span>
                   </Button>}
                 
                 {isStarted && <Button 
                     variant="secondary" 
                     size="sm" 
                     onClick={handleCompleteWorkout} 
-                    className={workoutProgress === 100 
+                    className={`text-xs sm:text-sm px-2 sm:px-3 ${workoutProgress === 100 
                       ? "bg-success text-success-foreground hover:bg-success/90" 
                       : "bg-transparent text-white border border-white hover:bg-white hover:text-primary"
-                    }
+                    }`}
                   >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Complete Workout
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+                    <span className="hidden xs:inline">Complete Workout</span>
                   </Button>}
                 
                 {/* Status badge */}
