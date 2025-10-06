@@ -203,8 +203,8 @@ export function ActiveWorkout({
               </p>
               
               <div className="flex gap-2">
-                {!isCompleted && <Button variant="secondary" size="sm" onClick={() => setShowAddExercise(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
+                {!isCompleted && <Button variant="secondary" size="sm" onClick={() => setShowAddExercise(true)} className="text-xs sm:text-sm px-2 sm:px-3">
+                    <Plus className="h-4 w-4 mr-1 sm:mr-2" />
                     Add Exercise
                   </Button>}
                 
@@ -212,12 +212,12 @@ export function ActiveWorkout({
                     variant="secondary" 
                     size="sm" 
                     onClick={handleCompleteWorkout} 
-                    className={workoutProgress === 100 
+                    className={`text-xs sm:text-sm px-2 sm:px-3 ${workoutProgress === 100 
                       ? "bg-success text-success-foreground hover:bg-success/90" 
                       : "bg-transparent text-white border border-white hover:bg-white hover:text-primary"
-                    }
+                    }`}
                   >
-                    <CheckCircle className="h-4 w-4 mr-2" />
+                    <CheckCircle className="h-4 w-4 mr-1 sm:mr-2" />
                     Complete Workout
                   </Button>}
                 
