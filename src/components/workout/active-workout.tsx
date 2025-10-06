@@ -197,7 +197,7 @@ export function ActiveWorkout({
           <div className="space-y-4">
             <Progress value={workoutProgress} className="bg-primary-foreground/20 [&>div]:bg-primary-foreground" />
             
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-sm opacity-90">
                 {exercises.length} exercises • {exercises.reduce((sum, ex) => sum + ex.completed_sets, 0)} / {exercises.reduce((sum, ex) => sum + ex.set_count, 0)} sets completed
               </p>
