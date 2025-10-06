@@ -202,7 +202,7 @@ export function ActiveWorkout({
                 {exercises.length} exercises • {exercises.reduce((sum, ex) => sum + ex.completed_sets, 0)} / {exercises.reduce((sum, ex) => sum + ex.set_count, 0)} sets completed
               </p>
               
-              <div className="flex gap-2 w-full justify-between">
+              <div className="flex gap-2 w-full sm:w-auto justify-between sm:justify-start">
                 {!isCompleted && <Button variant="secondary" size="sm" onClick={() => setShowAddExercise(true)} className="text-xs sm:text-sm px-2 sm:px-3">
                     <Plus className="h-4 w-4 mr-1 sm:mr-2" />
                     Add Exercise
