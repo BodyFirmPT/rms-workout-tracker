@@ -144,6 +144,11 @@ export function CopyExercisesDialog({
                                         ? 'secondary' 
                                         : 'outline'
                                     }
+                                    className={
+                                      workout.status === 'completed'
+                                        ? 'bg-success/10 text-success border-success/20'
+                                        : ''
+                                    }
                                   >
                                     {workout.status}
                                   </Badge>
