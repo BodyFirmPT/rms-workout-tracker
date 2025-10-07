@@ -85,13 +85,9 @@ const ActiveWorkout = () => {
               </h1>
             </div>
             <div className="flex gap-2">
-              {showStartButton && <Button onClick={handleStartWorkout} size="lg">
-                <Play className="h-4 w-4 mr-2" />
-                Start Workout
-              </Button>}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="lg">
+                  <Button variant="ghost" size="icon">
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -102,6 +98,10 @@ const ActiveWorkout = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              {showStartButton && <Button onClick={handleStartWorkout} size="lg">
+                <Play className="h-4 w-4 mr-2" />
+                Start Workout
+              </Button>}
             </div>
           </div>
         </div>
