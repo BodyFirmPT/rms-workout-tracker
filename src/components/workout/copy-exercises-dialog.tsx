@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { Copy, Plus, Calendar, Search } from "lucide-react";
+import { Copy, Plus, Calendar } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { CreateWorkoutDialog } from "./create-workout-dialog";
 import { toast } from "@/hooks/use-toast";
@@ -39,23 +38,15 @@ export function CopyExercisesDialog({
   const { workouts, getClientById, copyExercisesToWorkout, copyExercisesByCategoryToWorkout, loadData } = useWorkoutStore();
   const [showCreateWorkout, setShowCreateWorkout] = useState(false);
   const [copying, setCopying] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
 
   const sourceWorkout = workouts.find(w => w.id === sourceWorkoutId);
   const clientId = sourceWorkout?.client_id;
 
   // Get recent workouts for the same client (excluding the current one)
-  const allRecentWorkouts = workouts
+  const recentWorkouts = workouts
     .filter(w => w.client_id === clientId && w.id !== sourceWorkoutId)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 50); // Get more workouts to filter from
-
-  // Filter workouts based on search query
-  const recentWorkouts = searchQuery.trim()
-    ? allRecentWorkouts.filter(w => 
-        w.note?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : allRecentWorkouts.slice(0, 10); // Show only 10 when not searching
+    .slice(0, 10);
 
   const handleCopyToWorkout = async (targetWorkoutId: string) => {
     setCopying(targetWorkoutId);
@@ -128,29 +119,9 @@ export function CopyExercisesDialog({
             </Card>
 
             {/* Recent Workouts List */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
+            {recentWorkouts.length > 0 && (
+              <div className="space-y-2">
                 <h3 className="text-sm font-medium">Recent Workouts</h3>
-                {allRecentWorkouts.length > 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    {recentWorkouts.length} of {allRecentWorkouts.length}
-                  </span>
-                )}
-              </div>
-              
-              {allRecentWorkouts.length > 0 && (
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search workout notes..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-              )}
-
-              {recentWorkouts.length > 0 ? (
                 <ScrollArea className="h-[300px] rounded-md border">
                   <div className="p-4 space-y-2">
                     {recentWorkouts.map((workout) => {
@@ -196,14 +167,10 @@ export function CopyExercisesDialog({
                     })}
                   </div>
                 </ScrollArea>
-              ) : searchQuery.trim() ? (
-                <div className="text-center py-8 text-muted-foreground border rounded-md">
-                  <p>No workouts found matching "{searchQuery}"</p>
-                </div>
-              ) : null}
-            </div>
+              </div>
+            )}
 
-            {allRecentWorkouts.length === 0 && (
+            {recentWorkouts.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <p>No other workouts found for this client.</p>
                 <p className="text-sm mt-2">Create a new workout to copy these exercises.</p>
