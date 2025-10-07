@@ -297,7 +297,6 @@ export function ActiveWorkout({
                       groupCount={visibleGroups.length}
                       totalExercises={totalCategoryExercises}
                       onCopyToWorkout={() => setCopyingCategory({ name: categoryName, exerciseCount: totalCategoryExercises })}
-                      disabled={isCompleted}
                     />
                     
                     <div className="space-y-0">
