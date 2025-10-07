@@ -40,8 +40,10 @@ export function ExerciseTimer({ duration, onComplete, onReset }: ExerciseTimerPr
   };
 
   const playCompletionBeeps = () => {
-    playBeep();
-    setTimeout(() => playBeep(), 150);
+    // Play 6 beeps with 200ms intervals for better notification
+    for (let i = 0; i < 6; i++) {
+      setTimeout(() => playBeep(), i * 200);
+    }
   };
 
   useEffect(() => {
