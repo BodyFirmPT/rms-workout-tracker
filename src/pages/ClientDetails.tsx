@@ -39,9 +39,12 @@ export default function ClientDetails() {
   useEffect(() => {
     const loadProgresses = async () => {
       const progresses: { [id: string]: number } = {};
-      const clientWorkouts = workouts.filter(w => w.client_id === clientId);
+      const clientWorkouts = workouts
+        .filter(w => w.client_id === clientId)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 10); // Match the displayed workouts
       
-      for (const workout of clientWorkouts.slice(-5)) {
+      for (const workout of clientWorkouts) {
         progresses[workout.id] = await getWorkoutProgress(workout.id);
       }
       setWorkoutProgresses(progresses);
