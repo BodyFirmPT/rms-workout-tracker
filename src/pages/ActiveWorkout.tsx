@@ -77,14 +77,12 @@ const ActiveWorkout = () => {
             Back to Client
           </Button>
           
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="min-w-[300px]">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center justify-between flex-1 min-w-[300px]">
               <h1 className="text-3xl font-bold text-foreground">
                 {currentWorkout.status === 'completed' ? 'Completed Workout' : 
                  currentWorkout.status === 'started' ? 'Active Workout' : 'Workout Details'}
               </h1>
-            </div>
-            <div className="flex gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon">
@@ -98,11 +96,11 @@ const ActiveWorkout = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              {showStartButton && <Button onClick={handleStartWorkout} size="lg">
-                <Play className="h-4 w-4 mr-2" />
-                Start Workout
-              </Button>}
             </div>
+            {showStartButton && <Button onClick={handleStartWorkout} size="lg">
+              <Play className="h-4 w-4 mr-2" />
+              Start Workout
+            </Button>}
           </div>
         </div>
         
