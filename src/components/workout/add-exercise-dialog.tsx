@@ -191,8 +191,8 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
                 value={weightCount}
                 onChange={(e) => setWeightCount(Number(e.target.value))}
                 min="0"
-                step="0.5"
-                placeholder="e.g., 15"
+                step="any"
+                placeholder="e.g., 15, 22.5"
               />
             </div>
             
