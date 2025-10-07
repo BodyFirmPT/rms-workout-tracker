@@ -69,7 +69,7 @@ export function MuscleGroupHeader({
                 <MoreVertical className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-56 z-50 bg-popover">
               <DropdownMenuItem onClick={onCopyToWorkout}>
                 Copy to another workout
               </DropdownMenuItem>
