@@ -1,6 +1,12 @@
-import { Plus } from "lucide-react";
+import { Plus, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface MuscleGroupHeaderProps {
   name: string;
@@ -10,6 +16,7 @@ interface MuscleGroupHeaderProps {
   isLast: boolean;
   hasContent: boolean;
   onAddExercise: () => void;
+  onCopyToWorkout?: () => void;
   disabled?: boolean;
 }
 
@@ -21,6 +28,7 @@ export function MuscleGroupHeader({
   isLast,
   hasContent,
   onAddExercise,
+  onCopyToWorkout,
   disabled = false
 }: MuscleGroupHeaderProps) {
   return (
@@ -38,16 +46,37 @@ export function MuscleGroupHeader({
           {exerciseCount}
         </Badge>
       </div>
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        onClick={onAddExercise} 
-        className="h-6 px-2 text-xs" 
-        disabled={disabled}
-      >
-        <Plus className="h-2.5 w-2.5 mr-1" />
-        Add
-      </Button>
+      <div className="flex items-center gap-1">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={onAddExercise} 
+          className="h-6 px-2 text-xs" 
+          disabled={disabled}
+        >
+          <Plus className="h-2.5 w-2.5 mr-1" />
+          Add
+        </Button>
+        {exerciseCount > 0 && onCopyToWorkout && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 w-6 p-0" 
+                disabled={disabled}
+              >
+                <MoreVertical className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem onClick={onCopyToWorkout}>
+                Copy to another workout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
     </div>
   );
 }

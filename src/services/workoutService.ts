@@ -494,4 +494,44 @@ export class WorkoutService {
     if (error) throw error;
     return data;
   }
+
+  static async copyExercisesToWorkout(sourceWorkoutId: string, targetWorkoutId: string, muscleGroupId: string): Promise<void> {
+    // Get exercises from source workout for the specified muscle group
+    const { data: exercises, error: fetchError } = await supabase
+      .from('workout_exercise')
+      .select('*')
+      .eq('workout_id', sourceWorkoutId)
+      .eq('muscle_group_id', muscleGroupId);
+
+    if (fetchError) throw fetchError;
+
+    if (!exercises || exercises.length === 0) {
+      return;
+    }
+
+    // Copy exercises to target workout
+    const exercisesToInsert = exercises.map(exercise => ({
+      workout_id: targetWorkoutId,
+      muscle_group_id: exercise.muscle_group_id,
+      exercise_name: exercise.exercise_name,
+      reps_count: exercise.reps_count,
+      reps_unit: exercise.reps_unit,
+      weight_count: exercise.weight_count,
+      weight_unit: exercise.weight_unit,
+      // Keep old fields for compatibility
+      reps: exercise.reps_count.toString(),
+      unit: exercise.reps_unit,
+      count: exercise.weight_count,
+      note: exercise.note || '',
+      set_count: exercise.set_count,
+      completed_sets: 0,
+      is_completed: false
+    }));
+
+    const { error: insertError } = await supabase
+      .from('workout_exercise')
+      .insert(exercisesToInsert);
+
+    if (insertError) throw insertError;
+  }
 }

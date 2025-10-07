@@ -16,9 +16,10 @@ interface CreateWorkoutDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultClientId?: string;
+  onWorkoutCreated?: (workoutId: string) => void;
 }
 
-export function CreateWorkoutDialog({ open, onOpenChange, defaultClientId }: CreateWorkoutDialogProps) {
+export function CreateWorkoutDialog({ open, onOpenChange, defaultClientId, onWorkoutCreated }: CreateWorkoutDialogProps) {
   const [note, setNote] = useState("");
   const [date, setDate] = useState<Date>(new Date());
   const [clientId, setClientId] = useState(defaultClientId || "");
@@ -33,11 +34,11 @@ export function CreateWorkoutDialog({ open, onOpenChange, defaultClientId }: Cre
     }
   }, [defaultClientId]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!clientId) return;
 
-    const workoutId = createWorkout(clientId, note.trim(), format(date, 'yyyy-MM-dd'));
+    const workoutId = await createWorkout(clientId, note.trim(), format(date, 'yyyy-MM-dd'));
     
     // Reset form
     setNote("");
@@ -45,8 +46,10 @@ export function CreateWorkoutDialog({ open, onOpenChange, defaultClientId }: Cre
     setClientId(defaultClientId || "");
     onOpenChange(false);
     
-    // TODO: Navigate to workout detail page
-    console.log("Created workout:", workoutId);
+    // Call the callback if provided
+    if (onWorkoutCreated && workoutId) {
+      onWorkoutCreated(workoutId);
+    }
   };
 
   const handleCreateClient = () => {

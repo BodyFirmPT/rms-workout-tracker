@@ -9,6 +9,7 @@ import { AddExerciseDialog } from "@/components/workout/add-exercise-dialog";
 import { EditExerciseDialog } from "@/components/workout/edit-exercise-dialog";
 import { MuscleGroupSuggestions } from "@/components/workout/muscle-group-suggestions";
 import { MuscleGroupHeader } from "@/components/workout/muscle-group-header";
+import { CopyExercisesDialog } from "@/components/workout/copy-exercises-dialog";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { format } from "date-fns";
 import { CreateWorkoutExerciseInput, WorkoutExercise } from "@/types/workout";
@@ -24,6 +25,7 @@ export function ActiveWorkout({
   const [selectedMuscleGroupId, setSelectedMuscleGroupId] = useState<string | null>(null);
   const [workoutProgress, setWorkoutProgress] = useState(0);
   const [showStickyHeader, setShowStickyHeader] = useState(false);
+  const [copyingMuscleGroup, setCopyingMuscleGroup] = useState<{ id: string; name: string; exerciseCount: number } | null>(null);
   const {
     workouts,
     workoutExercises,
@@ -301,7 +303,16 @@ export function ActiveWorkout({
                     if (hasExercises) {
                       // Show added exercises for this muscle group - table-like layout
                       return <div key={muscleGroup.id} className="space-y-0">
-                              <MuscleGroupHeader name={muscleGroup.name} exerciseCount={groupExercises.length} isFirst={isFirst} isLast={isLast} hasContent={true} onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} disabled={isCompleted} />
+                              <MuscleGroupHeader 
+                                name={muscleGroup.name} 
+                                exerciseCount={groupExercises.length} 
+                                isFirst={isFirst} 
+                                isLast={isLast} 
+                                hasContent={true} 
+                                onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} 
+                                onCopyToWorkout={() => setCopyingMuscleGroup({ id: muscleGroup.id, name: muscleGroup.name, exerciseCount: groupExercises.length })}
+                                disabled={isCompleted} 
+                              />
                               
                               {/* Exercise rows */}
                               <div className={`border-2 border-t-0 border-border/80 overflow-hidden ${isLast ? 'rounded-b-lg' : ''}`}>
@@ -334,7 +345,17 @@ export function ActiveWorkout({
             const muscleGroup = muscleGroups.find(mg => mg.name === muscleGroupName);
             if (!muscleGroup || muscleGroup.default_group) return null;
             return <div key={muscleGroupName} className="space-y-0">
-                   <MuscleGroupHeader name={muscleGroupName} exerciseCount={exercises.length} isCustom={true} isFirst={true} isLast={true} hasContent={true} onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} disabled={isCompleted} />
+                   <MuscleGroupHeader 
+                     name={muscleGroupName} 
+                     exerciseCount={exercises.length} 
+                     isCustom={true} 
+                     isFirst={true} 
+                     isLast={true} 
+                     hasContent={true} 
+                     onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} 
+                     onCopyToWorkout={() => setCopyingMuscleGroup({ id: muscleGroup.id, name: muscleGroupName, exerciseCount: exercises.length })}
+                     disabled={isCompleted} 
+                   />
                    
                     {/* Exercise rows */}
                     <div className="border-2 border-t-0 rounded-b-lg border-border/80 overflow-hidden">
@@ -380,5 +401,17 @@ export function ActiveWorkout({
         if (!open) setEditingExercise(null);
       }} exercise={editingExercise} workoutId={currentWorkout.id} />
         </>}
+
+      {/* Copy Exercises Dialog */}
+      {copyingMuscleGroup && (
+        <CopyExercisesDialog
+          open={!!copyingMuscleGroup}
+          onOpenChange={(open) => !open && setCopyingMuscleGroup(null)}
+          sourceWorkoutId={currentWorkout.id}
+          muscleGroupId={copyingMuscleGroup.id}
+          muscleGroupName={copyingMuscleGroup.name}
+          exerciseCount={copyingMuscleGroup.exerciseCount}
+        />
+      )}
     </div>;
 }
