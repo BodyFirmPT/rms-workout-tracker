@@ -101,7 +101,7 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Add Exercise</DialogTitle>
           <DialogDescription>
@@ -109,7 +109,8 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="overflow-y-auto flex-1 pr-2">
+          <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="exercise-name">Exercise Name</Label>
             <Input
@@ -232,32 +233,33 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
             />
           </div>
           
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={!exerciseName.trim() || (!muscleGroupId && !newMuscleGroup.trim())}>
-              Add Exercise
-            </Button>
-          </div>
-        </form>
-
-        {/* Show suggestions only when a muscle group is selected */}
-        {(muscleGroupId || preselectedMuscleGroupId) && (() => {
-          const selectedMuscleGroup = getMuscleGroupById(muscleGroupId || preselectedMuscleGroupId || '');
-          return selectedMuscleGroup ? (
-            <div className="border-t mt-4 pt-4">
-              <div className="text-sm font-medium mb-2">Or choose from recent exercises:</div>
-              <MuscleGroupSuggestions
-                muscleGroup={selectedMuscleGroup}
-                clientId={clientId}
-                workoutId={workoutId}
-                hasExistingExercises={false}
-                onExerciseAdded={handleQuickAdd}
-              />
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={!exerciseName.trim() || (!muscleGroupId && !newMuscleGroup.trim())}>
+                Add Exercise
+              </Button>
             </div>
-          ) : null;
-        })()}
+          </form>
+
+          {/* Show suggestions only when a muscle group is selected */}
+          {(muscleGroupId || preselectedMuscleGroupId) && (() => {
+            const selectedMuscleGroup = getMuscleGroupById(muscleGroupId || preselectedMuscleGroupId || '');
+            return selectedMuscleGroup ? (
+              <div className="border-t mt-4 pt-4">
+                <div className="text-sm font-medium mb-2">Or choose from recent exercises:</div>
+                <MuscleGroupSuggestions
+                  muscleGroup={selectedMuscleGroup}
+                  clientId={clientId}
+                  workoutId={workoutId}
+                  hasExistingExercises={false}
+                  onExerciseAdded={handleQuickAdd}
+                />
+              </div>
+            ) : null;
+          })()}
+        </div>
       </DialogContent>
     </Dialog>
   );
