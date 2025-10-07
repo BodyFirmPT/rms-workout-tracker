@@ -1,9 +1,10 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Calendar, Clock, Play, Plus, Target, ArrowLeft, Settings, Trash2, Timer, Edit, Copy, User } from "lucide-react";
+import { Calendar, Clock, Play, Plus, Target, ArrowLeft, Settings, Trash2, Timer, Edit, Copy, User, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgressRing } from "@/components/ui/progress-ring";
+import { Input } from "@/components/ui/input";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { CreateWorkoutDialog } from "@/components/workout/create-workout-dialog";
 import { DeleteWorkoutDialog } from "@/components/workout/delete-workout-dialog";
@@ -20,6 +21,7 @@ export default function ClientDetails() {
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
   const [duplicatingWorkout, setDuplicatingWorkout] = useState<Workout | null>(null);
   const [workoutProgresses, setWorkoutProgresses] = useState<{ [id: string]: number }>({});
+  const [searchQuery, setSearchQuery] = useState("");
   
   const { 
     workouts, 
@@ -72,10 +74,17 @@ export default function ClientDetails() {
     );
   }
 
-  const clientWorkouts = workouts
+  const allClientWorkouts = workouts
     .filter(w => w.client_id === clientId)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 10);
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  // Filter workouts based on search query
+  const clientWorkouts = searchQuery.trim()
+    ? allClientWorkouts.filter(w => 
+        w.note?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        format(new Date(w.date + 'T00:00:00'), 'MMM d, yyyy').toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : allClientWorkouts.slice(0, 10); // Show only 10 when not searching
 
   const startedWorkout = getStartedWorkout();
   const clientStartedWorkout = startedWorkout?.client_id === clientId ? startedWorkout : null;
@@ -89,9 +98,9 @@ export default function ClientDetails() {
     navigate(`/workout/${workoutId}`);
   };
 
-  const totalWorkouts = clientWorkouts.length;
-  const completedWorkouts = clientWorkouts.filter(w => w.status === 'completed').length;
-  const thisWeekWorkouts = clientWorkouts.filter(w => {
+  const totalWorkouts = allClientWorkouts.length;
+  const completedWorkouts = allClientWorkouts.filter(w => w.status === 'completed').length;
+  const thisWeekWorkouts = allClientWorkouts.filter(w => {
     const workoutDate = new Date(w.date);
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
@@ -219,11 +228,28 @@ export default function ClientDetails() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Search Bar */}
+              {allClientWorkouts.length > 0 && (
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search workouts by date or notes..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                  />
+                  {searchQuery && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Showing {clientWorkouts.length} of {allClientWorkouts.length} workouts
+                    </p>
+                  )}
+                </div>
+              )}
               {loading ? (
                 <div className="text-center py-8">
                   <p className="text-muted-foreground">Loading workouts...</p>
                 </div>
-              ) : clientWorkouts.length === 0 ? (
+              ) : allClientWorkouts.length === 0 ? (
                 <div className="text-center py-8">
                   <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">No workouts yet for {client?.name}</p>
@@ -235,6 +261,10 @@ export default function ClientDetails() {
                     <Plus className="h-4 w-4 mr-2" />
                     Create First Workout
                   </Button>
+                </div>
+              ) : clientWorkouts.length === 0 && searchQuery ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No workouts found matching "{searchQuery}"</p>
                 </div>
               ) : (
                 clientWorkouts.map((workout) => {
