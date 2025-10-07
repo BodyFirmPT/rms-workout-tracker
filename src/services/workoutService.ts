@@ -534,4 +534,58 @@ export class WorkoutService {
 
     if (insertError) throw insertError;
   }
+
+  static async copyExercisesByCategoryToWorkout(sourceWorkoutId: string, targetWorkoutId: string, categoryName: string): Promise<void> {
+    // Get all muscle groups in this category
+    const { data: muscleGroups, error: mgError } = await supabase
+      .from('muscle_group')
+      .select('id')
+      .eq('category', categoryName);
+
+    if (mgError) throw mgError;
+
+    if (!muscleGroups || muscleGroups.length === 0) {
+      return;
+    }
+
+    const muscleGroupIds = muscleGroups.map(mg => mg.id);
+
+    // Get exercises from source workout for all muscle groups in this category
+    const { data: exercises, error: fetchError } = await supabase
+      .from('workout_exercise')
+      .select('*')
+      .eq('workout_id', sourceWorkoutId)
+      .in('muscle_group_id', muscleGroupIds);
+
+    if (fetchError) throw fetchError;
+
+    if (!exercises || exercises.length === 0) {
+      return;
+    }
+
+    // Copy exercises to target workout
+    const exercisesToInsert = exercises.map(exercise => ({
+      workout_id: targetWorkoutId,
+      muscle_group_id: exercise.muscle_group_id,
+      exercise_name: exercise.exercise_name,
+      reps_count: exercise.reps_count,
+      reps_unit: exercise.reps_unit,
+      weight_count: exercise.weight_count,
+      weight_unit: exercise.weight_unit,
+      // Keep old fields for compatibility
+      reps: exercise.reps_count.toString(),
+      unit: exercise.reps_unit,
+      count: exercise.weight_count,
+      note: exercise.note || '',
+      set_count: exercise.set_count,
+      completed_sets: 0,
+      is_completed: false
+    }));
+
+    const { error: insertError } = await supabase
+      .from('workout_exercise')
+      .insert(exercisesToInsert);
+
+    if (insertError) throw insertError;
+  }
 }

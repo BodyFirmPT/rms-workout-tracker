@@ -48,6 +48,7 @@ interface WorkoutStore {
   updateWorkout: (id: string, updates: Partial<{ note: string; date: string }>) => Promise<void>;
   updateExercise: (workoutId: string, exerciseId: string, updates: Partial<CreateWorkoutExerciseInput>) => Promise<void>;
   copyExercisesToWorkout: (sourceWorkoutId: string, targetWorkoutId: string, muscleGroupId: string) => Promise<void>;
+  copyExercisesByCategoryToWorkout: (sourceWorkoutId: string, targetWorkoutId: string, categoryName: string) => Promise<void>;
   getStartedWorkout: () => Workout | undefined;
 }
 
@@ -415,6 +416,17 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
       await get().loadWorkoutExercises(targetWorkoutId);
     } catch (error) {
       console.error('Failed to copy exercises:', error);
+      throw error;
+    }
+  },
+
+  copyExercisesByCategoryToWorkout: async (sourceWorkoutId: string, targetWorkoutId: string, categoryName: string) => {
+    try {
+      await WorkoutService.copyExercisesByCategoryToWorkout(sourceWorkoutId, targetWorkoutId, categoryName);
+      // Reload exercises for the target workout
+      await get().loadWorkoutExercises(targetWorkoutId);
+    } catch (error) {
+      console.error('Failed to copy exercises by category:', error);
       throw error;
     }
   },

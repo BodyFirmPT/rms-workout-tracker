@@ -9,6 +9,7 @@ import { AddExerciseDialog } from "@/components/workout/add-exercise-dialog";
 import { EditExerciseDialog } from "@/components/workout/edit-exercise-dialog";
 import { MuscleGroupSuggestions } from "@/components/workout/muscle-group-suggestions";
 import { MuscleGroupHeader } from "@/components/workout/muscle-group-header";
+import { CategoryHeader } from "@/components/workout/category-header";
 import { CopyExercisesDialog } from "@/components/workout/copy-exercises-dialog";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { format } from "date-fns";
@@ -25,7 +26,7 @@ export function ActiveWorkout({
   const [selectedMuscleGroupId, setSelectedMuscleGroupId] = useState<string | null>(null);
   const [workoutProgress, setWorkoutProgress] = useState(0);
   const [showStickyHeader, setShowStickyHeader] = useState(false);
-  const [copyingMuscleGroup, setCopyingMuscleGroup] = useState<{ id: string; name: string; exerciseCount: number } | null>(null);
+  const [copyingCategory, setCopyingCategory] = useState<{ name: string; exerciseCount: number } | null>(null);
   const {
     workouts,
     workoutExercises,
@@ -283,16 +284,21 @@ export function ActiveWorkout({
               if (visibleGroups.length === 0) {
                 return null;
               }
+              // Calculate total exercises in this category
+              const totalCategoryExercises = visibleGroups.reduce((sum, mg) => {
+                const groupExercises = exercisesByMuscleGroupId[mg.id] || [];
+                return sum + groupExercises.length;
+              }, 0);
+
               return <div key={categoryName} className="space-y-3">
                     {/* Category header - more prominent */}
-                    <div className="flex items-center gap-2 py-2 px-3 bg-primary/5 border-l-4 border-primary rounded-r-md">
-                      <h4 className="text-sm font-semibold text-primary uppercase tracking-wider">
-                        {categoryName}
-                      </h4>
-                      <Badge variant="secondary" className="text-xs px-1.5 py-0 bg-primary/10 text-primary border-primary/20">
-                        {visibleGroups.length} groups
-                      </Badge>
-                    </div>
+                    <CategoryHeader 
+                      name={categoryName}
+                      groupCount={visibleGroups.length}
+                      totalExercises={totalCategoryExercises}
+                      onCopyToWorkout={() => setCopyingCategory({ name: categoryName, exerciseCount: totalCategoryExercises })}
+                      disabled={isCompleted}
+                    />
                     
                     <div className="space-y-0">
                       {visibleGroups.map((muscleGroup, index) => {
@@ -303,16 +309,15 @@ export function ActiveWorkout({
                     if (hasExercises) {
                       // Show added exercises for this muscle group - table-like layout
                       return <div key={muscleGroup.id} className="space-y-0">
-                              <MuscleGroupHeader 
-                                name={muscleGroup.name} 
-                                exerciseCount={groupExercises.length} 
-                                isFirst={isFirst} 
-                                isLast={isLast} 
-                                hasContent={true} 
-                                onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} 
-                                onCopyToWorkout={() => setCopyingMuscleGroup({ id: muscleGroup.id, name: muscleGroup.name, exerciseCount: groupExercises.length })}
-                                disabled={isCompleted} 
-                              />
+                               <MuscleGroupHeader 
+                                 name={muscleGroup.name} 
+                                 exerciseCount={groupExercises.length} 
+                                 isFirst={isFirst} 
+                                 isLast={isLast} 
+                                 hasContent={true} 
+                                 onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} 
+                                 disabled={isCompleted} 
+                               />
                               
                               {/* Exercise rows */}
                               <div className={`border-2 border-t-0 border-border/80 overflow-hidden ${isLast ? 'rounded-b-lg' : ''}`}>
@@ -353,7 +358,6 @@ export function ActiveWorkout({
                      isLast={true} 
                      hasContent={true} 
                      onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} 
-                     onCopyToWorkout={() => setCopyingMuscleGroup({ id: muscleGroup.id, name: muscleGroupName, exerciseCount: exercises.length })}
                      disabled={isCompleted} 
                    />
                    
@@ -403,14 +407,13 @@ export function ActiveWorkout({
         </>}
 
       {/* Copy Exercises Dialog */}
-      {copyingMuscleGroup && (
+      {copyingCategory && (
         <CopyExercisesDialog
-          open={!!copyingMuscleGroup}
-          onOpenChange={(open) => !open && setCopyingMuscleGroup(null)}
+          open={!!copyingCategory}
+          onOpenChange={(open) => !open && setCopyingCategory(null)}
           sourceWorkoutId={currentWorkout.id}
-          muscleGroupId={copyingMuscleGroup.id}
-          muscleGroupName={copyingMuscleGroup.name}
-          exerciseCount={copyingMuscleGroup.exerciseCount}
+          categoryName={copyingCategory.name}
+          exerciseCount={copyingCategory.exerciseCount}
         />
       )}
     </div>;

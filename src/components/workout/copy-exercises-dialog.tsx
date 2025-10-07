@@ -20,8 +20,9 @@ interface CopyExercisesDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   sourceWorkoutId: string;
-  muscleGroupId: string;
-  muscleGroupName: string;
+  muscleGroupId?: string;
+  categoryName?: string;
+  muscleGroupName?: string;
   exerciseCount: number;
 }
 
@@ -30,10 +31,11 @@ export function CopyExercisesDialog({
   onOpenChange,
   sourceWorkoutId,
   muscleGroupId,
+  categoryName,
   muscleGroupName,
   exerciseCount,
 }: CopyExercisesDialogProps) {
-  const { workouts, getClientById, copyExercisesToWorkout, loadData } = useWorkoutStore();
+  const { workouts, getClientById, copyExercisesToWorkout, copyExercisesByCategoryToWorkout, loadData } = useWorkoutStore();
   const [showCreateWorkout, setShowCreateWorkout] = useState(false);
   const [copying, setCopying] = useState<string | null>(null);
 
@@ -47,14 +49,18 @@ export function CopyExercisesDialog({
     .slice(0, 10);
 
   const handleCopyToWorkout = async (targetWorkoutId: string) => {
-    if (!copyExercisesToWorkout) return;
-    
     setCopying(targetWorkoutId);
     try {
-      await copyExercisesToWorkout(sourceWorkoutId, targetWorkoutId, muscleGroupId);
+      if (categoryName && copyExercisesByCategoryToWorkout) {
+        await copyExercisesByCategoryToWorkout(sourceWorkoutId, targetWorkoutId, categoryName);
+      } else if (muscleGroupId && copyExercisesToWorkout) {
+        await copyExercisesToWorkout(sourceWorkoutId, targetWorkoutId, muscleGroupId);
+      }
+      
+      const sourceName = categoryName || muscleGroupName || 'exercises';
       toast({
         title: "Exercises copied",
-        description: `${exerciseCount} exercise${exerciseCount !== 1 ? 's' : ''} from ${muscleGroupName} copied successfully.`,
+        description: `${exerciseCount} exercise${exerciseCount !== 1 ? 's' : ''} from ${sourceName} copied successfully.`,
       });
       onOpenChange(false);
       await loadData();
@@ -83,7 +89,7 @@ export function CopyExercisesDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Copy {muscleGroupName} Exercises</DialogTitle>
+            <DialogTitle>Copy {categoryName || muscleGroupName} Exercises</DialogTitle>
             <DialogDescription>
               Copy {exerciseCount} exercise{exerciseCount !== 1 ? 's' : ''} to another workout for {client?.name}
             </DialogDescription>
