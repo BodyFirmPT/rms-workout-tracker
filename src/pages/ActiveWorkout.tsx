@@ -1,9 +1,15 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Play, Timer } from "lucide-react";
+import { ArrowLeft, Play, Timer, MoreVertical, Printer } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ActiveWorkout as ActiveWorkoutComponent } from "@/components/workout/active-workout";
 
 const ActiveWorkout = () => {
@@ -78,10 +84,25 @@ const ActiveWorkout = () => {
                  currentWorkout.status === 'started' ? 'Active Workout' : 'Workout Details'}
               </h1>
             </div>
-            {showStartButton && <Button onClick={handleStartWorkout} size="lg">
-              <Play className="h-4 w-4 mr-2" />
-              Start Workout
-            </Button>}
+            <div className="flex gap-2">
+              {showStartButton && <Button onClick={handleStartWorkout} size="lg">
+                <Play className="h-4 w-4 mr-2" />
+                Start Workout
+              </Button>}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="lg">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => navigate(`/workout/${currentWorkout.id}/print`)}>
+                    <Printer className="h-4 w-4 mr-2" />
+                    Print Workout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
         

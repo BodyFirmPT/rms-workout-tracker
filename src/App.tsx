@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import ClientDetails from "./pages/ClientDetails";
 import ActiveWorkout from "./pages/ActiveWorkout";
+import PrintWorkout from "./pages/PrintWorkout";
 import MuscleGroups from "./pages/MuscleGroups";
 import NotFound from "./pages/NotFound";
 
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/client/:clientId" element={<ClientDetails />} />
           <Route path="/workout/:id?" element={<ActiveWorkout />} />
+          <Route path="/workout/:id/print" element={<PrintWorkout />} />
           <Route path="/muscle-groups" element={<MuscleGroups />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
