@@ -101,16 +101,17 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col overflow-hidden">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Add Exercise</DialogTitle>
           <DialogDescription>
             Add a new exercise to this workout.
           </DialogDescription>
         </DialogHeader>
         
-        <div className="overflow-y-auto flex-1 pr-2">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="overflow-y-auto flex-1 -mx-6 px-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] relative">
+          <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none z-10" />
+          <form onSubmit={handleSubmit} className="space-y-4 pb-4">
           <div className="space-y-2">
             <Label htmlFor="exercise-name">Exercise Name</Label>
             <Input
@@ -233,7 +234,7 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
             />
           </div>
           
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 pt-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
@@ -247,7 +248,7 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
           {(muscleGroupId || preselectedMuscleGroupId) && (() => {
             const selectedMuscleGroup = getMuscleGroupById(muscleGroupId || preselectedMuscleGroupId || '');
             return selectedMuscleGroup ? (
-              <div className="border-t mt-4 pt-4">
+              <div className="border-t mt-4 pt-4 pb-4">
                 <div className="text-sm font-medium mb-2">Or choose from recent exercises:</div>
                 <MuscleGroupSuggestions
                   muscleGroup={selectedMuscleGroup}
