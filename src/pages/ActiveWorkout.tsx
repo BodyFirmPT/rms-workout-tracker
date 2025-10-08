@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Play, Timer, MoreVertical, Printer } from "lucide-react";
+import { ArrowLeft, Play, Timer, MoreVertical, Printer, Edit } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { format } from "date-fns";
@@ -11,12 +11,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ActiveWorkout as ActiveWorkoutComponent } from "@/components/workout/active-workout";
+import { EditWorkoutDialog } from "@/components/workout/edit-workout-dialog";
 
 const ActiveWorkout = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { workouts, startWorkout, getClientById, loadData } = useWorkoutStore();
   const [currentWorkout, setCurrentWorkout] = useState(null);
+  const [showEditWorkout, setShowEditWorkout] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -90,6 +92,10 @@ const ActiveWorkout = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setShowEditWorkout(true)}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Workout
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate(`/workout/${currentWorkout.id}/print`)}>
                     <Printer className="h-4 w-4 mr-2" />
                     Print Workout
@@ -106,6 +112,14 @@ const ActiveWorkout = () => {
         
         <ActiveWorkoutComponent workoutId={currentWorkout.id} />
       </div>
+
+      {currentWorkout && (
+        <EditWorkoutDialog
+          open={showEditWorkout}
+          onOpenChange={setShowEditWorkout}
+          workout={currentWorkout}
+        />
+      )}
     </div>;
 };
 
