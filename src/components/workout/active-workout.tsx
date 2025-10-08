@@ -83,6 +83,17 @@ export function ActiveWorkout({
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Auto-refresh exercises every 30 seconds for started workouts
+  useEffect(() => {
+    if (isStarted && currentWorkout) {
+      const interval = setInterval(() => {
+        loadWorkoutExercises(currentWorkout.id);
+      }, 30000); // 30 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [isStarted, currentWorkout, loadWorkoutExercises]);
   if (!currentWorkout) {
     return <div className="text-center py-12">
         <Timer className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
