@@ -8,6 +8,7 @@ export interface Client {
   id: string;
   name: string;
   trainer_id: string;
+  workout_count_offset: number;
   created_at?: string;
 }
 

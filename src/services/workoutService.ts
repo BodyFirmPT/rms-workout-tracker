@@ -53,7 +53,7 @@ export class WorkoutService {
     return data;
   }
 
-  static async updateClient(id: string, updates: Partial<{ name: string; trainer_id: string }>): Promise<Client> {
+  static async updateClient(id: string, updates: Partial<{ name: string; trainer_id: string; workout_count_offset: number }>): Promise<Client> {
     const { data, error } = await supabase
       .from('client')
       .update(updates)

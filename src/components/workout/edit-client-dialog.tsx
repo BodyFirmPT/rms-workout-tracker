@@ -18,6 +18,7 @@ interface EditClientDialogProps {
 export function EditClientDialog({ open, onOpenChange, client }: EditClientDialogProps) {
   const [name, setName] = useState(client.name);
   const [trainerId, setTrainerId] = useState(client.trainer_id);
+  const [workoutCountOffset, setWorkoutCountOffset] = useState(client.workout_count_offset || 0);
   const [showCreateTrainer, setShowCreateTrainer] = useState(false);
   
   const { trainers, updateClient } = useWorkoutStore();
@@ -25,13 +26,18 @@ export function EditClientDialog({ open, onOpenChange, client }: EditClientDialo
   useEffect(() => {
     setName(client.name);
     setTrainerId(client.trainer_id);
+    setWorkoutCountOffset(client.workout_count_offset || 0);
   }, [client]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !trainerId) return;
 
-    updateClient(client.id, { name: name.trim(), trainer_id: trainerId });
+    updateClient(client.id, { 
+      name: name.trim(), 
+      trainer_id: trainerId,
+      workout_count_offset: workoutCountOffset
+    });
     onOpenChange(false);
   };
 
@@ -87,6 +93,21 @@ export function EditClientDialog({ open, onOpenChange, client }: EditClientDialo
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="offset">Workout Count Offset</Label>
+              <Input
+                id="offset"
+                type="number"
+                min="0"
+                value={workoutCountOffset}
+                onChange={(e) => setWorkoutCountOffset(parseInt(e.target.value) || 0)}
+                placeholder="0"
+              />
+              <p className="text-xs text-muted-foreground">
+                Add previous workouts done before using this system
+              </p>
             </div>
             
             <div className="flex justify-end gap-2">

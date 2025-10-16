@@ -98,8 +98,9 @@ export default function ClientDetails() {
     navigate(`/workout/${workoutId}`);
   };
 
-  const totalWorkouts = allClientWorkouts.length;
-  const completedWorkouts = allClientWorkouts.filter(w => w.status === 'completed').length;
+  const workoutOffset = client?.workout_count_offset || 0;
+  const totalWorkouts = allClientWorkouts.length + workoutOffset;
+  const completedWorkouts = allClientWorkouts.filter(w => w.status === 'completed').length + workoutOffset;
   const thisWeekWorkouts = allClientWorkouts.filter(w => {
     const workoutDate = new Date(w.date);
     const weekAgo = new Date();
