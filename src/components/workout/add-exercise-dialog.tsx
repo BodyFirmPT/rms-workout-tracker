@@ -144,12 +144,18 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
               type="single" 
               value={exerciseType} 
               onValueChange={(value) => value && setExerciseType(value as 'exercise' | 'stretch')}
-              className="justify-start"
+              className="inline-flex border border-input rounded-lg p-1 bg-muted/30 gap-1"
             >
-              <ToggleGroupItem value="exercise" className="flex-1">
+              <ToggleGroupItem 
+                value="exercise" 
+                className="flex-1 data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=off]:bg-transparent data-[state=off]:text-muted-foreground hover:bg-background/50"
+              >
                 Exercise
               </ToggleGroupItem>
-              <ToggleGroupItem value="stretch" className="flex-1">
+              <ToggleGroupItem 
+                value="stretch" 
+                className="flex-1 data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=off]:bg-transparent data-[state=off]:text-muted-foreground hover:bg-background/50"
+              >
                 Stretch
               </ToggleGroupItem>
             </ToggleGroup>
