@@ -42,6 +42,7 @@ export interface WorkoutExercise {
   set_count: number;
   completed_sets: number;
   is_completed: boolean;
+  type: 'exercise' | 'stretch';
   created_at?: string;
   // Keep old fields for migration compatibility
   reps?: string;
@@ -58,4 +59,5 @@ export interface CreateWorkoutExerciseInput {
   weight_unit: string;
   note?: string;
   set_count: number;
+  type?: 'exercise' | 'stretch';
 }

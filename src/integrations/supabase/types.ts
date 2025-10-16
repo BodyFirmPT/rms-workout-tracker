@@ -134,6 +134,7 @@ export type Database = {
           reps_count: number
           reps_unit: string
           set_count: number
+          type: string
           unit: string
           weight_count: number
           weight_unit: string
@@ -152,6 +153,7 @@ export type Database = {
           reps_count: number
           reps_unit?: string
           set_count: number
+          type?: string
           unit: string
           weight_count: number
           weight_unit?: string
@@ -170,6 +172,7 @@ export type Database = {
           reps_count?: number
           reps_unit?: string
           set_count?: number
+          type?: string
           unit?: string
           weight_count?: number
           weight_unit?: string

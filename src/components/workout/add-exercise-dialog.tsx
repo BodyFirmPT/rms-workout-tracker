@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { CreateWorkoutExerciseInput } from "@/types/workout";
 import { MuscleGroupSuggestions } from "@/components/workout/muscle-group-suggestions";
@@ -22,7 +23,8 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
   const [exerciseName, setExerciseName] = useState("");
   const [muscleGroupId, setMuscleGroupId] = useState("");
   const [newMuscleGroup, setNewMuscleGroup] = useState("");
-  const [repsCount, setRepsCount] = useState(1);
+  const [exerciseType, setExerciseType] = useState<'exercise' | 'stretch'>('exercise');
+  const [repsCount, setRepsCount] = useState(12);
   const [repsUnit, setRepsUnit] = useState("reps");
   const [weightCount, setWeightCount] = useState(0);
   const [weightUnit, setWeightUnit] = useState("lbs");
@@ -44,6 +46,17 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
     }
   }, [open, preselectedMuscleGroupId]);
 
+  // Update defaults when exercise type changes
+  useEffect(() => {
+    if (exerciseType === 'stretch') {
+      setRepsUnit('seconds');
+      setRepsCount(30);
+    } else {
+      setRepsUnit('reps');
+      setRepsCount(12);
+    }
+  }, [exerciseType]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!exerciseName.trim()) return;
@@ -60,6 +73,7 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
     const exercise: CreateWorkoutExerciseInput = {
       muscle_group_id: finalMuscleGroupId,
       exercise_name: exerciseName.trim(),
+      type: exerciseType,
       reps_count: repsCount,
       reps_unit: repsUnit,
       weight_count: weightCount,
@@ -74,7 +88,8 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
     setExerciseName("");
     setMuscleGroupId("");
     setNewMuscleGroup("");
-    setRepsCount(1);
+    setExerciseType('exercise');
+    setRepsCount(12);
     setRepsUnit("reps");
     setWeightCount(0);
     setWeightUnit("lbs");
@@ -121,6 +136,23 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
               placeholder="e.g., Bench Press, Squats"
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Type</Label>
+            <ToggleGroup 
+              type="single" 
+              value={exerciseType} 
+              onValueChange={(value) => value && setExerciseType(value as 'exercise' | 'stretch')}
+              className="justify-start"
+            >
+              <ToggleGroupItem value="exercise" className="flex-1">
+                Exercise
+              </ToggleGroupItem>
+              <ToggleGroupItem value="stretch" className="flex-1">
+                Stretch
+              </ToggleGroupItem>
+            </ToggleGroup>
           </div>
           
           <div className="space-y-2">

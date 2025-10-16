@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { WorkoutExercise } from "@/types/workout";
 
@@ -37,6 +38,7 @@ export function EditExerciseDialog({
   const [exerciseName, setExerciseName] = useState("");
   const [muscleGroupId, setMuscleGroupId] = useState("");
   const [newMuscleGroup, setNewMuscleGroup] = useState("");
+  const [exerciseType, setExerciseType] = useState<'exercise' | 'stretch'>('exercise');
   const [repsCount, setRepsCount] = useState(1);
   const [repsUnit, setRepsUnit] = useState("reps");
   const [weightCount, setWeightCount] = useState(0);
@@ -56,6 +58,7 @@ export function EditExerciseDialog({
     if (exercise) {
       setExerciseName(exercise.exercise_name);
       setMuscleGroupId(exercise.muscle_group_id);
+      setExerciseType(exercise.type || 'exercise');
       setRepsCount(exercise.reps_count || 1);
       setRepsUnit(exercise.reps_unit || "reps");
       setWeightCount(exercise.weight_count || 0);
@@ -66,6 +69,17 @@ export function EditExerciseDialog({
       setNewMuscleGroup("");
     }
   }, [exercise]);
+
+  // Update defaults when exercise type changes
+  useEffect(() => {
+    if (exerciseType === 'stretch') {
+      setRepsUnit('seconds');
+      setRepsCount(30);
+    } else {
+      setRepsUnit('reps');
+      setRepsCount(12);
+    }
+  }, [exerciseType]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,6 +100,7 @@ export function EditExerciseDialog({
       await updateExercise(workoutId, exercise.id, {
         exercise_name: exerciseName.trim(),
         muscle_group_id: finalMuscleGroupId,
+        type: exerciseType,
         reps_count: repsCount,
         reps_unit: repsUnit,
         weight_count: weightCount,
@@ -130,6 +145,23 @@ export function EditExerciseDialog({
               placeholder="e.g., Push-ups, Squats"
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Type</Label>
+            <ToggleGroup 
+              type="single" 
+              value={exerciseType} 
+              onValueChange={(value) => value && setExerciseType(value as 'exercise' | 'stretch')}
+              className="justify-start"
+            >
+              <ToggleGroupItem value="exercise" className="flex-1">
+                Exercise
+              </ToggleGroupItem>
+              <ToggleGroupItem value="stretch" className="flex-1">
+                Stretch
+              </ToggleGroupItem>
+            </ToggleGroup>
           </div>
 
           <div className="space-y-2">

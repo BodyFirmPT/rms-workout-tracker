@@ -44,6 +44,7 @@ export function MuscleGroupSuggestions({
       await addExerciseToWorkout(workoutId, {
         muscle_group_id: exercise.muscle_group_id,
         exercise_name: exercise.exercise_name,
+        type: exercise.type || 'exercise',
         reps_count: exercise.reps_count || 1,
         reps_unit: exercise.reps_unit || "reps",
         weight_count: exercise.weight_count || 0,
@@ -74,7 +75,8 @@ export function MuscleGroupSuggestions({
                 weightCount={exercise.weight_count || 0} 
                 weightUnit={exercise.weight_unit || "lbs"} 
                 setCount={exercise.set_count} 
-                note={exercise.note || undefined} 
+                note={exercise.note || undefined}
+                type={exercise.type || 'exercise'}
                 variant="suggested" 
                 onAdd={() => handleCopyExercise(exercise)} 
                 disabled={disabled} 

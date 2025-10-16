@@ -260,6 +260,7 @@ export class WorkoutService {
         workout_id: newWorkout.id,
         muscle_group_id: exercise.muscle_group_id,
         exercise_name: exercise.exercise_name,
+        type: exercise.type || 'exercise',
         reps_count: exercise.reps_count,
         reps_unit: exercise.reps_unit,
         weight_count: exercise.weight_count,
@@ -296,7 +297,7 @@ export class WorkoutService {
       .order('created_at');
     
     if (error) throw error;
-    return data || [];
+    return (data || []) as WorkoutExercise[];
   }
 
   static async addExerciseToWorkout(workoutId: string, exercise: CreateWorkoutExerciseInput): Promise<WorkoutExercise> {
@@ -306,6 +307,7 @@ export class WorkoutService {
         workout_id: workoutId,
         muscle_group_id: exercise.muscle_group_id,
         exercise_name: exercise.exercise_name,
+        type: exercise.type || 'exercise',
         reps_count: exercise.reps_count,
         reps_unit: exercise.reps_unit,
         weight_count: exercise.weight_count,
@@ -323,7 +325,7 @@ export class WorkoutService {
       .single();
     
     if (error) throw error;
-    return data;
+    return data as WorkoutExercise;
   }
 
   static async completeExerciseSet(exerciseId: string, decrement = false): Promise<WorkoutExercise> {
@@ -364,7 +366,7 @@ export class WorkoutService {
       .single();
     
     if (error) throw error;
-    return data;
+    return data as WorkoutExercise;
   }
 
   static async getWorkoutProgress(workoutId: string): Promise<number> {
@@ -395,7 +397,7 @@ export class WorkoutService {
     const { data, error } = await query.limit(50);
     
     if (error) throw error;
-    return data || [];
+    return (data || []) as WorkoutExercise[];
   }
 
   static async getUniqueExercisesForClient(clientId: string, muscleGroupId: string): Promise<WorkoutExercise[]> {
@@ -492,7 +494,7 @@ export class WorkoutService {
       .single();
     
     if (error) throw error;
-    return data;
+    return data as WorkoutExercise;
   }
 
   static async copyExercisesToWorkout(sourceWorkoutId: string, targetWorkoutId: string, muscleGroupId: string): Promise<void> {
@@ -514,6 +516,7 @@ export class WorkoutService {
       workout_id: targetWorkoutId,
       muscle_group_id: exercise.muscle_group_id,
       exercise_name: exercise.exercise_name,
+      type: exercise.type || 'exercise',
       reps_count: exercise.reps_count,
       reps_unit: exercise.reps_unit,
       weight_count: exercise.weight_count,
@@ -568,6 +571,7 @@ export class WorkoutService {
       workout_id: targetWorkoutId,
       muscle_group_id: exercise.muscle_group_id,
       exercise_name: exercise.exercise_name,
+      type: exercise.type || 'exercise',
       reps_count: exercise.reps_count,
       reps_unit: exercise.reps_unit,
       weight_count: exercise.weight_count,

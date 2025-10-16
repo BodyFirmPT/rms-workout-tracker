@@ -332,12 +332,12 @@ export function ActiveWorkout({
                                  disabled={isCompleted} 
                                />
                               
-                              {/* Exercise rows */}
-                              <div className={`border-2 border-t-0 border-border/80 overflow-hidden ${isLast ? 'rounded-b-lg' : ''}`}>
-                                 {groupExercises.map(exercise => <div className="ml-3 sm:ml-6 border-l-2 border-primary/20">
-                                     <UnifiedExerciseCard key={exercise.id} exerciseName={exercise.exercise_name} repsCount={exercise.reps_count || 1} repsUnit={exercise.reps_unit || "reps"} weightCount={exercise.weight_count || 0} weightUnit={exercise.weight_unit || "lbs"} setCount={exercise.set_count} completedSets={exercise.completed_sets} note={exercise.note || undefined} muscleGroup={muscleGroup.name} isCompleted={exercise.is_completed} variant="added" onCompleteSet={!isCompleted ? decrement => handleCompleteSet(exercise.id, decrement) : undefined} onEdit={!isCompleted ? () => handleEditExercise(exercise.id) : undefined} onDelete={!isCompleted ? () => handleDeleteExercise(exercise.id) : undefined} disabled={isCompleted} workoutStarted={isStarted} />
-                                   </div>)}
-                              </div>
+                               {/* Exercise rows */}
+                               <div className={`border-2 border-t-0 border-border/80 overflow-hidden ${isLast ? 'rounded-b-lg' : ''}`}>
+                                  {groupExercises.map(exercise => <div className="ml-3 sm:ml-6 border-l-2 border-primary/20">
+                                      <UnifiedExerciseCard key={exercise.id} exerciseName={exercise.exercise_name} repsCount={exercise.reps_count || 1} repsUnit={exercise.reps_unit || "reps"} weightCount={exercise.weight_count || 0} weightUnit={exercise.weight_unit || "lbs"} setCount={exercise.set_count} completedSets={exercise.completed_sets} note={exercise.note || undefined} muscleGroup={muscleGroup.name} isCompleted={exercise.is_completed} type={exercise.type || 'exercise'} variant="added" onCompleteSet={!isCompleted ? decrement => handleCompleteSet(exercise.id, decrement) : undefined} onEdit={!isCompleted ? () => handleEditExercise(exercise.id) : undefined} onDelete={!isCompleted ? () => handleDeleteExercise(exercise.id) : undefined} disabled={isCompleted} workoutStarted={isStarted} />
+                                    </div>)}
+                               </div>
                             </div>;
                     } else {
                       // Show muscle group suggestions (only when no active workflow)
@@ -374,12 +374,12 @@ export function ActiveWorkout({
                      disabled={isCompleted} 
                    />
                    
-                    {/* Exercise rows */}
-                    <div className="border-2 border-t-0 rounded-b-lg border-border/80 overflow-hidden">
-                       {exercises.map(exercise => <div className="ml-3 sm:ml-6 border-l-2 border-primary/20">
-                           <UnifiedExerciseCard key={exercise.id} exerciseName={exercise.exercise_name} repsCount={exercise.reps_count || 1} repsUnit={exercise.reps_unit || "reps"} weightCount={exercise.weight_count || 0} weightUnit={exercise.weight_unit || "lbs"} setCount={exercise.set_count} completedSets={exercise.completed_sets} note={exercise.note || undefined} muscleGroup={muscleGroupName} isCompleted={exercise.is_completed} variant="added" onCompleteSet={!isCompleted ? decrement => handleCompleteSet(exercise.id, decrement) : undefined} onEdit={!isCompleted ? () => handleEditExercise(exercise.id) : undefined} onDelete={!isCompleted ? () => handleDeleteExercise(exercise.id) : undefined} disabled={isCompleted} workoutStarted={isStarted} />
-                         </div>)}
-                    </div>
+                     {/* Exercise rows */}
+                     <div className="border-2 border-t-0 rounded-b-lg border-border/80 overflow-hidden">
+                        {exercises.map(exercise => <div className="ml-3 sm:ml-6 border-l-2 border-primary/20">
+                            <UnifiedExerciseCard key={exercise.id} exerciseName={exercise.exercise_name} repsCount={exercise.reps_count || 1} repsUnit={exercise.reps_unit || "reps"} weightCount={exercise.weight_count || 0} weightUnit={exercise.weight_unit || "lbs"} setCount={exercise.set_count} completedSets={exercise.completed_sets} note={exercise.note || undefined} muscleGroup={muscleGroupName} isCompleted={exercise.is_completed} type={exercise.type || 'exercise'} variant="added" onCompleteSet={!isCompleted ? decrement => handleCompleteSet(exercise.id, decrement) : undefined} onEdit={!isCompleted ? () => handleEditExercise(exercise.id) : undefined} onDelete={!isCompleted ? () => handleDeleteExercise(exercise.id) : undefined} disabled={isCompleted} workoutStarted={isStarted} />
+                          </div>)}
+                     </div>
                  </div>;
           })}
 

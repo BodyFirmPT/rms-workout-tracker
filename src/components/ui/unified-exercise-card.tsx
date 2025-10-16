@@ -1,4 +1,4 @@
-import { Check, Plus, Edit, Trash2, Zap, Dumbbell, MoreVertical } from "lucide-react";
+import { Check, Plus, Edit, Trash2, Zap, Dumbbell, MoreVertical, Wind } from "lucide-react";
 import { Button } from "./button";
 import { Badge } from "./badge";
 import { cn } from "@/lib/utils";
@@ -22,6 +22,7 @@ interface UnifiedExerciseCardProps {
   muscleGroup?: string;
   isCompleted?: boolean;
   variant: 'suggested' | 'added';
+  type?: 'exercise' | 'stretch';
   onAdd?: () => void;
   onCompleteSet?: (decrement?: boolean) => void;
   onEdit?: () => void;
@@ -42,6 +43,7 @@ export function UnifiedExerciseCard({
   muscleGroup,
   isCompleted = false,
   variant,
+  type = 'exercise',
   onAdd,
   onCompleteSet,
   onEdit,
@@ -50,6 +52,7 @@ export function UnifiedExerciseCard({
   workoutStarted = false
 }: UnifiedExerciseCardProps) {
   const isSuggested = variant === 'suggested';
+  const isStretch = type === 'stretch';
   const isTimedExercise = !isSuggested && (repsUnit.toLowerCase() === 'sec' || repsUnit.toLowerCase() === 'seconds');
   
   return (
@@ -65,6 +68,8 @@ export function UnifiedExerciseCard({
       {/* Icon */}
       {isSuggested ? (
         <Zap className="h-3 w-3 text-muted-foreground/70 shrink-0" />
+      ) : isStretch ? (
+        <Wind className="h-3 w-3 text-muted-foreground/60 shrink-0" />
       ) : (
         <Dumbbell className="h-3 w-3 text-muted-foreground/60 shrink-0" />
       )}
