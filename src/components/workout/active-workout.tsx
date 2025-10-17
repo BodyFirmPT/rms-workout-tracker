@@ -303,17 +303,17 @@ export function ActiveWorkout({
       {/* Active Injuries Drawer */}
       {activeInjuries.length > 0 && (
         <Collapsible open={injuriesOpen} onOpenChange={setInjuriesOpen}>
-          <Card className="border-destructive/50 mx-4 -mt-3 sm:-mt-6">
+          <Card className="border-destructive/50 mx-4 -mt-5 sm:-mt-8">
             <CollapsibleTrigger className="w-full">
-              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors py-3">
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors py-1.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5 text-destructive" />
-                    <CardTitle className="text-base">
+                    <AlertCircle className="h-4 w-4 text-destructive" />
+                    <CardTitle className="text-sm font-medium">
                       {activeInjuries.length} Active {activeInjuries.length === 1 ? 'Injury' : 'Injuries'}
                     </CardTitle>
                   </div>
-                  <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform ${injuriesOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${injuriesOpen ? 'rotate-180' : ''}`} />
                 </div>
               </CardHeader>
             </CollapsibleTrigger>
