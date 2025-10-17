@@ -104,29 +104,6 @@ export default function ClientInjuries() {
         </div>
 
         <div className="space-y-6">
-          {/* Stats */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Injuries</CardTitle>
-                <AlertCircle className="h-4 w-4 text-destructive" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{activeInjuries.length}</div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Injuries</CardTitle>
-                <AlertCircle className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{injuries.length}</div>
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Active Injuries */}
           {activeInjuries.length > 0 && (
             <Card>
