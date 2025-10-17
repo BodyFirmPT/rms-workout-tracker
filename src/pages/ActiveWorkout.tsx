@@ -78,7 +78,7 @@ const ActiveWorkout = () => {
         <div className="mb-6">
           <Button variant="ghost" onClick={() => navigate(`/client/${currentWorkout.client_id}`)} className="mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Client
+            Back to {client?.name || 'Client'}
           </Button>
           
           <div className="flex flex-wrap items-center gap-4">
