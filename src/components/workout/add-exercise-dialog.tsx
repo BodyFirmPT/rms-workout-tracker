@@ -140,25 +140,27 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
 
           <div className="space-y-2">
             <Label>Type</Label>
-            <ToggleGroup 
-              type="single" 
-              value={exerciseType} 
-              onValueChange={(value) => value && setExerciseType(value as 'exercise' | 'stretch')}
-              className="inline-flex border border-input rounded-lg p-1 bg-muted/30 gap-1"
-            >
-              <ToggleGroupItem 
-                value="exercise" 
-                className="flex-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm data-[state=off]:bg-transparent data-[state=off]:text-muted-foreground hover:bg-background/50 hover:text-foreground"
+            <div className="w-full">
+              <ToggleGroup 
+                type="single" 
+                value={exerciseType} 
+                onValueChange={(value) => value && setExerciseType(value as 'exercise' | 'stretch')}
+                className="inline-flex border border-input rounded-lg p-1 bg-muted/30 gap-1 w-full"
               >
-                Exercise
-              </ToggleGroupItem>
-              <ToggleGroupItem 
-                value="stretch" 
-                className="flex-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm data-[state=off]:bg-transparent data-[state=off]:text-muted-foreground hover:bg-background/50 hover:text-foreground"
-              >
-                Stretch
-              </ToggleGroupItem>
-            </ToggleGroup>
+                <ToggleGroupItem 
+                  value="exercise" 
+                  className="flex-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm data-[state=off]:bg-transparent data-[state=off]:text-muted-foreground hover:bg-background/50 hover:text-foreground"
+                >
+                  Exercise
+                </ToggleGroupItem>
+                <ToggleGroupItem 
+                  value="stretch" 
+                  className="flex-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm data-[state=off]:bg-transparent data-[state=off]:text-muted-foreground hover:bg-background/50 hover:text-foreground"
+                >
+                  Stretch
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
           </div>
           
           <div className="space-y-2">
