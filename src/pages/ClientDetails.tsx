@@ -128,34 +128,31 @@ export default function ClientDetails() {
             </Button>
           </div>
           
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary/10 rounded-full">
-              <User className="h-8 w-8 text-primary" />
-            </div>
-            <div>
-              <div className="group flex items-center gap-3">
-                <h1 className="text-4xl font-bold text-foreground">
-                  {client?.name}
-                </h1>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setEditingClient(true)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-primary/10 rounded-full">
+                <User className="h-8 w-8 text-primary" />
               </div>
-              <p className="text-lg text-muted-foreground">
-                Training progress and workout history
-              </p>
+              <div>
+                <div className="group flex items-center gap-3">
+                  <h1 className="text-4xl font-bold text-foreground">
+                    {client?.name}
+                  </h1>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditingClient(true)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-lg text-muted-foreground">
+                  Training progress and workout history
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          {/* Quick Actions */}
-          <div className="flex gap-2">
+            
             <Button
               variant="outline"
               onClick={() => navigate(`/client/${clientId}/injuries`)}
@@ -165,7 +162,9 @@ export default function ClientDetails() {
               Manage Injuries
             </Button>
           </div>
+        </div>
 
+        <div className="space-y-6">
           {/* Client Stats */}
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
