@@ -270,6 +270,8 @@ export default function ClientDetails() {
               ) : (
                 clientWorkouts.map((workout) => {
                   const progress = workoutProgresses[workout.id] || 0;
+                  const workoutIndex = allClientWorkouts.findIndex(w => w.id === workout.id);
+                  const workoutNumber = totalWorkouts - workoutIndex;
                   
                   return (
                     <div key={workout.id} className="group flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
@@ -286,7 +288,7 @@ export default function ClientDetails() {
                           <h4 className="font-bold">{format(new Date(workout.date + 'T00:00:00'), 'MMM d, yyyy')}</h4>
                           {workout.note && (
                             <p className="text-xs text-muted-foreground italic mt-1">
-                              {workout.note}
+                              Workout #{workoutNumber} · {workout.note}
                             </p>
                           )}
                         </div>
