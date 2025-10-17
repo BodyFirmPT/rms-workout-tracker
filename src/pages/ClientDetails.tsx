@@ -132,23 +132,23 @@ export default function ClientDetails() {
             <div className="p-3 bg-primary/10 rounded-full">
               <User className="h-8 w-8 text-primary" />
             </div>
-            <div className="group flex items-center gap-3">
-              <div>
+            <div>
+              <div className="group flex items-center gap-3">
                 <h1 className="text-4xl font-bold text-foreground">
                   {client?.name}
                 </h1>
-                <p className="text-lg text-muted-foreground">
-                  Training progress and workout history
-                </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setEditingClient(true)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setEditingClient(true)}
-                className="opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
+              <p className="text-lg text-muted-foreground">
+                Training progress and workout history
+              </p>
             </div>
           </div>
         </div>
