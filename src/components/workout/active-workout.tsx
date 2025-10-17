@@ -323,15 +323,17 @@ export function ActiveWorkout({
                   <div key={injury.id} className="p-3 bg-muted/50 rounded-lg border">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1">
-                        <h4 className="font-semibold text-foreground mb-1">{injury.name}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {format(new Date(injury.start_date), 'MMM d, yyyy')}
-                          {injury.end_date && ` - ${format(new Date(injury.end_date), 'MMM d, yyyy')}`}
-                          {!injury.end_date && ' - Ongoing'}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {injuryWorkoutCounts[injury.id] || 0} {injuryWorkoutCounts[injury.id] === 1 ? 'workout' : 'workouts'} with this injury
-                        </p>
+                        <h4 className="font-semibold text-foreground text-sm">
+                          {injury.name}
+                          <span className="font-normal text-muted-foreground">
+                            {' · '}
+                            {format(new Date(injury.start_date), 'MMM d, yyyy')}
+                            {injury.end_date && ` - ${format(new Date(injury.end_date), 'MMM d, yyyy')}`}
+                            {!injury.end_date && ' - Ongoing'}
+                            {' · '}
+                            {injuryWorkoutCounts[injury.id] || 0} {injuryWorkoutCounts[injury.id] === 1 ? 'workout' : 'workouts'}
+                          </span>
+                        </h4>
                       </div>
                       <Badge variant="destructive" className="shrink-0">Active</Badge>
                     </div>
