@@ -382,7 +382,7 @@ export function ActiveWorkout({
                             {injury.end_date && ` - ${format(new Date(injury.end_date), 'MMM d, yyyy')}`}
                             {!injury.end_date && ' - Ongoing'}
                             {' · '}
-                            {injuryWorkoutCounts[injury.id] || 0} {injuryWorkoutCounts[injury.id] === 1 ? 'workout' : 'workouts'}
+                            {(injuryWorkoutCounts[injury.id] || 0) + (injury.workout_count_offset || 0)} {((injuryWorkoutCounts[injury.id] || 0) + (injury.workout_count_offset || 0)) === 1 ? 'workout' : 'workouts'}
                           </span>
                         </h4>
                       </div>

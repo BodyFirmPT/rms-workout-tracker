@@ -54,6 +54,7 @@ export type Database = {
           id: string
           name: string
           start_date: string
+          workout_count_offset: number
         }
         Insert: {
           client_id: string
@@ -62,6 +63,7 @@ export type Database = {
           id?: string
           name: string
           start_date: string
+          workout_count_offset?: number
         }
         Update: {
           client_id?: string
@@ -70,6 +72,7 @@ export type Database = {
           id?: string
           name?: string
           start_date?: string
+          workout_count_offset?: number
         }
         Relationships: [
           {

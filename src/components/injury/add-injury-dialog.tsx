@@ -22,6 +22,7 @@ export function AddInjuryDialog({ open, onOpenChange, clientId, onSuccess }: Add
   const [name, setName] = useState("");
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
+  const [workoutOffset, setWorkoutOffset] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -45,6 +46,7 @@ export function AddInjuryDialog({ open, onOpenChange, clientId, onSuccess }: Add
         name: name.trim(),
         start_date: format(startDate, "yyyy-MM-dd"),
         end_date: endDate ? format(endDate, "yyyy-MM-dd") : null,
+        workout_count_offset: workoutOffset,
       });
 
       if (error) throw error;
@@ -57,6 +59,7 @@ export function AddInjuryDialog({ open, onOpenChange, clientId, onSuccess }: Add
       setName("");
       setStartDate(undefined);
       setEndDate(undefined);
+      setWorkoutOffset(0);
       onOpenChange(false);
       onSuccess();
     } catch (error) {
@@ -147,6 +150,21 @@ export function AddInjuryDialog({ open, onOpenChange, clientId, onSuccess }: Add
             </Popover>
             <p className="text-xs text-muted-foreground">
               Leave empty if injury is ongoing
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="workoutOffset">Previous Workouts with Injury (Optional)</Label>
+            <Input
+              id="workoutOffset"
+              type="number"
+              min="0"
+              value={workoutOffset}
+              onChange={(e) => setWorkoutOffset(Math.max(0, parseInt(e.target.value) || 0))}
+              placeholder="0"
+            />
+            <p className="text-xs text-muted-foreground">
+              Number of workouts completed with this injury before tracking in system
             </p>
           </div>
 

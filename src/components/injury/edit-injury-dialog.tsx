@@ -25,6 +25,7 @@ export function EditInjuryDialog({ open, onOpenChange, injury, onSuccess }: Edit
   const [endDate, setEndDate] = useState<Date | undefined>(
     injury.end_date ? new Date(injury.end_date) : undefined
   );
+  const [workoutOffset, setWorkoutOffset] = useState(injury.workout_count_offset || 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -32,6 +33,7 @@ export function EditInjuryDialog({ open, onOpenChange, injury, onSuccess }: Edit
     setName(injury.name);
     setStartDate(new Date(injury.start_date));
     setEndDate(injury.end_date ? new Date(injury.end_date) : undefined);
+    setWorkoutOffset(injury.workout_count_offset || 0);
   }, [injury]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,6 +57,7 @@ export function EditInjuryDialog({ open, onOpenChange, injury, onSuccess }: Edit
           name: name.trim(),
           start_date: format(startDate, "yyyy-MM-dd"),
           end_date: endDate ? format(endDate, "yyyy-MM-dd") : null,
+          workout_count_offset: workoutOffset,
         })
         .eq("id", injury.id);
 
@@ -168,6 +171,21 @@ export function EditInjuryDialog({ open, onOpenChange, injury, onSuccess }: Edit
             </div>
             <p className="text-xs text-muted-foreground">
               Leave empty if injury is ongoing
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="workoutOffset">Previous Workouts with Injury (Optional)</Label>
+            <Input
+              id="workoutOffset"
+              type="number"
+              min="0"
+              value={workoutOffset}
+              onChange={(e) => setWorkoutOffset(Math.max(0, parseInt(e.target.value) || 0))}
+              placeholder="0"
+            />
+            <p className="text-xs text-muted-foreground">
+              Number of workouts completed with this injury before tracking in system
             </p>
           </div>
 
