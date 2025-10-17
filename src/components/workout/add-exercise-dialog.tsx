@@ -118,9 +118,9 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col overflow-hidden">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>Add Exercise</DialogTitle>
+          <DialogTitle>{exerciseType === 'stretch' ? 'Add Stretch' : 'Add Exercise'}</DialogTitle>
           <DialogDescription>
-            Add a new exercise to this workout.
+            Add a new {exerciseType === 'stretch' ? 'stretch' : 'exercise'} to this workout.
           </DialogDescription>
         </DialogHeader>
         

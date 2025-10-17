@@ -130,9 +130,9 @@ export function EditExerciseDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit Exercise</DialogTitle>
+          <DialogTitle>{exerciseType === 'stretch' ? 'Edit Stretch' : 'Edit Exercise'}</DialogTitle>
           <DialogDescription>
-            Update the exercise details below.
+            Update the {exerciseType === 'stretch' ? 'stretch' : 'exercise'} details below.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
