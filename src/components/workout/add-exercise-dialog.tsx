@@ -128,7 +128,7 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
           <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none z-10" />
           <form onSubmit={handleSubmit} className="space-y-4 pb-4">
           <div className="space-y-2">
-            <Label htmlFor="exercise-name">Exercise Name</Label>
+            <Label htmlFor="exercise-name">{exerciseType === 'stretch' ? 'Stretch Name' : 'Exercise Name'}</Label>
             <Input
               id="exercise-name"
               value={exerciseName}

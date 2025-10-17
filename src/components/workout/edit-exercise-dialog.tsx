@@ -137,7 +137,7 @@ export function EditExerciseDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="exerciseName">Exercise Name</Label>
+            <Label htmlFor="exerciseName">{exerciseType === 'stretch' ? 'Stretch Name' : 'Exercise Name'}</Label>
             <Input
               id="exerciseName"
               value={exerciseName}
