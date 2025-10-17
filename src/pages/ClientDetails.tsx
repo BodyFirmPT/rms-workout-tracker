@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Calendar, Clock, Play, Plus, Target, ArrowLeft, Settings, Trash2, Timer, Edit, Copy, User, Search } from "lucide-react";
+import { Calendar, Clock, Play, Plus, Target, ArrowLeft, Settings, Trash2, Timer, Edit, Copy, User, Search, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgressRing } from "@/components/ui/progress-ring";
@@ -154,7 +154,17 @@ export default function ClientDetails() {
         </div>
 
         <div className="space-y-6">
-          {/* Navigation */}
+          {/* Quick Actions */}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => navigate(`/client/${clientId}/injuries`)}
+              className="flex items-center gap-2"
+            >
+              <AlertCircle className="h-4 w-4" />
+              Manage Injuries
+            </Button>
+          </div>
 
           {/* Client Stats */}
           <div className="grid gap-4 md:grid-cols-3">

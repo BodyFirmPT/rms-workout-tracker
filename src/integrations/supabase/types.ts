@@ -46,6 +46,41 @@ export type Database = {
           },
         ]
       }
+      injury: {
+        Row: {
+          client_id: string
+          created_at: string
+          end_date: string | null
+          id: string
+          name: string
+          start_date: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          name: string
+          start_date: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          name?: string
+          start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "injury_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       muscle_group: {
         Row: {
           category: string | null
