@@ -246,7 +246,7 @@ export function ActiveWorkout({
       )}
 
       {/* Workout Header */}
-      <Card className={`text-primary-foreground shadow-primary ${isCompleted ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' : 'bg-primary-gradient'}`}>
+      <Card className={`text-primary-foreground shadow-primary relative z-10 ${isCompleted ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' : 'bg-primary-gradient'}`}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -303,7 +303,7 @@ export function ActiveWorkout({
       {/* Active Injuries Drawer */}
       {activeInjuries.length > 0 && (
         <Collapsible open={injuriesOpen} onOpenChange={setInjuriesOpen}>
-          <Card className="border-destructive/50 mx-4 -mt-5 sm:-mt-8">
+          <Card className="border-destructive/50 mx-4 -mt-5 sm:-mt-8 relative z-0">
             <CollapsibleTrigger className="w-full">
               <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors py-1.5">
                 <div className="flex items-center justify-between">
