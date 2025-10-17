@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown } from "lucide-react";
+import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,8 @@ import { MuscleGroupSuggestions } from "@/components/workout/muscle-group-sugges
 import { MuscleGroupHeader } from "@/components/workout/muscle-group-header";
 import { CategoryHeader } from "@/components/workout/category-header";
 import { CopyExercisesDialog } from "@/components/workout/copy-exercises-dialog";
+import { AddInjuryDialog } from "@/components/injury/add-injury-dialog";
+import { EditInjuryDialog } from "@/components/injury/edit-injury-dialog";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { format } from "date-fns";
 import { CreateWorkoutExerciseInput, WorkoutExercise } from "@/types/workout";
@@ -33,6 +35,9 @@ export function ActiveWorkout({
   const [activeInjuries, setActiveInjuries] = useState<Injury[]>([]);
   const [injuryWorkoutCounts, setInjuryWorkoutCounts] = useState<{ [injuryId: string]: number }>({});
   const [injuriesOpen, setInjuriesOpen] = useState(false);
+  const [showAddInjury, setShowAddInjury] = useState(false);
+  const [showEditInjury, setShowEditInjury] = useState(false);
+  const [editingInjury, setEditingInjury] = useState<Injury | null>(null);
   const {
     workouts,
     workoutExercises,
@@ -149,6 +154,33 @@ export function ActiveWorkout({
 
     loadInjuries();
   }, [currentWorkout]);
+
+  const handleEditInjury = (injury: Injury) => {
+    setEditingInjury(injury);
+    setShowEditInjury(true);
+  };
+
+  const handleInjuryUpdated = () => {
+    // Reload injuries after update
+    if (currentWorkout) {
+      const loadInjuries = async () => {
+        try {
+          const { data, error } = await supabase
+            .from("injury")
+            .select("*")
+            .eq("client_id", currentWorkout.client_id)
+            .lte("start_date", currentWorkout.date)
+            .or(`end_date.is.null,end_date.gte.${currentWorkout.date}`);
+
+          if (error) throw error;
+          setActiveInjuries(data || []);
+        } catch (error) {
+          console.error("Error loading injuries:", error);
+        }
+      };
+      loadInjuries();
+    }
+  };
   if (!currentWorkout) {
     return <div className="text-center py-12">
         <Timer className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -335,10 +367,30 @@ export function ActiveWorkout({
                           </span>
                         </h4>
                       </div>
-                      <Badge variant="destructive" className="shrink-0">Active</Badge>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditInjury(injury)}
+                          className="h-7 w-7 p-0"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Badge variant="destructive">Active</Badge>
+                      </div>
                     </div>
                   </div>
                 ))}
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAddInjury(true)}
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Injury
+                </Button>
               </CardContent>
             </CollapsibleContent>
           </Card>
@@ -783,6 +835,26 @@ export function ActiveWorkout({
           sourceWorkoutId={currentWorkout.id}
           categoryName={copyingCategory.name}
           exerciseCount={copyingCategory.exerciseCount}
+        />
+      )}
+
+      {/* Injury Dialogs */}
+      <AddInjuryDialog
+        open={showAddInjury}
+        onOpenChange={setShowAddInjury}
+        clientId={currentWorkout.client_id}
+        onSuccess={handleInjuryUpdated}
+      />
+      
+      {editingInjury && (
+        <EditInjuryDialog
+          open={showEditInjury}
+          onOpenChange={(open) => {
+            setShowEditInjury(open);
+            if (!open) setEditingInjury(null);
+          }}
+          injury={editingInjury}
+          onSuccess={handleInjuryUpdated}
         />
       )}
     </div>;
