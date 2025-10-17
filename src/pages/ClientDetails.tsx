@@ -11,6 +11,7 @@ import { CreateWorkoutDialog } from "@/components/workout/create-workout-dialog"
 import { DeleteWorkoutDialog } from "@/components/workout/delete-workout-dialog";
 import { EditWorkoutDialog } from "@/components/workout/edit-workout-dialog";
 import { DuplicateWorkoutDialog } from "@/components/workout/duplicate-workout-dialog";
+import { EditClientDialog } from "@/components/workout/edit-client-dialog";
 import { format } from "date-fns";
 import { Workout } from "@/types/workout";
 
@@ -21,6 +22,7 @@ export default function ClientDetails() {
   const [deletingWorkout, setDeletingWorkout] = useState<Workout | null>(null);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
   const [duplicatingWorkout, setDuplicatingWorkout] = useState<Workout | null>(null);
+  const [editingClient, setEditingClient] = useState(false);
   const [workoutProgresses, setWorkoutProgresses] = useState<{ [id: string]: number }>({});
   const [searchQuery, setSearchQuery] = useState("");
   
@@ -130,13 +132,23 @@ export default function ClientDetails() {
             <div className="p-3 bg-primary/10 rounded-full">
               <User className="h-8 w-8 text-primary" />
             </div>
-            <div>
-              <h1 className="text-4xl font-bold text-foreground">
-                {client?.name}
-              </h1>
-              <p className="text-lg text-muted-foreground">
-                Training progress and workout history
-              </p>
+            <div className="group flex items-center gap-3">
+              <div>
+                <h1 className="text-4xl font-bold text-foreground">
+                  {client?.name}
+                </h1>
+                <p className="text-lg text-muted-foreground">
+                  Training progress and workout history
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setEditingClient(true)}
+                className="opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>
@@ -395,6 +407,14 @@ export default function ClientDetails() {
               open={!!duplicatingWorkout}
               onOpenChange={(open) => !open && setDuplicatingWorkout(null)}
               workout={duplicatingWorkout}
+            />
+          )}
+
+          {client && editingClient && (
+            <EditClientDialog
+              open={editingClient}
+              onOpenChange={setEditingClient}
+              client={client}
             />
           )}
         </div>
