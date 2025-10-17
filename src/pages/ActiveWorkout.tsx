@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Play, Timer, MoreVertical, Printer, Edit } from "lucide-react";
+import { ArrowLeft, Play, Timer, MoreVertical, Printer, Edit, Plus } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { format } from "date-fns";
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ActiveWorkout as ActiveWorkoutComponent } from "@/components/workout/active-workout";
 import { EditWorkoutDialog } from "@/components/workout/edit-workout-dialog";
+import { AddInjuryDialog } from "@/components/injury/add-injury-dialog";
 
 const ActiveWorkout = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const ActiveWorkout = () => {
   const { workouts, startWorkout, getClientById, loadData } = useWorkoutStore();
   const [currentWorkout, setCurrentWorkout] = useState(null);
   const [showEditWorkout, setShowEditWorkout] = useState(false);
+  const [showAddInjury, setShowAddInjury] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -96,6 +98,10 @@ const ActiveWorkout = () => {
                     <Edit className="h-4 w-4 mr-2" />
                     Edit Workout
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowAddInjury(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add New Injury
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate(`/workout/${currentWorkout.id}/print`)}>
                     <Printer className="h-4 w-4 mr-2" />
                     Print Workout
@@ -114,11 +120,22 @@ const ActiveWorkout = () => {
       </div>
 
       {currentWorkout && (
-        <EditWorkoutDialog
-          open={showEditWorkout}
-          onOpenChange={setShowEditWorkout}
-          workout={currentWorkout}
-        />
+        <>
+          <EditWorkoutDialog
+            open={showEditWorkout}
+            onOpenChange={setShowEditWorkout}
+            workout={currentWorkout}
+          />
+          <AddInjuryDialog
+            open={showAddInjury}
+            onOpenChange={setShowAddInjury}
+            clientId={currentWorkout.client_id}
+            onSuccess={() => {
+              setShowAddInjury(false);
+              loadData();
+            }}
+          />
+        </>
       )}
     </div>;
 };
