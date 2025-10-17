@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown, Pencil } from "lucide-react";
+import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown, Pencil, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { UnifiedExerciseCard } from "@/components/ui/unified-exercise-card";
 import { AddExerciseDialog } from "@/components/workout/add-exercise-dialog";
 import { EditExerciseDialog } from "@/components/workout/edit-exercise-dialog";
@@ -345,7 +346,25 @@ export function ActiveWorkout({
                       {activeInjuries.length} Active {activeInjuries.length === 1 ? 'Injury' : 'Injuries'}
                     </CardTitle>
                   </div>
-                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${injuriesOpen ? 'rotate-180' : ''}`} />
+                  <div className="flex items-center gap-1">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          setShowAddInjury(true);
+                        }}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add New Injury
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${injuriesOpen ? 'rotate-180' : ''}`} />
+                  </div>
                 </div>
               </CardHeader>
             </CollapsibleTrigger>
@@ -381,16 +400,6 @@ export function ActiveWorkout({
                     </div>
                   </div>
                 ))}
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowAddInjury(true)}
-                  className="w-full"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Injury
-                </Button>
               </CardContent>
             </CollapsibleContent>
           </Card>
