@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CheckCircle, Plus, StopCircle, Timer, Target } from "lucide-react";
+import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,8 @@ import { CopyExercisesDialog } from "@/components/workout/copy-exercises-dialog"
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { format } from "date-fns";
 import { CreateWorkoutExerciseInput, WorkoutExercise } from "@/types/workout";
+import { Injury } from "@/types/injury";
+import { supabase } from "@/integrations/supabase/client";
 interface ActiveWorkoutProps {
   workoutId: string; // Always required now
 }
@@ -27,6 +29,7 @@ export function ActiveWorkout({
   const [workoutProgress, setWorkoutProgress] = useState(0);
   const [showStickyHeader, setShowStickyHeader] = useState(false);
   const [copyingCategory, setCopyingCategory] = useState<{ name: string; exerciseCount: number } | null>(null);
+  const [activeInjuries, setActiveInjuries] = useState<Injury[]>([]);
   const {
     workouts,
     workoutExercises,
@@ -95,6 +98,30 @@ export function ActiveWorkout({
       return () => clearInterval(interval);
     }
   }, [isCompleted, currentWorkout, loadWorkoutExercises, loadData]);
+
+  // Load active injuries for the workout date
+  useEffect(() => {
+    const loadInjuries = async () => {
+      if (!currentWorkout) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from("injury")
+          .select("*")
+          .eq("client_id", currentWorkout.client_id)
+          .lte("start_date", currentWorkout.date)
+          .or(`end_date.is.null,end_date.gte.${currentWorkout.date}`);
+
+        if (error) throw error;
+        setActiveInjuries(data || []);
+      } catch (error) {
+        console.error("Error loading injuries:", error);
+        setActiveInjuries([]);
+      }
+    };
+
+    loadInjuries();
+  }, [currentWorkout]);
   if (!currentWorkout) {
     return <div className="text-center py-12">
         <Timer className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -245,6 +272,37 @@ export function ActiveWorkout({
           </div>
         </CardContent>
       </Card>
+
+      {/* Active Injuries Section */}
+      {activeInjuries.length > 0 && (
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-destructive">
+              <AlertCircle className="h-5 w-5" />
+              Active Injuries
+            </CardTitle>
+            <CardDescription>
+              Injuries active during this workout date
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {activeInjuries.map((injury) => (
+                <div key={injury.id} className="flex items-center justify-between p-3 bg-background rounded-lg border border-destructive/20">
+                  <div>
+                    <h4 className="font-medium text-foreground">{injury.name}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Started: {format(new Date(injury.start_date), 'MMM d, yyyy')}
+                      {injury.end_date && ` • Ended: ${format(new Date(injury.end_date), 'MMM d, yyyy')}`}
+                    </p>
+                  </div>
+                  <Badge variant="destructive" className="shrink-0">Active</Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Exercises Section - Split into incomplete and completed when started */}
       {isStarted ? (
