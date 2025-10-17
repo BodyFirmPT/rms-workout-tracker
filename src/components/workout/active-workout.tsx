@@ -275,33 +275,21 @@ export function ActiveWorkout({
 
       {/* Active Injuries Section */}
       {activeInjuries.length > 0 && (
-        <Card className="border-destructive/50 bg-destructive/5">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-destructive">
-              <AlertCircle className="h-5 w-5" />
-              Active Injuries
-            </CardTitle>
-            <CardDescription>
-              Injuries active during this workout date
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {activeInjuries.map((injury) => (
-                <div key={injury.id} className="flex items-center justify-between p-3 bg-background rounded-lg border border-destructive/20">
-                  <div>
-                    <h4 className="font-medium text-foreground">{injury.name}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Started: {format(new Date(injury.start_date), 'MMM d, yyyy')}
-                      {injury.end_date && ` • Ended: ${format(new Date(injury.end_date), 'MMM d, yyyy')}`}
-                    </p>
-                  </div>
-                  <Badge variant="destructive" className="shrink-0">Active</Badge>
-                </div>
-              ))}
+        <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-destructive mb-1">Active Injuries</p>
+              <div className="flex flex-wrap gap-2">
+                {activeInjuries.map((injury) => (
+                  <Badge key={injury.id} variant="destructive" className="text-xs">
+                    {injury.name}
+                  </Badge>
+                ))}
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {/* Exercises Section - Split into incomplete and completed when started */}
