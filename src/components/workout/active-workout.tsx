@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle } from "lucide-react";
+import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { UnifiedExerciseCard } from "@/components/ui/unified-exercise-card";
 import { AddExerciseDialog } from "@/components/workout/add-exercise-dialog";
 import { EditExerciseDialog } from "@/components/workout/edit-exercise-dialog";
@@ -30,6 +31,8 @@ export function ActiveWorkout({
   const [showStickyHeader, setShowStickyHeader] = useState(false);
   const [copyingCategory, setCopyingCategory] = useState<{ name: string; exerciseCount: number } | null>(null);
   const [activeInjuries, setActiveInjuries] = useState<Injury[]>([]);
+  const [injuryWorkoutCounts, setInjuryWorkoutCounts] = useState<{ [injuryId: string]: number }>({});
+  const [injuriesOpen, setInjuriesOpen] = useState(false);
   const {
     workouts,
     workoutExercises,
@@ -114,6 +117,30 @@ export function ActiveWorkout({
 
         if (error) throw error;
         setActiveInjuries(data || []);
+
+        // Calculate workout counts for each injury
+        if (data && data.length > 0) {
+          const { data: allWorkouts, error: workoutsError } = await supabase
+            .from("workout")
+            .select("id, date")
+            .eq("client_id", currentWorkout.client_id)
+            .lte("date", currentWorkout.date)
+            .order("date", { ascending: true });
+
+          if (workoutsError) throw workoutsError;
+
+          const counts: { [injuryId: string]: number } = {};
+          data.forEach((injury) => {
+            const workoutsWithInjury = (allWorkouts || []).filter((workout) => {
+              const workoutDate = workout.date;
+              const afterStart = workoutDate >= injury.start_date;
+              const beforeEnd = !injury.end_date || workoutDate <= injury.end_date;
+              return afterStart && beforeEnd;
+            });
+            counts[injury.id] = workoutsWithInjury.length;
+          });
+          setInjuryWorkoutCounts(counts);
+        }
       } catch (error) {
         console.error("Error loading injuries:", error);
         setActiveInjuries([]);
@@ -273,23 +300,47 @@ export function ActiveWorkout({
         </CardContent>
       </Card>
 
-      {/* Active Injuries Section */}
+      {/* Active Injuries Drawer */}
       {activeInjuries.length > 0 && (
-        <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3">
-          <div className="flex items-start gap-2">
-            <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-destructive mb-1">Active Injuries</p>
-              <div className="flex flex-wrap gap-2">
+        <Collapsible open={injuriesOpen} onOpenChange={setInjuriesOpen}>
+          <Card className="border-destructive/50">
+            <CollapsibleTrigger className="w-full">
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5 text-destructive" />
+                    <CardTitle className="text-base">
+                      {activeInjuries.length} Active {activeInjuries.length === 1 ? 'Injury' : 'Injuries'}
+                    </CardTitle>
+                  </div>
+                  <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform ${injuriesOpen ? 'rotate-180' : ''}`} />
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0 space-y-3">
                 {activeInjuries.map((injury) => (
-                  <Badge key={injury.id} variant="destructive" className="text-xs">
-                    {injury.name}
-                  </Badge>
+                  <div key={injury.id} className="p-3 bg-muted/50 rounded-lg border">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-foreground mb-1">{injury.name}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {format(new Date(injury.start_date), 'MMM d, yyyy')}
+                          {injury.end_date && ` - ${format(new Date(injury.end_date), 'MMM d, yyyy')}`}
+                          {!injury.end_date && ' - Ongoing'}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {injuryWorkoutCounts[injury.id] || 0} {injuryWorkoutCounts[injury.id] === 1 ? 'workout' : 'workouts'} with this injury
+                        </p>
+                      </div>
+                      <Badge variant="destructive" className="shrink-0">Active</Badge>
+                    </div>
+                  </div>
                 ))}
-              </div>
-            </div>
-          </div>
-        </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
       )}
 
       {/* Exercises Section - Split into incomplete and completed when started */}
