@@ -303,7 +303,7 @@ export function ActiveWorkout({
       {/* Active Injuries Drawer */}
       {activeInjuries.length > 0 && (
         <Collapsible open={injuriesOpen} onOpenChange={setInjuriesOpen}>
-          <Card className="border-destructive/50 mx-4">
+          <Card className="border-destructive/50 mx-4 -mt-3 sm:-mt-6">
             <CollapsibleTrigger className="w-full">
               <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors py-3">
                 <div className="flex items-center justify-between">
