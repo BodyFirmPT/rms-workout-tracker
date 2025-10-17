@@ -371,8 +371,8 @@ export function ActiveWorkout({
             <CollapsibleContent>
               <CardContent className="pt-0 space-y-3">
                 {activeInjuries.map((injury) => (
-                  <div key={injury.id} className="p-3 bg-muted/50 rounded-lg border">
-                    <div className="flex items-start justify-between gap-2">
+                  <div key={injury.id} className="group p-3 bg-muted/50 rounded-lg border">
+                    <div className="flex items-center justify-between gap-2">
                       <div className="flex-1">
                         <h4 className="font-semibold text-foreground text-sm">
                           {injury.name}
@@ -391,9 +391,9 @@ export function ActiveWorkout({
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEditInjury(injury)}
-                          className="h-7 w-7 p-0"
+                          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                          <Pencil className="h-3.5 w-3.5" />
+                          <Pencil className="h-3 w-3" />
                         </Button>
                         <Badge variant="destructive">Active</Badge>
                       </div>
