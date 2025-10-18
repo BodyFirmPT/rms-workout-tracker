@@ -69,31 +69,33 @@ export function CreateWorkoutDialog({ open, onOpenChange, defaultClientId, onWor
           </DialogHeader>
           
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="client">Client</Label>
-              <div className="flex gap-2">
-                <Select value={clientId} onValueChange={setClientId}>
-                  <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Select a client" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.map((client) => (
-                      <SelectItem key={client.id} value={client.id}>
-                        {client.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCreateClient}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
+            {!defaultClientId && (
+              <div className="space-y-2">
+                <Label htmlFor="client">Client</Label>
+                <div className="flex gap-2">
+                  <Select value={clientId} onValueChange={setClientId}>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Select a client" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clients.map((client) => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCreateClient}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
             
             <div className="space-y-2">
               <Label>Workout Date</Label>
