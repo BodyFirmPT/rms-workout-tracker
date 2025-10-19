@@ -134,7 +134,7 @@ export function EditExerciseDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>{exerciseType === 'stretch' ? 'Edit Stretch' : 'Edit Exercise'}</DialogTitle>
           <DialogDescription>
@@ -244,7 +244,7 @@ export function EditExerciseDialog({
           </div>
 
           <div className="space-y-2">
-            <div className="grid grid-cols-2 gap-4">
+            <div className={`grid gap-4 ${showLeftRight ? 'grid-cols-3' : 'grid-cols-2'}`}>
               <div className="space-y-2">
                 <Label htmlFor="weight-count">{showLeftRight ? "Right Weight" : "Weight"}</Label>
                 <Input
@@ -256,6 +256,19 @@ export function EditExerciseDialog({
                   step="0.5"
                 />
               </div>
+              {showLeftRight && (
+                <div className="space-y-2">
+                  <Label htmlFor="left-weight">Left Weight</Label>
+                  <Input
+                    id="left-weight"
+                    type="number"
+                    value={leftWeight ?? 0}
+                    onChange={(e) => setLeftWeight(Number(e.target.value))}
+                    min="0"
+                    step="0.5"
+                  />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="weight-unit">Weight Unit</Label>
                 <Select value={weightUnit} onValueChange={setWeightUnit}>
@@ -269,19 +282,6 @@ export function EditExerciseDialog({
                 </Select>
               </div>
             </div>
-            {showLeftRight && (
-              <div className="space-y-2">
-                <Label htmlFor="left-weight">Left Weight</Label>
-                <Input
-                  id="left-weight"
-                  type="number"
-                  value={leftWeight ?? 0}
-                  onChange={(e) => setLeftWeight(Number(e.target.value))}
-                  min="0"
-                  step="0.5"
-                />
-              </div>
-            )}
             <Button
               type="button"
               variant="ghost"
