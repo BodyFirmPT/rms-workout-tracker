@@ -338,7 +338,9 @@ export default function ClientDetails() {
                         <div>
                           <h4 className="font-bold">{format(new Date(workout.date + 'T00:00:00'), 'MMM d, yyyy')}</h4>
                           <p className="text-xs text-muted-foreground italic mt-1">
-                            Workout #{workoutNumber}{workout.note && ` · ${workout.note}`}
+                            {!workout.canceled_at && `Workout #${workoutNumber}`}
+                            {!workout.canceled_at && workout.note && ` · `}
+                            {workout.note}
                           </p>
                         </div>
                       </div>
