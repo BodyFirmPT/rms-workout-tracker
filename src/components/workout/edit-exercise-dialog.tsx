@@ -134,14 +134,14 @@ export function EditExerciseDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>{exerciseType === 'stretch' ? 'Edit Stretch' : 'Edit Exercise'}</DialogTitle>
           <DialogDescription>
             Update the {exerciseType === 'stretch' ? 'stretch' : 'exercise'} details below.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto flex-1 -mx-6 px-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-track]:bg-transparent">
           <div className="space-y-2">
             <Label htmlFor="exerciseName">{exerciseType === 'stretch' ? 'Stretch Name' : 'Exercise Name'}</Label>
             <Input
@@ -327,7 +327,7 @@ export function EditExerciseDialog({
             />
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
