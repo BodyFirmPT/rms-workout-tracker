@@ -265,6 +265,7 @@ export class WorkoutService {
         reps_unit: exercise.reps_unit,
         weight_count: exercise.weight_count,
         weight_unit: exercise.weight_unit,
+        left_weight: exercise.left_weight,
         // Keep old fields for compatibility
         reps: exercise.reps_count.toString(),
         unit: exercise.reps_unit,
@@ -312,6 +313,7 @@ export class WorkoutService {
         reps_unit: exercise.reps_unit,
         weight_count: exercise.weight_count,
         weight_unit: exercise.weight_unit,
+        left_weight: exercise.left_weight,
         // Keep old fields for compatibility
         reps: exercise.reps_count.toString(),
         unit: exercise.reps_unit,

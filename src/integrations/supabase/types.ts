@@ -169,6 +169,7 @@ export type Database = {
           exercise_name: string
           id: string
           is_completed: boolean
+          left_weight: number | null
           muscle_group_id: string
           note: string | null
           reps: string
@@ -188,6 +189,7 @@ export type Database = {
           exercise_name: string
           id?: string
           is_completed?: boolean
+          left_weight?: number | null
           muscle_group_id: string
           note?: string | null
           reps: string
@@ -207,6 +209,7 @@ export type Database = {
           exercise_name?: string
           id?: string
           is_completed?: boolean
+          left_weight?: number | null
           muscle_group_id?: string
           note?: string | null
           reps?: string

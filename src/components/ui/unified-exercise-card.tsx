@@ -16,6 +16,7 @@ interface UnifiedExerciseCardProps {
   repsUnit: string;
   weightCount: number;
   weightUnit: string;
+  leftWeight?: number;
   setCount: number;
   completedSets?: number;
   note?: string;
@@ -37,6 +38,7 @@ export function UnifiedExerciseCard({
   repsUnit,
   weightCount,
   weightUnit,
+  leftWeight,
   setCount,
   completedSets = 0,
   note,
@@ -92,7 +94,11 @@ export function UnifiedExerciseCard({
             isSuggested ? "text-muted-foreground/70" : "text-muted-foreground"
           )}>
             {setCount} × {repsCount} {repsUnit}
-            {weightCount > 0 && ` @ ${weightCount} ${weightUnit}`}
+            {weightCount > 0 && leftWeight !== null && leftWeight !== undefined 
+              ? ` @ R:${weightCount} L:${leftWeight} ${weightUnit}` 
+              : weightCount > 0 
+                ? ` @ ${weightCount} ${weightUnit}` 
+                : ''}
           </span>
         </div>
         {note && (

@@ -39,6 +39,7 @@ export interface WorkoutExercise {
   reps_unit: string;
   weight_count: number;
   weight_unit: string;
+  left_weight?: number;
   note: string;
   set_count: number;
   completed_sets: number;
@@ -58,6 +59,7 @@ export interface CreateWorkoutExerciseInput {
   reps_unit: string;
   weight_count: number;
   weight_unit: string;
+  left_weight?: number;
   note?: string;
   set_count: number;
   type?: 'exercise' | 'stretch';

@@ -49,6 +49,7 @@ export function MuscleGroupSuggestions({
         reps_unit: exercise.reps_unit || "reps",
         weight_count: exercise.weight_count || 0,
         weight_unit: exercise.weight_unit || "lbs",
+        left_weight: exercise.left_weight,
         set_count: exercise.set_count,
         note: exercise.note || ''
       });
@@ -74,6 +75,7 @@ export function MuscleGroupSuggestions({
                 repsUnit={exercise.reps_unit || "reps"} 
                 weightCount={exercise.weight_count || 0} 
                 weightUnit={exercise.weight_unit || "lbs"} 
+                leftWeight={exercise.left_weight}
                 setCount={exercise.set_count} 
                 note={exercise.note || undefined}
                 type={exercise.type || 'exercise'}

@@ -43,6 +43,8 @@ export function EditExerciseDialog({
   const [repsUnit, setRepsUnit] = useState("reps");
   const [weightCount, setWeightCount] = useState(0);
   const [weightUnit, setWeightUnit] = useState("lbs");
+  const [leftWeight, setLeftWeight] = useState<number | null>(null);
+  const [showLeftRight, setShowLeftRight] = useState(false);
   const [sets, setSets] = useState("3");
   const [note, setNote] = useState("");
   const [isCreatingNewMuscleGroup, setIsCreatingNewMuscleGroup] = useState(false);
@@ -63,6 +65,8 @@ export function EditExerciseDialog({
       setRepsUnit(exercise.reps_unit || "reps");
       setWeightCount(exercise.weight_count || 0);
       setWeightUnit(exercise.weight_unit || "lbs");
+      setLeftWeight(exercise.left_weight ?? null);
+      setShowLeftRight(exercise.left_weight !== null && exercise.left_weight !== undefined);
       setSets(exercise.set_count.toString());
       setNote(exercise.note || "");
       setIsCreatingNewMuscleGroup(false);
@@ -105,6 +109,7 @@ export function EditExerciseDialog({
         reps_unit: repsUnit,
         weight_count: weightCount,
         weight_unit: weightUnit,
+        left_weight: showLeftRight ? leftWeight : undefined,
         set_count: parseInt(sets),
         note: note.trim() || undefined,
       });
@@ -237,30 +242,62 @@ export function EditExerciseDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="weight-count">Weight</Label>
-              <Input
-                id="weight-count"
-                type="number"
-                value={weightCount}
-                onChange={(e) => setWeightCount(Number(e.target.value))}
-                min="0"
-                step="0.5"
-              />
+          <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="weight-count">{showLeftRight ? "Right Weight" : "Weight"}</Label>
+                <Input
+                  id="weight-count"
+                  type="number"
+                  value={weightCount}
+                  onChange={(e) => setWeightCount(Number(e.target.value))}
+                  min="0"
+                  step="0.5"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="weight-unit">Weight Unit</Label>
+                <Select value={weightUnit} onValueChange={setWeightUnit}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="lbs">Pounds (lbs)</SelectItem>
+                    <SelectItem value="kg">Kilograms (kg)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="weight-unit">Weight Unit</Label>
-              <Select value={weightUnit} onValueChange={setWeightUnit}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="lbs">Pounds (lbs)</SelectItem>
-                  <SelectItem value="kg">Kilograms (kg)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {showLeftRight && (
+              <div className="space-y-2">
+                <Label htmlFor="left-weight">Left Weight</Label>
+                <Input
+                  id="left-weight"
+                  type="number"
+                  value={leftWeight ?? 0}
+                  onChange={(e) => setLeftWeight(Number(e.target.value))}
+                  min="0"
+                  step="0.5"
+                />
+              </div>
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                if (showLeftRight) {
+                  setShowLeftRight(false);
+                  setLeftWeight(null);
+                } else {
+                  setShowLeftRight(true);
+                  setLeftWeight(weightCount);
+                }
+              }}
+              className="text-xs h-auto py-1 px-2"
+            >
+              {showLeftRight ? "Reset left/right" : "Set right/left"}
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 gap-4">
