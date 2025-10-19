@@ -295,9 +295,9 @@ export function EditExerciseDialog({
                   setLeftWeight(weightCount);
                 }
               }}
-              className="text-xs h-auto py-1 px-2 text-primary hover:text-primary/80"
+              className="text-xs h-auto py-1 px-2 text-primary hover:text-white"
             >
-              <ArrowLeftRight className="h-3 w-3 mr-1" />
+              <ArrowLeftRight className="h-3 w-3 mr-0.5" />
               {showLeftRight ? "Reset left/right" : "Set right/left"}
             </Button>
           </div>
