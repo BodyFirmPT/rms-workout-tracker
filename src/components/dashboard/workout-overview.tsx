@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Calendar, Clock, Play, Plus, Target, Users, Settings, Trash2, Timer, Edit, Copy } from "lucide-react";
+import { Calendar, Clock, Play, Plus, Target, Users, Settings, Trash2, Timer, Edit, Copy, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgressRing } from "@/components/ui/progress-ring";
@@ -255,7 +255,12 @@ export function WorkoutOverview() {
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                     {workout.status === 'completed' ? (
+                     {workout.canceled_at ? (
+                       <div className="px-3 py-1.5 bg-destructive/10 text-destructive text-sm font-medium rounded-md flex items-center gap-2">
+                         <XCircle className="h-3 w-3" />
+                         Canceled
+                       </div>
+                     ) : workout.status === 'completed' ? (
                        <div className="px-3 py-1.5 bg-success/10 text-success text-sm font-medium rounded-md flex items-center gap-2">
                          <Target className="h-3 w-3" />
                          Completed

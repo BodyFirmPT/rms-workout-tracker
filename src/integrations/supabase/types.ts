@@ -128,6 +128,7 @@ export type Database = {
       }
       workout: {
         Row: {
+          canceled_at: string | null
           client_id: string
           created_at: string
           date: string
@@ -136,6 +137,7 @@ export type Database = {
           status: string
         }
         Insert: {
+          canceled_at?: string | null
           client_id: string
           created_at?: string
           date?: string
@@ -144,6 +146,7 @@ export type Database = {
           status?: string
         }
         Update: {
+          canceled_at?: string | null
           client_id?: string
           created_at?: string
           date?: string
