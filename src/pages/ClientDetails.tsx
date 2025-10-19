@@ -81,6 +81,10 @@ export default function ClientDetails() {
     .filter(w => w.client_id === clientId)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+  // Separate cancelled and active workouts
+  const cancelledWorkouts = allClientWorkouts.filter(w => w.canceled_at);
+  const activeWorkouts = allClientWorkouts.filter(w => !w.canceled_at);
+
   // Filter workouts based on search query
   const clientWorkouts = searchQuery.trim()
     ? allClientWorkouts.filter(w => 
@@ -102,14 +106,15 @@ export default function ClientDetails() {
   };
 
   const workoutOffset = client?.workout_count_offset || 0;
-  const totalWorkouts = allClientWorkouts.length + workoutOffset;
-  const completedWorkouts = allClientWorkouts.filter(w => w.status === 'completed').length + workoutOffset;
-  const thisWeekWorkouts = allClientWorkouts.filter(w => {
+  const totalWorkouts = activeWorkouts.length + workoutOffset;
+  const completedWorkouts = activeWorkouts.filter(w => w.status === 'completed').length + workoutOffset;
+  const thisWeekWorkouts = activeWorkouts.filter(w => {
     const workoutDate = new Date(w.date);
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     return workoutDate >= weekAgo;
   }).length;
+  const cancelledCount = cancelledWorkouts.length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -166,7 +171,7 @@ export default function ClientDetails() {
 
         <div className="space-y-6">
           {/* Client Stats */}
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Workouts</CardTitle>
@@ -181,8 +186,8 @@ export default function ClientDetails() {
                     <TooltipContent>
                       <p className="text-sm">
                         {workoutOffset > 0 
-                          ? `${workoutOffset} offset + ${allClientWorkouts.length} in system`
-                          : `${allClientWorkouts.length} workouts in system`}
+                          ? `${workoutOffset} offset + ${activeWorkouts.length} in system (excluding cancelled)`
+                          : `${activeWorkouts.length} workouts in system (excluding cancelled)`}
                       </p>
                     </TooltipContent>
                   </Tooltip>
@@ -207,6 +212,16 @@ export default function ClientDetails() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{thisWeekWorkouts}</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Cancelled</CardTitle>
+                <XCircle className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{cancelledCount}</div>
               </CardContent>
             </Card>
           </div>
