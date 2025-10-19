@@ -226,42 +226,6 @@ export default function ClientDetails() {
             </Card>
           </div>
 
-          {/* Active Workout */}
-          {clientStartedWorkout && (
-            <Card className="bg-primary-gradient text-primary-foreground shadow-primary">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Clock className="h-5 w-5" />
-                      Active Workout
-                    </CardTitle>
-                    <CardDescription className="text-primary-foreground/80">
-                      {clientStartedWorkout.note}
-                    </CardDescription>
-                  </div>
-                  <ProgressRing 
-                    progress={workoutProgresses[clientStartedWorkout.id] || 0} 
-                    size={60}
-                    strokeWidth={6}
-                  />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm opacity-90">
-                      {format(new Date(clientStartedWorkout.date), 'MMM d')}
-                    </p>
-                  </div>
-                  <Button variant="secondary" size="sm" onClick={() => navigate(`/workout/${clientStartedWorkout.id}`)}>
-                    Continue
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Recent Workouts */}
           <Card>
             <CardHeader>
