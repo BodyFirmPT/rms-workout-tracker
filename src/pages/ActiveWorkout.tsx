@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Play, Timer, MoreVertical, Printer, Edit, Plus } from "lucide-react";
+import { ArrowLeft, Play, Timer, MoreVertical, Printer, Edit, Plus, XCircle } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { format } from "date-fns";
@@ -13,6 +13,7 @@ import {
 import { ActiveWorkout as ActiveWorkoutComponent } from "@/components/workout/active-workout";
 import { EditWorkoutDialog } from "@/components/workout/edit-workout-dialog";
 import { AddInjuryDialog } from "@/components/injury/add-injury-dialog";
+import { Badge } from "@/components/ui/badge";
 
 const ActiveWorkout = () => {
   const navigate = useNavigate();
@@ -82,11 +83,17 @@ const ActiveWorkout = () => {
           </Button>
           
           <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center justify-between flex-1 min-w-[300px]">
+            <div className="flex items-center gap-3 flex-1 min-w-[300px]">
               <h1 className="text-3xl font-bold text-foreground">
                 {currentWorkout.status === 'completed' ? 'Completed Workout' : 
                  currentWorkout.status === 'started' ? 'Active Workout' : 'Workout Details'}
               </h1>
+              {currentWorkout.canceled_at && (
+                <Badge variant="destructive" className="flex items-center gap-1">
+                  <XCircle className="h-3 w-3" />
+                  Canceled
+                </Badge>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon">

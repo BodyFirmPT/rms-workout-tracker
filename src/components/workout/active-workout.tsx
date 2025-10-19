@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown, Pencil, MoreVertical } from "lucide-react";
+import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown, Pencil, MoreVertical, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -282,7 +282,7 @@ export function ActiveWorkout({
       <Card className={`text-primary-foreground shadow-primary relative z-10 ${isCompleted ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' : 'bg-primary-gradient'}`}>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div>
+            <div className="flex-1">
               <CardTitle className="flex items-center gap-2">
                 <Timer className="h-5 w-5" />
                 {format(new Date(currentWorkout.date + 'T00:00:00'), 'MMMM d, yyyy')}
@@ -290,6 +290,12 @@ export function ActiveWorkout({
               <CardDescription className="text-primary-foreground/80">
                 {client?.name}{currentWorkout.note && ` • ${currentWorkout.note}`}
               </CardDescription>
+              {currentWorkout.canceled_at && (
+                <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-white/20 rounded-md text-sm font-medium">
+                  <XCircle className="h-4 w-4" />
+                  Canceled on {format(new Date(currentWorkout.canceled_at), 'PPP p')}
+                </div>
+              )}
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold">{workoutProgress}%</div>
