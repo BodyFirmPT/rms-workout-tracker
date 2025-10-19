@@ -107,112 +107,108 @@ const PrintWorkout = () => {
           if (visibleGroups.length === 0) return null;
 
           return (
-            <div key={categoryName} className="break-inside-avoid">
+            <div key={categoryName} className="mb-3">
               <h2 className="text-base font-bold text-black uppercase tracking-wide mb-2 pb-1 border-b-2 border-black">
                 {categoryName}
               </h2>
 
-              {visibleGroups.map(muscleGroup => {
-                const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
+              <table className="w-full border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-gray-400">
+                    <th className="text-left py-1 font-medium text-gray-700 w-6"></th>
+                    <th className="text-left py-1 font-medium text-gray-700 w-28">Muscle Group</th>
+                    <th className="text-left py-1 font-medium text-gray-700">Exercise</th>
+                    <th className="text-center py-1 font-medium text-gray-700 w-16">Sets</th>
+                    <th className="text-center py-1 font-medium text-gray-700 w-20">Reps</th>
+                    <th className="text-center py-1 font-medium text-gray-700 w-20">Weight</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibleGroups.map(muscleGroup => {
+                    const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
 
-                return (
-                  <div key={muscleGroup.id} className="mb-2 break-inside-avoid">
-                    <h3 className="text-sm font-semibold text-black mb-1">
-                      {muscleGroup.name}
-                    </h3>
-
-                    <table className="w-full border-collapse text-xs">
-                      <thead>
-                        <tr className="border-b border-gray-400">
-                          <th className="text-left py-1 font-medium text-gray-700 w-6"></th>
-                          <th className="text-left py-1 font-medium text-gray-700">Exercise</th>
-                          <th className="text-center py-1 font-medium text-gray-700 w-16">Sets</th>
-                          <th className="text-center py-1 font-medium text-gray-700 w-20">Reps</th>
-                          <th className="text-center py-1 font-medium text-gray-700 w-20">Weight</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {groupExercises.map(exercise => (
-                          <tr key={exercise.id} className="border-b border-gray-200">
-                            <td className="py-1.5 align-top">
-                              <div className="w-4 h-4 border-2 border-black rounded-sm"></div>
-                            </td>
-                            <td className="py-1.5 align-top">
-                              <div className="font-medium text-black">{exercise.exercise_name}</div>
-                              {exercise.note && (
-                                <div className="text-xs text-gray-600 mt-0.5">{exercise.note}</div>
-                              )}
-                            </td>
-                            <td className="py-1.5 text-center align-top font-medium text-black">{exercise.set_count}</td>
-                            <td className="py-1.5 text-center align-top text-black">
-                              {exercise.reps_count} {exercise.reps_unit}
-                            </td>
-                            <td className="py-1.5 text-center align-top text-black">
-                              {exercise.weight_count > 0 ? `${exercise.weight_count} ${exercise.weight_unit}` : '-'}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                );
-              })}
+                    return groupExercises.map((exercise, index) => (
+                      <tr key={exercise.id} className="border-b border-gray-200">
+                        <td className="py-1.5 align-top">
+                          <div className="w-4 h-4 border-2 border-black rounded-sm"></div>
+                        </td>
+                        <td className="py-1.5 align-top">
+                          {index === 0 && (
+                            <div className="font-semibold text-black">{muscleGroup.name}</div>
+                          )}
+                        </td>
+                        <td className="py-1.5 align-top">
+                          <div className="font-medium text-black">{exercise.exercise_name}</div>
+                          {exercise.note && (
+                            <div className="text-xs text-gray-600 mt-0.5">{exercise.note}</div>
+                          )}
+                        </td>
+                        <td className="py-1.5 text-center align-top font-medium text-black">{exercise.set_count}</td>
+                        <td className="py-1.5 text-center align-top text-black">
+                          {exercise.reps_count} {exercise.reps_unit}
+                        </td>
+                        <td className="py-1.5 text-center align-top text-black">
+                          {exercise.weight_count > 0 ? `${exercise.weight_count} ${exercise.weight_unit}` : '-'}
+                        </td>
+                      </tr>
+                    ));
+                  })}
+                </tbody>
+              </table>
             </div>
           );
         })}
 
         {/* Custom muscle groups */}
         {customMuscleGroupsWithExercises.length > 0 && (
-          <div className="break-inside-avoid">
+          <div className="mb-3">
             <h2 className="text-base font-bold text-black uppercase tracking-wide mb-2 pb-1 border-b-2 border-black">
               Other
             </h2>
 
-            {customMuscleGroupsWithExercises.map(muscleGroup => {
-              const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
+            <table className="w-full border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-gray-400">
+                  <th className="text-left py-1 font-medium text-gray-700 w-6"></th>
+                  <th className="text-left py-1 font-medium text-gray-700 w-28">Muscle Group</th>
+                  <th className="text-left py-1 font-medium text-gray-700">Exercise</th>
+                  <th className="text-center py-1 font-medium text-gray-700 w-16">Sets</th>
+                  <th className="text-center py-1 font-medium text-gray-700 w-20">Reps</th>
+                  <th className="text-center py-1 font-medium text-gray-700 w-20">Weight</th>
+                </tr>
+              </thead>
+              <tbody>
+                {customMuscleGroupsWithExercises.map(muscleGroup => {
+                  const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
 
-              return (
-                <div key={muscleGroup.id} className="mb-2 break-inside-avoid">
-                  <h3 className="text-sm font-semibold text-black mb-1">
-                    {muscleGroup.name}
-                  </h3>
-
-                  <table className="w-full border-collapse text-xs">
-                    <thead>
-                      <tr className="border-b border-gray-400">
-                        <th className="text-left py-1 font-medium text-gray-700 w-6"></th>
-                        <th className="text-left py-1 font-medium text-gray-700">Exercise</th>
-                        <th className="text-center py-1 font-medium text-gray-700 w-16">Sets</th>
-                        <th className="text-center py-1 font-medium text-gray-700 w-20">Reps</th>
-                        <th className="text-center py-1 font-medium text-gray-700 w-20">Weight</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {groupExercises.map(exercise => (
-                        <tr key={exercise.id} className="border-b border-gray-200">
-                          <td className="py-1.5 align-top">
-                            <div className="w-4 h-4 border-2 border-black rounded-sm"></div>
-                          </td>
-                          <td className="py-1.5 align-top">
-                            <div className="font-medium text-black">{exercise.exercise_name}</div>
-                            {exercise.note && (
-                              <div className="text-xs text-gray-600 mt-0.5">{exercise.note}</div>
-                            )}
-                          </td>
-                          <td className="py-1.5 text-center align-top font-medium text-black">{exercise.set_count}</td>
-                          <td className="py-1.5 text-center align-top text-black">
-                            {exercise.reps_count} {exercise.reps_unit}
-                          </td>
-                          <td className="py-1.5 text-center align-top text-black">
-                            {exercise.weight_count > 0 ? `${exercise.weight_count} ${exercise.weight_unit}` : '-'}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              );
-            })}
+                  return groupExercises.map((exercise, index) => (
+                    <tr key={exercise.id} className="border-b border-gray-200">
+                      <td className="py-1.5 align-top">
+                        <div className="w-4 h-4 border-2 border-black rounded-sm"></div>
+                      </td>
+                      <td className="py-1.5 align-top">
+                        {index === 0 && (
+                          <div className="font-semibold text-black">{muscleGroup.name}</div>
+                        )}
+                      </td>
+                      <td className="py-1.5 align-top">
+                        <div className="font-medium text-black">{exercise.exercise_name}</div>
+                        {exercise.note && (
+                          <div className="text-xs text-gray-600 mt-0.5">{exercise.note}</div>
+                        )}
+                      </td>
+                      <td className="py-1.5 text-center align-top font-medium text-black">{exercise.set_count}</td>
+                      <td className="py-1.5 text-center align-top text-black">
+                        {exercise.reps_count} {exercise.reps_unit}
+                      </td>
+                      <td className="py-1.5 text-center align-top text-black">
+                        {exercise.weight_count > 0 ? `${exercise.weight_count} ${exercise.weight_unit}` : '-'}
+                      </td>
+                    </tr>
+                  ));
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
