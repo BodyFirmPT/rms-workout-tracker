@@ -95,7 +95,7 @@ export function UnifiedExerciseCard({
           )}>
             {setCount} × {repsCount} {repsUnit}
             {weightCount > 0 && leftWeight !== null && leftWeight !== undefined 
-              ? ` @ R:${weightCount} L:${leftWeight} ${weightUnit}` 
+              ? ` @ R:${weightCount} ${weightUnit} L:${leftWeight} ${weightUnit}` 
               : weightCount > 0 
                 ? ` @ ${weightCount} ${weightUnit}` 
                 : ''}
