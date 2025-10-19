@@ -128,7 +128,7 @@ const PrintWorkout = () => {
                     const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
 
                     return groupExercises.map((exercise, index) => (
-                      <tr key={exercise.id} className="border-b border-gray-200">
+                      <tr key={exercise.id} className={index === groupExercises.length - 1 ? "border-b border-gray-200" : ""}>
                         <td className="py-1.5 align-top">
                           <div className="w-4 h-4 border-2 border-black rounded-sm"></div>
                         </td>
@@ -182,7 +182,7 @@ const PrintWorkout = () => {
                   const groupExercises = exercisesByMuscleGroupId[muscleGroup.id] || [];
 
                   return groupExercises.map((exercise, index) => (
-                    <tr key={exercise.id} className="border-b border-gray-200">
+                    <tr key={exercise.id} className={index === groupExercises.length - 1 ? "border-b border-gray-200" : ""}>
                       <td className="py-1.5 align-top">
                         <div className="w-4 h-4 border-2 border-black rounded-sm"></div>
                       </td>
