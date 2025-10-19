@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ArrowLeftRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -112,13 +113,23 @@ export function EditExerciseDialog({
         weight_unit: weightUnit,
         left_weight: showLeftRight ? leftWeight : undefined,
         set_count: parseInt(sets),
-        note: note.trim() || undefined,
+        note: note.trim(),
+      });
+
+      toast({
+        title: "Exercise updated",
+        description: "The exercise has been successfully updated.",
       });
 
       // Reset and close
       onOpenChange(false);
     } catch (error) {
       console.error("Failed to update exercise:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update exercise. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
