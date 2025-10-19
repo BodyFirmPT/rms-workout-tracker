@@ -320,8 +320,9 @@ export default function ClientDetails() {
               ) : (
                 clientWorkouts.map((workout) => {
                   const progress = workoutProgresses[workout.id] || 0;
-                  const workoutIndex = allClientWorkouts.findIndex(w => w.id === workout.id);
-                  const workoutNumber = totalWorkouts - workoutIndex;
+                  // Calculate workout number based on active workouts only
+                  const workoutIndex = activeWorkouts.findIndex(w => w.id === workout.id);
+                  const workoutNumber = workoutIndex >= 0 ? totalWorkouts - workoutIndex : 0;
                   
                   return (
                     <div key={workout.id} className="group flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
