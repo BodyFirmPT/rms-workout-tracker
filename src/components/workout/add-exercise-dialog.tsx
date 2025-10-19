@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus } from "lucide-react";
+import { Plus, ArrowLeftRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -283,8 +283,9 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
                   setLeftWeight(weightCount);
                 }
               }}
-              className="text-xs h-auto py-1 px-2"
+              className="text-xs h-auto py-1 px-2 text-primary hover:text-primary/80"
             >
+              <ArrowLeftRight className="h-3 w-3 mr-1" />
               {showLeftRight ? "Reset left/right" : "Set right/left"}
             </Button>
           </div>
