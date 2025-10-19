@@ -233,20 +233,6 @@ export function EditWorkoutDialog({ open, onOpenChange, workout }: EditWorkoutDi
             </div>
           )}
 
-          {!workout.canceled_at && !showCancelDatePicker && (
-            <div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowCancelDatePicker(true)}
-                className="w-full text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
-              >
-                <XCircle className="h-4 w-4 mr-2" />
-                Mark Canceled
-              </Button>
-            </div>
-          )}
-
           {showCancelDatePicker && !workout.canceled_at && (
             <div className="space-y-3 rounded-lg border border-border p-4 bg-muted/30">
               <div className="flex items-center justify-between">
@@ -310,13 +296,23 @@ export function EditWorkoutDialog({ open, onOpenChange, workout }: EditWorkoutDi
             </div>
           )}
           
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={handleCancel}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Updating..." : "Update Workout"}
-            </Button>
+          <div className="flex justify-between gap-2 pt-4">
+            {!workout.canceled_at && !showCancelDatePicker && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowCancelDatePicker(true)}
+                className="text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                Mark Canceled
+              </Button>
+            )}
+            <div className="flex gap-2 ml-auto">
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Updating..." : "Update Workout"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
