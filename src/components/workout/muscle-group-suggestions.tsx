@@ -126,27 +126,22 @@ export function MuscleGroupSuggestions({
           
           <div>
             {suggestions.map((exercise, index) => (
-              <div key={index}>
-                <UnifiedExerciseCard 
-                  exerciseName={exercise.exercise_name} 
-                  repsCount={exercise.reps_count || 1} 
-                  repsUnit={exercise.reps_unit || "reps"} 
-                  weightCount={exercise.weight_count || 0} 
-                  weightUnit={exercise.weight_unit || "lbs"} 
-                  leftWeight={exercise.left_weight}
-                  setCount={exercise.set_count} 
-                  note={exercise.note || undefined}
-                  type={exercise.type || 'exercise'}
-                  variant="suggested" 
-                  onAdd={() => handleCopyExercise(exercise)} 
-                  disabled={disabled} 
-                />
-                {exercise.workout_date && (
-                  <div className="px-3 py-1 text-[10px] text-muted-foreground border-b border-border/20">
-                    Last used: {format(new Date(exercise.workout_date + 'T00:00:00'), 'MMM d, yyyy')}
-                  </div>
-                )}
-              </div>
+              <UnifiedExerciseCard 
+                key={index}
+                exerciseName={exercise.exercise_name} 
+                repsCount={exercise.reps_count || 1} 
+                repsUnit={exercise.reps_unit || "reps"} 
+                weightCount={exercise.weight_count || 0} 
+                weightUnit={exercise.weight_unit || "lbs"} 
+                leftWeight={exercise.left_weight}
+                setCount={exercise.set_count} 
+                note={exercise.note || undefined}
+                type={exercise.type || 'exercise'}
+                workoutDate={exercise.workout_date}
+                variant="suggested" 
+                onAdd={() => handleCopyExercise(exercise)} 
+                disabled={disabled} 
+              />
             ))}
           </div>
           

@@ -1,4 +1,5 @@
 import { Check, Plus, Edit, Trash2, Zap, Dumbbell, MoreVertical, Wind } from "lucide-react";
+import { format } from "date-fns";
 import { Button } from "./button";
 import { Badge } from "./badge";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,7 @@ interface UnifiedExerciseCardProps {
   isCompleted?: boolean;
   variant: 'suggested' | 'added';
   type?: 'exercise' | 'stretch';
+  workoutDate?: string;
   onAdd?: () => void;
   onCompleteSet?: (decrement?: boolean) => void;
   onEdit?: () => void;
@@ -46,6 +48,7 @@ export function UnifiedExerciseCard({
   isCompleted = false,
   variant,
   type = 'exercise',
+  workoutDate,
   onAdd,
   onCompleteSet,
   onEdit,
@@ -104,6 +107,11 @@ export function UnifiedExerciseCard({
         {note && (
           <div className="text-xs text-muted-foreground mt-0.5 break-words">
             {note}
+          </div>
+        )}
+        {workoutDate && (
+          <div className="text-[10px] text-muted-foreground/70 mt-0.5">
+            Last used: {format(new Date(workoutDate + 'T00:00:00'), 'MMM d, yyyy')}
           </div>
         )}
       </div>
