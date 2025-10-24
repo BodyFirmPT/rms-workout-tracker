@@ -12,6 +12,7 @@ import { CreateWorkoutExerciseInput } from "@/types/workout";
 interface ExerciseFormProps {
   onSubmit: (data: CreateWorkoutExerciseInput, newMuscleGroupName?: string) => Promise<void>;
   onCancel: () => void;
+  onMuscleGroupChange?: (muscleGroupId: string) => void;
   initialValues?: {
     exerciseName?: string;
     muscleGroupId?: string;
@@ -31,6 +32,7 @@ interface ExerciseFormProps {
 export function ExerciseForm({
   onSubmit,
   onCancel,
+  onMuscleGroupChange,
   initialValues,
   submitLabel = "Add Exercise",
   preselectedMuscleGroupId,
@@ -128,9 +130,11 @@ export function ExerciseForm({
     if (value === "new" || value === "__new__") {
       setShowNewMuscleGroup(true);
       setMuscleGroupId("");
+      onMuscleGroupChange?.("");
     } else {
       setShowNewMuscleGroup(false);
       setMuscleGroupId(value);
+      onMuscleGroupChange?.(value);
     }
   };
 

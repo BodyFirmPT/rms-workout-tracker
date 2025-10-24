@@ -18,13 +18,15 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
   
   const { addExerciseToWorkout, addMuscleGroup, getMuscleGroupById } = useWorkoutStore();
 
+  // Update selected muscle group when preselected changes
+  const effectiveMuscleGroupId = selectedMuscleGroupId || preselectedMuscleGroupId || "";
+
   const handleSubmit = async (exercise: CreateWorkoutExerciseInput, newMuscleGroupName?: string) => {
     let finalMuscleGroupId = exercise.muscle_group_id;
 
     // Create new muscle group if needed
     if (newMuscleGroupName) {
       finalMuscleGroupId = await addMuscleGroup(newMuscleGroupName, false);
-      setSelectedMuscleGroupId(finalMuscleGroupId);
     }
 
     if (!finalMuscleGroupId) return;
@@ -39,6 +41,10 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
 
   const handleQuickAdd = () => {
     onOpenChange(false);
+  };
+
+  const handleMuscleGroupChange = (muscleGroupId: string) => {
+    setSelectedMuscleGroupId(muscleGroupId);
   };
 
   return (
@@ -57,13 +63,14 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
           <ExerciseForm
             onSubmit={handleSubmit}
             onCancel={() => onOpenChange(false)}
+            onMuscleGroupChange={handleMuscleGroupChange}
             submitLabel="Add Exercise"
             preselectedMuscleGroupId={preselectedMuscleGroupId}
           />
 
           {/* Show suggestions only when a muscle group is selected */}
-          {(selectedMuscleGroupId || preselectedMuscleGroupId) && (() => {
-            const selectedMuscleGroup = getMuscleGroupById(selectedMuscleGroupId || preselectedMuscleGroupId || '');
+          {effectiveMuscleGroupId && (() => {
+            const selectedMuscleGroup = getMuscleGroupById(effectiveMuscleGroupId);
             return selectedMuscleGroup ? (
               <div className="border-t mt-4 pt-4 pb-4">
                 <div className="text-sm font-medium mb-2">Or choose from recent exercises:</div>
