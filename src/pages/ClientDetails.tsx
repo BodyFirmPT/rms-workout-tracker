@@ -115,6 +115,7 @@ export default function ClientDetails() {
     return workoutDate >= weekAgo;
   }).length;
   const cancelledCount = cancelledWorkouts.length;
+  const lateCancelledCount = cancelledWorkouts.filter(w => w.late_cancelled).length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -222,6 +223,11 @@ export default function ClientDetails() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{cancelledCount}</div>
+                {lateCancelledCount > 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {lateCancelledCount} late cancel{lateCancelledCount !== 1 ? 's' : ''}
+                  </p>
+                )}
               </CardContent>
             </Card>
           </div>
