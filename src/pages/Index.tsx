@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Settings } from "lucide-react";
+import { Settings, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ClientSelector } from "@/components/dashboard/client-selector";
 
@@ -18,14 +18,24 @@ const Index = () => {
               Select a client to view their training sessions and create new workouts
             </p>
           </div>
-          <Button 
-            variant="outline" 
-            onClick={() => navigate("/muscle-groups")}
-            className="flex items-center gap-2"
-          >
-            <Settings className="h-4 w-4" />
-            Manage Muscle Groups
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate("/profile")}
+              className="flex items-center gap-2"
+            >
+              <User className="h-4 w-4" />
+              Profile
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate("/muscle-groups")}
+              className="flex items-center gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              Manage Muscle Groups
+            </Button>
+          </div>
         </div>
       </div>
       <div className="space-y-6">
