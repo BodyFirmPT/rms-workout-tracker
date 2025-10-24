@@ -13,6 +13,7 @@ interface MuscleGroupSuggestionsProps {
   hasExistingExercises: boolean;
   disabled?: boolean;
   onExerciseAdded?: () => void;
+  showClientFilter?: boolean;
 }
 export function MuscleGroupSuggestions({
   muscleGroup,
@@ -20,7 +21,8 @@ export function MuscleGroupSuggestions({
   workoutId,
   hasExistingExercises,
   disabled = false,
-  onExerciseAdded
+  onExerciseAdded,
+  showClientFilter = false
 }: MuscleGroupSuggestionsProps) {
   const [suggestions, setSuggestions] = useState<Array<WorkoutExercise & { workout_date?: string }>>([]);
   const [loading, setLoading] = useState(true);
@@ -94,30 +96,32 @@ export function MuscleGroupSuggestions({
               </div>
             </div>
             
-            <ToggleGroup 
-              type="single" 
-              value={clientFilter} 
-              onValueChange={(value) => {
-                if (value) {
-                  setClientFilter(value as 'this' | 'all');
-                  setDisplayCount(5); // Reset count when changing filter
-                }
-              }}
-              className="inline-flex border border-input rounded-lg p-0.5 bg-muted/30 gap-0.5 w-full"
-            >
-              <ToggleGroupItem 
-                value="this" 
-                className="flex-1 text-xs py-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm data-[state=off]:bg-transparent data-[state=off]:text-muted-foreground hover:bg-background/50 hover:text-foreground"
+            {showClientFilter && (
+              <ToggleGroup 
+                type="single" 
+                value={clientFilter} 
+                onValueChange={(value) => {
+                  if (value) {
+                    setClientFilter(value as 'this' | 'all');
+                    setDisplayCount(5); // Reset count when changing filter
+                  }
+                }}
+                className="inline-flex border border-input rounded-lg p-0.5 bg-muted/30 gap-0.5 w-full"
               >
-                This client
-              </ToggleGroupItem>
-              <ToggleGroupItem 
-                value="all" 
-                className="flex-1 text-xs py-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm data-[state=off]:bg-transparent data-[state=off]:text-muted-foreground hover:bg-background/50 hover:text-foreground"
-              >
-                All clients
-              </ToggleGroupItem>
-            </ToggleGroup>
+                <ToggleGroupItem 
+                  value="this" 
+                  className="flex-1 text-xs py-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm data-[state=off]:bg-transparent data-[state=off]:text-muted-foreground hover:bg-background/50 hover:text-foreground"
+                >
+                  This client
+                </ToggleGroupItem>
+                <ToggleGroupItem 
+                  value="all" 
+                  className="flex-1 text-xs py-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm data-[state=off]:bg-transparent data-[state=off]:text-muted-foreground hover:bg-background/50 hover:text-foreground"
+                >
+                  All clients
+                </ToggleGroupItem>
+              </ToggleGroup>
+            )}
           </div>
           
           <div>

@@ -80,6 +80,7 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
                   workoutId={workoutId}
                   hasExistingExercises={false}
                   onExerciseAdded={handleQuickAdd}
+                  showClientFilter={true}
                 />
               </div>
             ) : null;
