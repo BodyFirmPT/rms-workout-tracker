@@ -157,9 +157,8 @@ const Login = () => {
         {!showPasswordAuth ? (
           <Button
             onClick={() => setShowPasswordAuth(true)}
-            variant="outline"
+            variant="link"
             className="w-full"
-            size="lg"
           >
             Login with password
           </Button>
