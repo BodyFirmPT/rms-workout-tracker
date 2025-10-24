@@ -27,6 +27,7 @@ export interface Workout {
   client_id: string;
   status: 'draft' | 'started' | 'completed';
   canceled_at?: string;
+  late_cancelled?: boolean;
   created_at?: string;
   exercises?: WorkoutExercise[];
 }

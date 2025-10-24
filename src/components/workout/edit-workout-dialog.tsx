@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { Workout } from "@/types/workout";
@@ -33,6 +34,7 @@ export function EditWorkoutDialog({ open, onOpenChange, workout }: EditWorkoutDi
   const [showCancelDatePicker, setShowCancelDatePicker] = useState(false);
   const [cancelDate, setCancelDate] = useState<Date>(new Date());
   const [cancelTime, setCancelTime] = useState<string>(format(new Date(), 'HH:mm'));
+  const [lateCancelled, setLateCancelled] = useState(workout.late_cancelled || false);
   
   const { updateWorkout, getClientById, loadData } = useWorkoutStore();
 
@@ -94,7 +96,10 @@ export function EditWorkoutDialog({ open, onOpenChange, workout }: EditWorkoutDi
 
       const { error } = await supabase
         .from('workout')
-        .update({ canceled_at: cancelDateTime.toISOString() })
+        .update({ 
+          canceled_at: cancelDateTime.toISOString(),
+          late_cancelled: lateCancelled 
+        })
         .eq('id', workout.id);
 
       if (error) throw error;
@@ -284,6 +289,17 @@ export function EditWorkoutDialog({ open, onOpenChange, workout }: EditWorkoutDi
                     className="flex-1"
                   />
                 </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="late-cancel"
+                  checked={lateCancelled}
+                  onCheckedChange={(checked) => setLateCancelled(checked === true)}
+                />
+                <Label htmlFor="late-cancel" className="text-sm font-normal cursor-pointer">
+                  Late cancel
+                </Label>
               </div>
 
               <Button

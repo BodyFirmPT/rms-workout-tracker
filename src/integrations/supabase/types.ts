@@ -160,6 +160,7 @@ export type Database = {
           created_at: string
           date: string
           id: string
+          late_cancelled: boolean | null
           note: string
           status: string
         }
@@ -169,6 +170,7 @@ export type Database = {
           created_at?: string
           date?: string
           id?: string
+          late_cancelled?: boolean | null
           note: string
           status?: string
         }
@@ -178,6 +180,7 @@ export type Database = {
           created_at?: string
           date?: string
           id?: string
+          late_cancelled?: boolean | null
           note?: string
           status?: string
         }
