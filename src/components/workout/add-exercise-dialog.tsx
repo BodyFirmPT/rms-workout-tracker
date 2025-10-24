@@ -133,6 +133,37 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
           <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none z-10" />
           <form onSubmit={handleSubmit} className="space-y-4 pb-4">
           <div className="space-y-2">
+            <Label htmlFor="muscle-group">Muscle Group</Label>
+            <Select value={showNewMuscleGroup ? "new" : muscleGroupId} onValueChange={handleMuscleGroupChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select muscle group" />
+              </SelectTrigger>
+              <SelectContent>
+                {muscleGroups.map((group) => (
+                  <SelectItem key={group.id} value={group.id}>
+                    {group.name}
+                  </SelectItem>
+                ))}
+                <SelectItem value="new">
+                  <div className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    Add new muscle group
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            
+            {showNewMuscleGroup && (
+              <Input
+                value={newMuscleGroup}
+                onChange={(e) => setNewMuscleGroup(e.target.value)}
+                placeholder="Enter new muscle group name"
+                className="mt-2"
+              />
+            )}
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="exercise-name">{exerciseType === 'stretch' ? 'Stretch Name' : 'Exercise Name'}</Label>
             <Input
               id="exercise-name"
@@ -166,37 +197,6 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="muscle-group">Muscle Group</Label>
-            <Select value={showNewMuscleGroup ? "new" : muscleGroupId} onValueChange={handleMuscleGroupChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select muscle group" />
-              </SelectTrigger>
-              <SelectContent>
-                {muscleGroups.map((group) => (
-                  <SelectItem key={group.id} value={group.id}>
-                    {group.name}
-                  </SelectItem>
-                ))}
-                <SelectItem value="new">
-                  <div className="flex items-center gap-2">
-                    <Plus className="h-4 w-4" />
-                    Add new muscle group
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            
-            {showNewMuscleGroup && (
-              <Input
-                value={newMuscleGroup}
-                onChange={(e) => setNewMuscleGroup(e.target.value)}
-                placeholder="Enter new muscle group name"
-                className="mt-2"
-              />
-            )}
           </div>
           
           <div className="grid grid-cols-2 gap-4">
