@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
-import { History } from "lucide-react";
+import { History, Plus } from "lucide-react";
+import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { UnifiedExerciseCard } from "@/components/ui/unified-exercise-card";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { MuscleGroup, WorkoutExercise } from "@/types/workout";
@@ -19,18 +22,35 @@ export function MuscleGroupSuggestions({
   disabled = false,
   onExerciseAdded
 }: MuscleGroupSuggestionsProps) {
-  const [suggestions, setSuggestions] = useState<WorkoutExercise[]>([]);
+  const [suggestions, setSuggestions] = useState<Array<WorkoutExercise & { workout_date?: string }>>([]);
   const [loading, setLoading] = useState(true);
+  const [clientFilter, setClientFilter] = useState<'this' | 'all'>('this');
+  const [displayCount, setDisplayCount] = useState(5);
+  const [hasMore, setHasMore] = useState(false);
+  
   const {
     getRecentExercisesForMuscleGroup,
     addExerciseToWorkout
   } = useWorkoutStore();
+  
   useEffect(() => {
     const loadSuggestions = async () => {
       setLoading(true);
       try {
-        const exercises = await getRecentExercisesForMuscleGroup(clientId, muscleGroup.id, 5);
-        setSuggestions(exercises);
+        const allClients = clientFilter === 'all';
+        const exercises = await getRecentExercisesForMuscleGroup(
+          clientId, 
+          muscleGroup.id, 
+          displayCount + 1, // Fetch one extra to check if there are more
+          0,
+          allClients
+        );
+        
+        // Check if there are more exercises available
+        setHasMore(exercises.length > displayCount);
+        
+        // Only show the requested number
+        setSuggestions(exercises.slice(0, displayCount));
       } catch (error) {
         console.error('Failed to load exercise suggestions:', error);
       } finally {
@@ -38,8 +58,12 @@ export function MuscleGroupSuggestions({
       }
     };
     loadSuggestions();
-  }, [clientId, muscleGroup.id, getRecentExercisesForMuscleGroup]);
-  const handleCopyExercise = async (exercise: WorkoutExercise) => {
+  }, [clientId, muscleGroup.id, getRecentExercisesForMuscleGroup, clientFilter, displayCount]);
+  
+  const handleLoadMore = () => {
+    setDisplayCount(prev => prev + 5);
+  };
+  const handleCopyExercise = async (exercise: WorkoutExercise & { workout_date?: string }) => {
     if (!disabled) {
       await addExerciseToWorkout(workoutId, {
         muscle_group_id: exercise.muscle_group_id,
@@ -57,34 +81,85 @@ export function MuscleGroupSuggestions({
       onExerciseAdded?.();
     }
   };
+  
   return (
     <>
       {suggestions.length > 0 && (
         <div>
-          <div className="px-3 py-1.5 text-xs text-muted-foreground bg-muted/10 border-b border-border/30">
-            <History className="h-2.5 w-2.5 inline mr-1" />
-            Recent exercises:
+          <div className="px-3 py-2 border-b border-border/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="text-xs text-muted-foreground">
+                <History className="h-2.5 w-2.5 inline mr-1" />
+                Recent exercises
+              </div>
+            </div>
+            
+            <ToggleGroup 
+              type="single" 
+              value={clientFilter} 
+              onValueChange={(value) => {
+                if (value) {
+                  setClientFilter(value as 'this' | 'all');
+                  setDisplayCount(5); // Reset count when changing filter
+                }
+              }}
+              className="inline-flex border border-input rounded-lg p-0.5 bg-muted/30 gap-0.5 w-full"
+            >
+              <ToggleGroupItem 
+                value="this" 
+                className="flex-1 text-xs py-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm data-[state=off]:bg-transparent data-[state=off]:text-muted-foreground hover:bg-background/50 hover:text-foreground"
+              >
+                This client
+              </ToggleGroupItem>
+              <ToggleGroupItem 
+                value="all" 
+                className="flex-1 text-xs py-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm data-[state=off]:bg-transparent data-[state=off]:text-muted-foreground hover:bg-background/50 hover:text-foreground"
+              >
+                All clients
+              </ToggleGroupItem>
+            </ToggleGroup>
           </div>
           
           <div>
             {suggestions.map((exercise, index) => (
-              <UnifiedExerciseCard 
-                key={index} 
-                exerciseName={exercise.exercise_name} 
-                repsCount={exercise.reps_count || 1} 
-                repsUnit={exercise.reps_unit || "reps"} 
-                weightCount={exercise.weight_count || 0} 
-                weightUnit={exercise.weight_unit || "lbs"} 
-                leftWeight={exercise.left_weight}
-                setCount={exercise.set_count} 
-                note={exercise.note || undefined}
-                type={exercise.type || 'exercise'}
-                variant="suggested" 
-                onAdd={() => handleCopyExercise(exercise)} 
-                disabled={disabled} 
-              />
+              <div key={index}>
+                <UnifiedExerciseCard 
+                  exerciseName={exercise.exercise_name} 
+                  repsCount={exercise.reps_count || 1} 
+                  repsUnit={exercise.reps_unit || "reps"} 
+                  weightCount={exercise.weight_count || 0} 
+                  weightUnit={exercise.weight_unit || "lbs"} 
+                  leftWeight={exercise.left_weight}
+                  setCount={exercise.set_count} 
+                  note={exercise.note || undefined}
+                  type={exercise.type || 'exercise'}
+                  variant="suggested" 
+                  onAdd={() => handleCopyExercise(exercise)} 
+                  disabled={disabled} 
+                />
+                {exercise.workout_date && (
+                  <div className="px-3 py-1 text-[10px] text-muted-foreground border-b border-border/20">
+                    Last used: {format(new Date(exercise.workout_date + 'T00:00:00'), 'MMM d, yyyy')}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
+          
+          {hasMore && (
+            <div className="px-3 py-2 border-t border-border/30">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleLoadMore}
+                className="w-full text-xs"
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Show 5 more
+              </Button>
+            </div>
+          )}
         </div>
       )}
       

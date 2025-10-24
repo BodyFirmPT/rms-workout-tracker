@@ -426,44 +426,59 @@ export class WorkoutService {
     return Array.from(uniqueExercises.values()).slice(0, 3); // Return top 3 unique exercises
   }
 
-  static async getRecentExercisesForMuscleGroup(clientId: string, muscleGroupId: string, limit = 5): Promise<WorkoutExercise[]> {
-    // Get all exercises for this muscle group from all clients
-    const { data, error } = await supabase
+  static async getRecentExercisesForMuscleGroup(
+    clientId: string, 
+    muscleGroupId: string, 
+    limit = 5, 
+    offset = 0,
+    allClients = false
+  ): Promise<Array<WorkoutExercise & { workout_date?: string }>> {
+    // Build query to get exercises with workout dates
+    let query = supabase
       .from('workout_exercise')
       .select(`
         *,
-        workout!inner(client_id)
+        workout!inner(client_id, date)
       `)
       .eq('muscle_group_id', muscleGroupId)
       .order('created_at', { ascending: false });
     
+    // Filter by client if not showing all clients
+    if (!allClients) {
+      query = query.eq('workout.client_id', clientId);
+    }
+    
+    const { data, error } = await query;
+    
     if (error) throw error;
     
-    // Separate exercises by client and get unique exercises by name
-    const currentClientExercises = new Map();
-    const otherClientExercises = new Map();
+    // Get unique exercises by name
+    const uniqueExercises = new Map<string, WorkoutExercise & { workout_date?: string }>();
     
-    (data || []).forEach(exercise => {
+    (data || []).forEach((exercise: any) => {
       const exerciseName = exercise.exercise_name;
       
-      if (exercise.workout.client_id === clientId) {
-        if (!currentClientExercises.has(exerciseName)) {
-          currentClientExercises.set(exerciseName, exercise);
-        }
-      } else {
-        if (!otherClientExercises.has(exerciseName) && !currentClientExercises.has(exerciseName)) {
-          otherClientExercises.set(exerciseName, exercise);
+      // If not showing all clients, or if this is from current client, prioritize it
+      if (!uniqueExercises.has(exerciseName)) {
+        uniqueExercises.set(exerciseName, {
+          ...exercise,
+          workout_date: exercise.workout?.date
+        });
+      } else if (!allClients || exercise.workout.client_id === clientId) {
+        // Replace if this is from current client and we're showing all clients
+        const existing = uniqueExercises.get(exerciseName);
+        if (existing && new Date(exercise.workout.date) > new Date(existing.workout_date || '')) {
+          uniqueExercises.set(exerciseName, {
+            ...exercise,
+            workout_date: exercise.workout?.date
+          });
         }
       }
     });
     
-    // Combine with current client exercises first
-    const result = [
-      ...Array.from(currentClientExercises.values()),
-      ...Array.from(otherClientExercises.values())
-    ];
-    
-    return result.slice(0, limit);
+    // Apply pagination
+    const result = Array.from(uniqueExercises.values());
+    return result.slice(offset, offset + limit);
   }
 
   static async deleteExercise(exerciseId: string): Promise<void> {

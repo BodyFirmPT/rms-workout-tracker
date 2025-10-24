@@ -41,7 +41,7 @@ interface WorkoutStore {
   getClientById: (id: string) => Client | undefined;
   getClientExerciseHistory: (clientId: string, muscleGroupId?: string) => Promise<WorkoutExercise[]>;
   getUniqueExercisesForClient: (clientId: string, muscleGroupId: string) => Promise<WorkoutExercise[]>;
-  getRecentExercisesForMuscleGroup: (clientId: string, muscleGroupId: string, limit?: number) => Promise<WorkoutExercise[]>;
+  getRecentExercisesForMuscleGroup: (clientId: string, muscleGroupId: string, limit?: number, offset?: number, allClients?: boolean) => Promise<Array<WorkoutExercise & { workout_date?: string }>>;
   loadWorkoutExercises: (workoutId: string) => Promise<void>;
   deleteExercise: (workoutId: string, exerciseId: string) => Promise<void>;
   deleteWorkout: (id: string) => Promise<void>;
@@ -346,9 +346,9 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
     }
   },
 
-  getRecentExercisesForMuscleGroup: async (clientId: string, muscleGroupId: string, limit = 5) => {
+  getRecentExercisesForMuscleGroup: async (clientId: string, muscleGroupId: string, limit = 5, offset = 0, allClients = false) => {
     try {
-      return await WorkoutService.getRecentExercisesForMuscleGroup(clientId, muscleGroupId, limit);
+      return await WorkoutService.getRecentExercisesForMuscleGroup(clientId, muscleGroupId, limit, offset, allClients);
     } catch (error) {
       console.error('Failed to get recent exercises for muscle group:', error);
       return [];
