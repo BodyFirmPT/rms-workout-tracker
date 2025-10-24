@@ -434,7 +434,7 @@ export class WorkoutService {
     allClients = false
   ): Promise<Array<WorkoutExercise & { workout_date?: string }>> {
     // Build query to get exercises with workout dates
-    let query = supabase
+    const { data, error } = await supabase
       .from('workout_exercise')
       .select(`
         *,
@@ -443,41 +443,44 @@ export class WorkoutService {
       .eq('muscle_group_id', muscleGroupId)
       .order('created_at', { ascending: false });
     
-    // Filter by client if not showing all clients
-    if (!allClients) {
-      query = query.eq('workout.client_id', clientId);
-    }
-    
-    const { data, error } = await query;
-    
     if (error) throw error;
     
-    // Get unique exercises by name
-    const uniqueExercises = new Map<string, WorkoutExercise & { workout_date?: string }>();
+    // Separate exercises by client and get unique exercises by name
+    const currentClientExercises = new Map<string, WorkoutExercise & { workout_date?: string }>();
+    const otherClientExercises = new Map<string, WorkoutExercise & { workout_date?: string }>();
     
     (data || []).forEach((exercise: any) => {
       const exerciseName = exercise.exercise_name;
+      const exerciseWithDate = {
+        ...exercise,
+        workout_date: exercise.workout?.date
+      };
       
-      // If not showing all clients, or if this is from current client, prioritize it
-      if (!uniqueExercises.has(exerciseName)) {
-        uniqueExercises.set(exerciseName, {
-          ...exercise,
-          workout_date: exercise.workout?.date
-        });
-      } else if (!allClients || exercise.workout.client_id === clientId) {
-        // Replace if this is from current client and we're showing all clients
-        const existing = uniqueExercises.get(exerciseName);
-        if (existing && new Date(exercise.workout.date) > new Date(existing.workout_date || '')) {
-          uniqueExercises.set(exerciseName, {
-            ...exercise,
-            workout_date: exercise.workout?.date
-          });
+      if (exercise.workout.client_id === clientId) {
+        if (!currentClientExercises.has(exerciseName)) {
+          currentClientExercises.set(exerciseName, exerciseWithDate);
+        }
+      } else {
+        if (!otherClientExercises.has(exerciseName) && !currentClientExercises.has(exerciseName)) {
+          otherClientExercises.set(exerciseName, exerciseWithDate);
         }
       }
     });
     
+    // Filter based on allClients parameter
+    let result: Array<WorkoutExercise & { workout_date?: string }>;
+    if (allClients) {
+      // Show all: current client exercises first, then others
+      result = [
+        ...Array.from(currentClientExercises.values()),
+        ...Array.from(otherClientExercises.values())
+      ];
+    } else {
+      // Show only current client exercises
+      result = Array.from(currentClientExercises.values());
+    }
+    
     // Apply pagination
-    const result = Array.from(uniqueExercises.values());
     return result.slice(offset, offset + limit);
   }
 
