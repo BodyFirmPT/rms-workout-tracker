@@ -111,7 +111,7 @@ export function EditExerciseDialog({
         reps_unit: repsUnit,
         weight_count: weightCount,
         weight_unit: weightUnit,
-        left_weight: showLeftRight ? leftWeight : undefined,
+        left_weight: showLeftRight ? leftWeight : null,
         set_count: parseInt(sets),
         note: note.trim(),
       });
