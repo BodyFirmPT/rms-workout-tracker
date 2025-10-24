@@ -122,8 +122,8 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="w-full max-w-md p-8 space-y-6 bg-card rounded-lg border">
-        <div className="text-center space-y-2">
+      <div className="w-full max-w-md p-8 bg-card rounded-lg border">
+        <div className="text-center space-y-2 mb-8">
           <h1 className="text-3xl font-bold text-foreground">Welcome</h1>
           <p className="text-muted-foreground">Sign in to access your workout tracker</p>
         </div>
@@ -158,7 +158,7 @@ const Login = () => {
           <Button
             onClick={() => setShowPasswordAuth(true)}
             variant="link"
-            className="w-full"
+            className="w-full mt-4"
           >
             Login with password
           </Button>
