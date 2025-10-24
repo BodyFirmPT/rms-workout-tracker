@@ -158,7 +158,7 @@ const Login = () => {
           <Button
             onClick={() => setShowPasswordAuth(true)}
             variant="link"
-            className="w-full mt-4 py-1"
+            className="w-full py-1"
           >
             Login with password
           </Button>
