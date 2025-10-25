@@ -9,12 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { Workout, WorkoutUpdateInput } from "@/types/workout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { WorkoutFormFields } from "./workout-form-fields";
 
 interface Location {
   id: string;
@@ -195,77 +195,17 @@ export function EditWorkoutDialog({ open, onOpenChange, workout }: EditWorkoutDi
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label>Workout Date</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !date && "text-muted-foreground",
-                    errors.date && "border-destructive"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={(selectedDate) => {
-                    if (selectedDate) {
-                      setDate(selectedDate);
-                      setErrors({ ...errors, date: "" });
-                    }
-                  }}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
-            {errors.date && (
-              <p className="text-sm text-destructive">{errors.date}</p>
-            )}
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="location">Location (optional)</Label>
-            <Select value={locationId} onValueChange={setLocationId}>
-              <SelectTrigger id="location">
-                <SelectValue placeholder="Select a location" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                {locations.map((location) => (
-                  <SelectItem key={location.id} value={location.id}>
-                    {location.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="note">Workout Note</Label>
-            <Input
-              id="note"
-              value={note}
-              onChange={(e) => {
-                setNote(e.target.value);
-                if (errors.note) {
-                  setErrors({ ...errors, note: "" });
-                }
-              }}
-              placeholder="e.g., Upper Body Strength, Cardio Session"
-              className={errors.note ? "border-destructive" : ""}
-            />
-            {errors.note && (
-              <p className="text-sm text-destructive">{errors.note}</p>
-            )}
-          </div>
+          <WorkoutFormFields
+            date={date}
+            onDateChange={setDate}
+            note={note}
+            onNoteChange={setNote}
+            locationId={locationId}
+            onLocationChange={setLocationId}
+            locations={locations}
+            errors={errors}
+            onErrorClear={(field) => setErrors({ ...errors, [field]: "" })}
+          />
           
           {workout.canceled_at && (
             <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3">

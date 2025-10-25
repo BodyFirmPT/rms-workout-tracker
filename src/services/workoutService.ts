@@ -162,13 +162,14 @@ export class WorkoutService {
     return (data || []) as Workout[];
   }
 
-  static async createWorkout(clientId: string, note: string, date?: string): Promise<Workout> {
+  static async createWorkout(clientId: string, note: string, date?: string, locationId?: string | null): Promise<Workout> {
     const { data, error } = await supabase
       .from('workout')
       .insert({ 
         client_id: clientId, 
         note,
         date: date || new Date().toISOString().split('T')[0],
+        location_id: locationId,
         status: 'draft'
       })
       .select()

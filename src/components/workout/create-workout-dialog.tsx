@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
-import { Plus, CalendarIcon } from "lucide-react";
+import { Plus } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { CreateClientDialog } from "./create-client-dialog";
+import { WorkoutFormFields } from "./workout-form-fields";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Location {
+  id: string;
+  name: string;
+}
 
 interface CreateWorkoutDialogProps {
   open: boolean;
@@ -23,6 +26,8 @@ export function CreateWorkoutDialog({ open, onOpenChange, defaultClientId, onWor
   const [note, setNote] = useState("");
   const [date, setDate] = useState<Date>(new Date());
   const [clientId, setClientId] = useState(defaultClientId || "");
+  const [locationId, setLocationId] = useState<string>("none");
+  const [locations, setLocations] = useState<Location[]>([]);
   const [showCreateClient, setShowCreateClient] = useState(false);
   
   const { clients, createWorkout } = useWorkoutStore();
@@ -34,16 +39,46 @@ export function CreateWorkoutDialog({ open, onOpenChange, defaultClientId, onWor
     }
   }, [defaultClientId]);
 
+  // Load locations when client changes
+  useEffect(() => {
+    if (open && clientId) {
+      loadLocations();
+    }
+  }, [open, clientId]);
+
+  const loadLocations = async () => {
+    if (!clientId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('location')
+        .select('id, name')
+        .eq('client_id', clientId)
+        .order('name');
+
+      if (error) throw error;
+      setLocations(data || []);
+    } catch (error) {
+      console.error('Error loading locations:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!clientId) return;
 
-    const workoutId = await createWorkout(clientId, note.trim(), format(date, 'yyyy-MM-dd'));
+    const workoutId = await createWorkout(
+      clientId, 
+      note.trim(), 
+      format(date, 'yyyy-MM-dd'),
+      locationId === "none" ? null : locationId
+    );
     
     // Reset form
     setNote("");
     setDate(new Date());
     setClientId(defaultClientId || "");
+    setLocationId("none");
     onOpenChange(false);
     
     // Call the callback if provided
@@ -97,42 +132,15 @@ export function CreateWorkoutDialog({ open, onOpenChange, defaultClientId, onWor
               </div>
             )}
             
-            <div className="space-y-2">
-              <Label>Workout Date</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !date && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={(selectedDate) => selectedDate && setDate(selectedDate)}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="note">Workout Note (Optional)</Label>
-              <Input
-                id="note"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="e.g., Upper Body Strength, Cardio Session"
-              />
-            </div>
+            <WorkoutFormFields
+              date={date}
+              onDateChange={setDate}
+              note={note}
+              onNoteChange={setNote}
+              locationId={locationId}
+              onLocationChange={setLocationId}
+              locations={locations}
+            />
             
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
