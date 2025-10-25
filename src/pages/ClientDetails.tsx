@@ -14,6 +14,12 @@ import { DuplicateWorkoutDialog } from "@/components/workout/duplicate-workout-d
 import { EditClientDialog } from "@/components/workout/edit-client-dialog";
 import { format } from "date-fns";
 import { Workout } from "@/types/workout";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Location {
+  id: string;
+  name: string;
+}
 
 export default function ClientDetails() {
   const { clientId } = useParams<{ clientId: string }>();
@@ -25,6 +31,7 @@ export default function ClientDetails() {
   const [editingClient, setEditingClient] = useState(false);
   const [workoutProgresses, setWorkoutProgresses] = useState<{ [id: string]: number }>({});
   const [searchQuery, setSearchQuery] = useState("");
+  const [locations, setLocations] = useState<{ [id: string]: Location }>({});
   
   const { 
     workouts, 
@@ -39,7 +46,29 @@ export default function ClientDetails() {
 
   useEffect(() => {
     loadData();
+    loadLocations();
   }, [loadData]);
+
+  const loadLocations = async () => {
+    if (!clientId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('location')
+        .select('id, name')
+        .eq('client_id', clientId);
+
+      if (error) throw error;
+      
+      const locationMap: { [id: string]: Location } = {};
+      data?.forEach(loc => {
+        locationMap[loc.id] = loc;
+      });
+      setLocations(locationMap);
+    } catch (error) {
+      console.error('Error loading locations:', error);
+    }
+  };
 
   useEffect(() => {
     const loadProgresses = async () => {
@@ -324,7 +353,12 @@ export default function ClientDetails() {
                           strokeWidth={4}
                         />
                         <div>
-                          <h4 className="font-bold">{format(new Date(workout.date + 'T00:00:00'), 'MMM d, yyyy')}</h4>
+                          <h4 className="font-bold">
+                            {format(new Date(workout.date + 'T00:00:00'), 'MMM d, yyyy')}
+                            {workout.location_id && locations[workout.location_id] && (
+                              <> · {locations[workout.location_id].name}</>
+                            )}
+                          </h4>
                           <p className="text-xs text-muted-foreground italic mt-1">
                             {!workout.canceled_at && `Workout #${workoutNumber}`}
                             {!workout.canceled_at && workout.note && ` · `}
