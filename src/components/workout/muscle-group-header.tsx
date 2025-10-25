@@ -79,27 +79,29 @@ export function MuscleGroupHeader({
           <Badge variant="secondary" className="text-xs px-1.5 py-0">
             {exerciseCount}
           </Badge>
+        </div>
+        <div className="flex items-center gap-2">
           {restrictions.length > 0 && !disabled && (
             <Badge 
               variant="outline" 
-              className="text-xs px-1.5 py-0 cursor-pointer hover:bg-accent"
+              className="text-xs px-1.5 py-0 cursor-pointer hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
               onClick={() => setShowRestrictionsDialog(true)}
             >
               <Ban className="h-3 w-3 mr-1" />
               {restrictions.length} {restrictions.length === 1 ? 'restriction' : 'restrictions'}
             </Badge>
           )}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onAddExercise} 
+            className="h-6 px-2 text-xs" 
+            disabled={disabled}
+          >
+            <Plus className="h-2.5 w-2.5 mr-1" />
+            Add
+          </Button>
         </div>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={onAddExercise} 
-          className="h-6 px-2 text-xs" 
-          disabled={disabled}
-        >
-          <Plus className="h-2.5 w-2.5 mr-1" />
-          Add
-        </Button>
       </div>
 
       <ViewRestrictionsDialog
