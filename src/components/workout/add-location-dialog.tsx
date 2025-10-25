@@ -41,15 +41,27 @@ export function AddLocationDialog({
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase
+      // First create the location
+      const { data: locationData, error: locationError } = await supabase
         .from('location')
         .insert({
-          client_id: clientId,
           name: locationName.trim(),
           description: description.trim() || null,
+        })
+        .select()
+        .single();
+
+      if (locationError) throw locationError;
+
+      // Then create the junction record
+      const { error: junctionError } = await supabase
+        .from('client_locations')
+        .insert({
+          client_id: clientId,
+          location_id: locationData.id,
         });
 
-      if (error) throw error;
+      if (junctionError) throw junctionError;
 
       toast.success("Location added");
       setLocationName("");

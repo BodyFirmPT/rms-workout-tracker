@@ -54,15 +54,22 @@ export default function ClientDetails() {
     
     try {
       const { data, error } = await supabase
-        .from('location')
-        .select('id, name')
+        .from('client_locations')
+        .select(`
+          location:location_id (
+            id,
+            name
+          )
+        `)
         .eq('client_id', clientId);
 
       if (error) throw error;
       
       const locationMap: { [id: string]: Location } = {};
-      data?.forEach(loc => {
-        locationMap[loc.id] = loc;
+      data?.forEach(item => {
+        if (item.location) {
+          locationMap[item.location.id] = item.location;
+        }
       });
       setLocations(locationMap);
     } catch (error) {

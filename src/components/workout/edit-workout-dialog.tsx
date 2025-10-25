@@ -59,13 +59,23 @@ export function EditWorkoutDialog({ open, onOpenChange, workout }: EditWorkoutDi
     
     try {
       const { data, error } = await supabase
-        .from('location')
-        .select('id, name')
-        .eq('client_id', client.id)
-        .order('name');
+        .from('client_locations')
+        .select(`
+          location:location_id (
+            id,
+            name
+          )
+        `)
+        .eq('client_id', client.id);
 
       if (error) throw error;
-      setLocations(data || []);
+      
+      const locationsList = (data || [])
+        .filter(item => item.location)
+        .map(item => item.location!)
+        .sort((a, b) => a.name.localeCompare(b.name));
+      
+      setLocations(locationsList);
     } catch (error) {
       console.error('Error loading locations:', error);
     }

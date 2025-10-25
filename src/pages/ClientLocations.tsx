@@ -17,6 +17,7 @@ interface Location {
   description: string | null;
   created_at: string;
   equipment_count?: number;
+  shared_count?: number;
 }
 
 export default function ClientLocations() {
@@ -46,22 +47,56 @@ export default function ClientLocations() {
     
     setLoading(true);
     try {
+      // Query through the junction table to get locations for this client
       const { data, error } = await supabase
-        .from('location')
-        .select('*, equipment(count)')
-        .eq('client_id', clientId)
-        .order('created_at', { ascending: false });
+        .from('client_locations')
+        .select(`
+          location_id,
+          location:location_id (
+            id,
+            name,
+            description,
+            created_at
+          )
+        `)
+        .eq('client_id', clientId);
 
       if (error) throw error;
       
-      // Transform the data to include equipment count
-      const locationsWithCount = (data || []).map(loc => ({
-        ...loc,
-        equipment_count: loc.equipment?.[0]?.count || 0,
-        equipment: undefined // Remove the nested equipment object
-      }));
+      // Get equipment counts for each location
+      const locationIds = (data || []).map(item => item.location?.id).filter(Boolean);
+      const { data: equipmentData } = await supabase
+        .from('equipment')
+        .select('location_id')
+        .in('location_id', locationIds);
       
-      setLocations(locationsWithCount);
+      // Count equipment per location
+      const equipmentCounts: Record<string, number> = {};
+      (equipmentData || []).forEach(item => {
+        equipmentCounts[item.location_id] = (equipmentCounts[item.location_id] || 0) + 1;
+      });
+      
+      // Check how many clients each location is shared with
+      const { data: sharingData } = await supabase
+        .from('client_locations')
+        .select('location_id, client_id')
+        .in('location_id', locationIds);
+      
+      const clientCounts: Record<string, number> = {};
+      (sharingData || []).forEach(item => {
+        clientCounts[item.location_id] = (clientCounts[item.location_id] || 0) + 1;
+      });
+      
+      // Transform the data
+      const locationsWithCount = (data || [])
+        .filter(item => item.location)
+        .map(item => ({
+          ...item.location!,
+          equipment_count: equipmentCounts[item.location!.id] || 0,
+          shared_count: clientCounts[item.location!.id] || 1,
+        }));
+      
+      setLocations(locationsWithCount as any);
     } catch (error) {
       console.error('Error loading locations:', error);
       toast.error('Failed to load locations');
@@ -155,11 +190,18 @@ export default function ClientLocations() {
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-4">
+                  <div className="space-y-4">
                   {locations.map((location) => (
                     <div key={location.id} className="group flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                       <div className="flex-1">
-                        <h4 className="font-bold">{location.name}</h4>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-bold">{location.name}</h4>
+                          {location.shared_count && location.shared_count > 1 && (
+                            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                              Shared with {location.shared_count - 1} other{location.shared_count - 1 === 1 ? '' : 's'}
+                            </span>
+                          )}
+                        </div>
                         {location.description && (
                           <p className="text-sm text-muted-foreground mt-1">
                             {location.description}
@@ -193,6 +235,7 @@ export default function ClientLocations() {
                           size="sm"
                           onClick={() => setDeletingLocation(location)}
                           className="hidden group-hover:inline-flex text-destructive hover:text-destructive"
+                          title={location.shared_count && location.shared_count > 1 ? "Remove from this client" : "Delete location"}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -227,6 +270,7 @@ export default function ClientLocations() {
           open={!!deletingLocation}
           onOpenChange={(open) => !open && setDeletingLocation(null)}
           location={deletingLocation}
+          clientId={clientId!}
           onSuccess={loadLocations}
         />
       )}

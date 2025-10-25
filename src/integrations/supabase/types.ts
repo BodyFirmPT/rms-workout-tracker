@@ -46,6 +46,42 @@ export type Database = {
           },
         ]
       }
+      client_locations: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          location_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          location_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          location_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_locations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_locations_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "location"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipment: {
         Row: {
           created_at: string
@@ -118,35 +154,24 @@ export type Database = {
       }
       location: {
         Row: {
-          client_id: string
           created_at: string
           description: string | null
           id: string
           name: string
         }
         Insert: {
-          client_id: string
           created_at?: string
           description?: string | null
           id?: string
           name: string
         }
         Update: {
-          client_id?: string
           created_at?: string
           description?: string | null
           id?: string
           name?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "location_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "client"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       muscle_group: {
         Row: {
