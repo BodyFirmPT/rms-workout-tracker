@@ -302,7 +302,7 @@ export function ActiveWorkout({
             showStickyHeader 
               ? 'translate-y-0 opacity-100' 
               : '-translate-y-full opacity-0 pointer-events-none'
-          } ${isCompleted ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' : 'bg-primary-gradient'} shadow-lg`}
+          } ${isCompleted ? 'bg-success-gradient' : 'bg-primary-gradient'} shadow-lg`}
         >
           <div className="container mx-auto max-w-6xl">
             <div className="flex items-center justify-between px-3 sm:px-4 py-3">
@@ -329,7 +329,7 @@ export function ActiveWorkout({
       )}
 
       {/* Workout Header */}
-      <Card className={`text-primary-foreground shadow-primary relative z-20 ${isCompleted ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' : 'bg-primary-gradient'}`}>
+      <Card className={`text-primary-foreground shadow-primary relative z-20 ${isCompleted ? 'bg-success-gradient' : 'bg-primary-gradient'}`}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex-1">

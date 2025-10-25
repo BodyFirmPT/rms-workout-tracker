@@ -29,8 +29,8 @@ All colors MUST be HSL.
     --accent: 174 72% 38%;
     --accent-foreground: 174 50% 96%;
 
-    --success: 142.1 76.2% 36.3%;
-    --success-foreground: 355.7 100% 97.3%;
+    --success: 174 72% 41%;
+    --success-foreground: 174 50% 96%;
 
     --destructive: 330 81% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -43,7 +43,7 @@ All colors MUST be HSL.
 
     /* Fitness App Specific Colors */
     --primary-gradient: linear-gradient(135deg, hsl(270 70% 45%), hsl(270 70% 52%));
-    --success-gradient: linear-gradient(135deg, hsl(var(--success)), hsl(142.1 76.2% 45%));
+    --success-gradient: linear-gradient(135deg, hsl(174 72% 41%), hsl(174 72% 50%));
     --accent-gradient: linear-gradient(135deg, hsl(174 72% 38%), hsl(174 72% 45%));
     
     /* Shadows */
@@ -83,8 +83,8 @@ All colors MUST be HSL.
     --accent: 174 72% 38%;
     --accent-foreground: 174 50% 96%;
 
-    --success: 142.1 76.2% 36.3%;
-    --success-foreground: 355.7 100% 97.3%;
+    --success: 174 72% 41%;
+    --success-foreground: 174 50% 96%;
 
     --destructive: 330 81% 50%;
     --destructive-foreground: 0 0% 100%;
