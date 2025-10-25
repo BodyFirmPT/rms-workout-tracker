@@ -5,16 +5,21 @@ import { cn } from "@/lib/utils";
 
 interface ExerciseTimerProps {
   duration: number; // in seconds
+  setCount?: number;
+  completedSets?: number;
   onComplete?: () => void;
   onReset?: () => void;
 }
 
-export function ExerciseTimer({ duration, onComplete, onReset }: ExerciseTimerProps) {
+export function ExerciseTimer({ duration, setCount = 1, completedSets = 0, onComplete, onReset }: ExerciseTimerProps) {
   const [timeRemaining, setTimeRemaining] = useState(duration);
   const [isRunning, setIsRunning] = useState(false);
   const [hasCompleted, setHasCompleted] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+
+  const allSetsComplete = completedSets >= setCount;
+  const hasMoreSets = completedSets < setCount;
 
   // Play beep sound
   const playBeep = () => {
@@ -84,10 +89,17 @@ export function ExerciseTimer({ duration, onComplete, onReset }: ExerciseTimerPr
     const wasCompleted = hasCompleted;
     setHasCompleted(false);
     
-    // If it was completed, call onReset to uncheck the exercise
-    if (wasCompleted && onReset) {
+    // If all sets are complete and we're resetting, call onReset to reset all sets
+    if (allSetsComplete && wasCompleted && onReset) {
       onReset();
     }
+  };
+
+  const handleStartNextSet = () => {
+    // Reset timer and start for next set
+    setTimeRemaining(duration);
+    setHasCompleted(false);
+    setIsRunning(true);
   };
 
   const formatTime = (seconds: number) => {
@@ -155,20 +167,33 @@ export function ExerciseTimer({ duration, onComplete, onReset }: ExerciseTimerPr
           </Button>
         )}
         
+        {/* Show play button for next set when current set complete but more sets remain */}
+        {hasCompleted && hasMoreSets && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleStartNextSet}
+            className="h-9 w-9 p-0 border-2 border-primary text-primary hover:bg-primary/10 rounded-full"
+            title="Start next set"
+          >
+            <Play className="h-5 w-5" strokeWidth={3} />
+          </Button>
+        )}
+        
         {(timeRemaining !== duration || hasCompleted) && (
           <Button
             variant="outline"
             size="sm"
             onClick={handleReset}
             className="h-9 w-9 p-0 border-2 border-primary text-primary hover:bg-primary/10 rounded-full"
-            title="Reset"
+            title={allSetsComplete ? "Reset all sets" : "Reset current set"}
           >
             <RotateCcw className="h-5 w-5" strokeWidth={3} />
           </Button>
         )}
         
-        {hasCompleted && (
-          // Show green check when completed (last position)
+        {hasCompleted && allSetsComplete && (
+          // Show green check only when all sets are completed
           <Button
             variant="outline"
             size="sm"
