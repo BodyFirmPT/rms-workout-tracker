@@ -309,6 +309,8 @@ export type Database = {
       }
       workout_exercise: {
         Row: {
+          band_color: string | null
+          band_type: string | null
           completed_sets: number
           count: number
           created_at: string
@@ -329,6 +331,8 @@ export type Database = {
           workout_id: string
         }
         Insert: {
+          band_color?: string | null
+          band_type?: string | null
           completed_sets?: number
           count: number
           created_at?: string
@@ -349,6 +353,8 @@ export type Database = {
           workout_id: string
         }
         Update: {
+          band_color?: string | null
+          band_type?: string | null
           completed_sets?: number
           count?: number
           created_at?: string

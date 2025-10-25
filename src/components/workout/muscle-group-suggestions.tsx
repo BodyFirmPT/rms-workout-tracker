@@ -97,14 +97,18 @@ export function MuscleGroupSuggestions({
       await addExerciseToWorkout(workoutId, {
         muscle_group_id: exercise.muscle_group_id,
         exercise_name: exercise.exercise_name,
-        type: exercise.type || 'exercise',
+        type: exercise.type === 'exercise' ? 'weight' : exercise.type,
         reps_count: exercise.reps_count || 1,
         reps_unit: exercise.reps_unit || "reps",
         weight_count: exercise.weight_count || 0,
         weight_unit: exercise.weight_unit || "lbs",
         left_weight: exercise.left_weight,
         set_count: exercise.set_count,
-        note: exercise.note || ''
+        note: exercise.note || '',
+        ...(exercise.type === 'band' && {
+          band_color: exercise.band_color,
+          band_type: exercise.band_type,
+        }),
       });
       // Call the callback to close the dialog if provided
       onExerciseAdded?.();
@@ -165,7 +169,9 @@ export function MuscleGroupSuggestions({
                     leftWeight={exercise.left_weight}
                     setCount={exercise.set_count} 
                     note={exercise.note || undefined}
-                    type={exercise.type || 'exercise'}
+                    type={(exercise.type === 'exercise' ? 'weight' : exercise.type) as 'weight' | 'band' | 'stretch'}
+                    bandColor={exercise.band_color}
+                    bandType={exercise.band_type}
                     workoutDate={exercise.workout_date}
                     clientName={exercise.exercise_client_id !== clientId ? exercise.client_name : undefined}
                     variant="suggested" 

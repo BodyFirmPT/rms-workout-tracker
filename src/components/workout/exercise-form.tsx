@@ -23,7 +23,7 @@ interface ExerciseFormProps {
   initialValues?: {
     exerciseName?: string;
     muscleGroupId?: string;
-    exerciseType?: 'exercise' | 'stretch';
+    exerciseType?: 'exercise' | 'weight' | 'band' | 'stretch';
     repsCount?: number;
     repsUnit?: string;
     weightCount?: number;
@@ -31,6 +31,8 @@ interface ExerciseFormProps {
     leftWeight?: number | null;
     sets?: number;
     note?: string;
+    bandColor?: string;
+    bandType?: string;
   };
   submitLabel?: string;
   preselectedMuscleGroupId?: string | null;
@@ -51,7 +53,7 @@ export function ExerciseForm({
   const [exerciseName, setExerciseName] = useState(initialValues?.exerciseName || "");
   const [muscleGroupId, setMuscleGroupId] = useState(initialValues?.muscleGroupId || "");
   const [newMuscleGroup, setNewMuscleGroup] = useState("");
-  const [exerciseType, setExerciseType] = useState<'exercise' | 'stretch'>(initialValues?.exerciseType || 'exercise');
+  const [exerciseType, setExerciseType] = useState<'exercise' | 'weight' | 'band' | 'stretch'>(initialValues?.exerciseType || 'weight');
   const [repsCount, setRepsCount] = useState(initialValues?.repsCount || 12);
   const [repsUnit, setRepsUnit] = useState(initialValues?.repsUnit || "reps");
   const [weightCount, setWeightCount] = useState(initialValues?.weightCount || 0);
@@ -62,6 +64,8 @@ export function ExerciseForm({
   );
   const [sets, setSets] = useState(initialValues?.sets || 1);
   const [note, setNote] = useState(initialValues?.note || "");
+  const [bandColor, setBandColor] = useState(initialValues?.bandColor || "");
+  const [bandType, setBandType] = useState(initialValues?.bandType || "");
   const [showNewMuscleGroup, setShowNewMuscleGroup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [restrictions, setRestrictions] = useState<Restriction[]>([]);
@@ -86,7 +90,7 @@ export function ExerciseForm({
     if (initialValues) {
       setExerciseName(initialValues.exerciseName || "");
       setMuscleGroupId(initialValues.muscleGroupId || "");
-      setExerciseType(initialValues.exerciseType || 'exercise');
+      setExerciseType(initialValues.exerciseType || 'weight');
       setRepsCount(initialValues.repsCount || 12);
       setRepsUnit(initialValues.repsUnit || "reps");
       setWeightCount(initialValues.weightCount || 0);
@@ -95,6 +99,8 @@ export function ExerciseForm({
       setShowLeftRight(initialValues.leftWeight !== null && initialValues.leftWeight !== undefined);
       setSets(initialValues.sets || 1);
       setNote(initialValues.note || "");
+      setBandColor(initialValues.bandColor || "");
+      setBandType(initialValues.bandType || "");
       setShowNewMuscleGroup(false);
       setNewMuscleGroup("");
     }
@@ -131,6 +137,10 @@ export function ExerciseForm({
         left_weight: showLeftRight ? leftWeight : null,
         set_count: sets,
         note: note.trim(),
+        ...(exerciseType === 'band' && {
+          band_color: bandColor,
+          band_type: bandType,
+        }),
       };
 
       await onSubmit(exercise, showNewMuscleGroup ? newMuscleGroup.trim() : undefined);
@@ -244,14 +254,20 @@ export function ExerciseForm({
           <ToggleGroup 
             type="single" 
             value={exerciseType} 
-            onValueChange={(value) => value && setExerciseType(value as 'exercise' | 'stretch')}
+            onValueChange={(value) => value && setExerciseType(value as 'weight' | 'band' | 'stretch')}
             className="inline-flex border border-input rounded-lg p-1 bg-muted/30 gap-1 w-full"
           >
             <ToggleGroupItem 
-              value="exercise" 
+              value="weight" 
               className="flex-1 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground data-[state=on]:shadow-sm data-[state=off]:bg-transparent data-[state=off]:text-muted-foreground hover:bg-background/50 hover:text-foreground"
             >
-              Exercise
+              Weight
+            </ToggleGroupItem>
+            <ToggleGroupItem 
+              value="band" 
+              className="flex-1 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground data-[state=on]:shadow-sm data-[state=off]:bg-transparent data-[state=off]:text-muted-foreground hover:bg-background/50 hover:text-foreground"
+            >
+              Band
             </ToggleGroupItem>
             <ToggleGroupItem 
               value="stretch" 
@@ -262,6 +278,43 @@ export function ExerciseForm({
           </ToggleGroup>
         </div>
       </div>
+
+      {/* Band-specific fields */}
+      {exerciseType === 'band' && (
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="band-color">Band Color</Label>
+            <Select value={bandColor} onValueChange={setBandColor} required>
+              <SelectTrigger id="band-color">
+                <SelectValue placeholder="Select color" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Black">Black</SelectItem>
+                <SelectItem value="Blue">Blue</SelectItem>
+                <SelectItem value="Purple">Purple</SelectItem>
+                <SelectItem value="Red">Red</SelectItem>
+                <SelectItem value="Green">Green</SelectItem>
+                <SelectItem value="Yellow">Yellow</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="band-type">Band Type</Label>
+            <Select value={bandType} onValueChange={setBandType} required>
+              <SelectTrigger id="band-type">
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1-handle">1-handle</SelectItem>
+                <SelectItem value="2-handle">2-handle</SelectItem>
+                <SelectItem value="flat">Flat</SelectItem>
+                <SelectItem value="figure-8">Figure-8</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">

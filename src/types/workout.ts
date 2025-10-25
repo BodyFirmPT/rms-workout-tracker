@@ -53,7 +53,9 @@ export interface WorkoutExercise {
   set_count: number;
   completed_sets: number;
   is_completed: boolean;
-  type: 'exercise' | 'stretch';
+  type: 'exercise' | 'weight' | 'band' | 'stretch';
+  band_color?: string | null;
+  band_type?: string | null;
   created_at?: string;
   // Keep old fields for migration compatibility
   reps?: string;
@@ -71,5 +73,7 @@ export interface CreateWorkoutExerciseInput {
   left_weight?: number;
   note?: string;
   set_count: number;
-  type?: 'exercise' | 'stretch';
+  type?: 'exercise' | 'weight' | 'band' | 'stretch';
+  band_color?: string;
+  band_type?: string;
 }

@@ -24,7 +24,9 @@ interface UnifiedExerciseCardProps {
   muscleGroup?: string;
   isCompleted?: boolean;
   variant: 'suggested' | 'added';
-  type?: 'exercise' | 'stretch';
+  type?: 'exercise' | 'weight' | 'band' | 'stretch';
+  bandColor?: string | null;
+  bandType?: string | null;
   workoutDate?: string;
   clientName?: string;
   onAdd?: () => void;
@@ -48,7 +50,9 @@ export function UnifiedExerciseCard({
   muscleGroup,
   isCompleted = false,
   variant,
-  type = 'exercise',
+  type = 'weight',
+  bandColor,
+  bandType,
   workoutDate,
   clientName,
   onAdd,
@@ -60,6 +64,7 @@ export function UnifiedExerciseCard({
 }: UnifiedExerciseCardProps) {
   const isSuggested = variant === 'suggested';
   const isStretch = type === 'stretch';
+  const isBand = type === 'band';
   const isTimedExercise = !isSuggested && (repsUnit.toLowerCase() === 'sec' || repsUnit.toLowerCase() === 'seconds');
   
   return (
@@ -99,11 +104,13 @@ export function UnifiedExerciseCard({
             isSuggested ? "text-muted-foreground/70" : "text-muted-foreground"
           )}>
             {setCount} × {repsCount} {repsUnit}
-            {weightCount > 0 && leftWeight !== null && leftWeight !== undefined 
-              ? ` @ R:${weightCount} ${weightUnit} L:${leftWeight} ${weightUnit}` 
-              : weightCount > 0 
-                ? ` @ ${weightCount} ${weightUnit}` 
-                : ''}
+            {isBand && bandColor && bandType 
+              ? ` • ${bandColor} ${bandType}` 
+              : weightCount > 0 && leftWeight !== null && leftWeight !== undefined 
+                ? ` @ R:${weightCount} ${weightUnit} L:${leftWeight} ${weightUnit}` 
+                : weightCount > 0 
+                  ? ` @ ${weightCount} ${weightUnit}` 
+                  : ''}
           </span>
         </div>
         {note && (

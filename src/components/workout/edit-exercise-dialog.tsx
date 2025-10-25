@@ -61,7 +61,7 @@ export function EditExerciseDialog({
   const initialValues = exercise ? {
     exerciseName: exercise.exercise_name,
     muscleGroupId: exercise.muscle_group_id,
-    exerciseType: exercise.type || 'exercise' as 'exercise' | 'stretch',
+    exerciseType: (exercise.type === 'exercise' ? 'weight' : exercise.type) as 'weight' | 'band' | 'stretch',
     repsCount: exercise.reps_count || 1,
     repsUnit: exercise.reps_unit || "reps",
     weightCount: exercise.weight_count || 0,
@@ -69,6 +69,8 @@ export function EditExerciseDialog({
     leftWeight: exercise.left_weight ?? null,
     sets: exercise.set_count,
     note: exercise.note || "",
+    bandColor: exercise.band_color || "",
+    bandType: exercise.band_type || "",
   } : undefined;
 
   return (
