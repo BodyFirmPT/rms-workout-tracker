@@ -479,16 +479,16 @@ export function ActiveWorkout({
               </CardHeader>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <CardContent className="pt-0 space-y-3">
+              <CardContent className="pt-0 space-y-1.5">
                 {availableEquipment.map((equipment) => (
-                  <div key={equipment.id} className="p-3 bg-muted/50 rounded-lg border">
+                  <div key={equipment.id} className="py-1.5 px-2 hover:bg-muted/30 rounded transition-colors">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-foreground text-sm">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm leading-tight">
                           {equipment.name}
-                        </h4>
+                        </p>
                         {equipment.description && (
-                          <p className="text-xs text-muted-foreground mt-1">
+                          <p className="text-xs text-muted-foreground mt-0.5 leading-tight">
                             {equipment.description}
                           </p>
                         )}
