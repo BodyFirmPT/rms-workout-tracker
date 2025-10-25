@@ -41,7 +41,7 @@ interface WorkoutStore {
   getClientById: (id: string) => Client | undefined;
   getClientExerciseHistory: (clientId: string, muscleGroupId?: string) => Promise<WorkoutExercise[]>;
   getUniqueExercisesForClient: (clientId: string, muscleGroupId: string) => Promise<WorkoutExercise[]>;
-  getRecentExercisesForMuscleGroup: (clientId: string, muscleGroupId: string, limit?: number, offset?: number, allClients?: boolean) => Promise<Array<WorkoutExercise & { workout_date?: string }>>;
+  getRecentExercisesForMuscleGroup: (clientId: string, muscleGroupId: string, limit?: number, offset?: number, allClients?: boolean) => Promise<Array<WorkoutExercise & { workout_date?: string; client_name?: string; exercise_client_id?: string }>>;
   loadWorkoutExercises: (workoutId: string) => Promise<void>;
   deleteExercise: (workoutId: string, exerciseId: string) => Promise<void>;
   deleteWorkout: (id: string) => Promise<void>;

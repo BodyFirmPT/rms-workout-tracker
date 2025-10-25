@@ -26,6 +26,7 @@ interface UnifiedExerciseCardProps {
   variant: 'suggested' | 'added';
   type?: 'exercise' | 'stretch';
   workoutDate?: string;
+  clientName?: string;
   onAdd?: () => void;
   onCompleteSet?: (decrement?: boolean) => void;
   onEdit?: () => void;
@@ -49,6 +50,7 @@ export function UnifiedExerciseCard({
   variant,
   type = 'exercise',
   workoutDate,
+  clientName,
   onAdd,
   onCompleteSet,
   onEdit,
@@ -112,7 +114,10 @@ export function UnifiedExerciseCard({
         {workoutDate && (
           <div className="flex items-center gap-1 text-[10px] text-muted-foreground/70 mt-0.5">
             <Clock className="h-2.5 w-2.5" />
-            {formatDistanceToNow(new Date(workoutDate + 'T00:00:00'), { addSuffix: true })}
+            <span>
+              {formatDistanceToNow(new Date(workoutDate + 'T00:00:00'), { addSuffix: true })}
+              {clientName && <> · {clientName}</>}
+            </span>
           </div>
         )}
       </div>

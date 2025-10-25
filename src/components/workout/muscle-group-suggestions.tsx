@@ -24,7 +24,7 @@ export function MuscleGroupSuggestions({
   onExerciseAdded,
   showClientFilter = false
 }: MuscleGroupSuggestionsProps) {
-  const [suggestions, setSuggestions] = useState<Array<WorkoutExercise & { workout_date?: string }>>([]);
+  const [suggestions, setSuggestions] = useState<Array<WorkoutExercise & { workout_date?: string; client_name?: string; exercise_client_id?: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [clientFilter, setClientFilter] = useState<'this' | 'all'>('this');
   const [displayCount, setDisplayCount] = useState(5);
@@ -92,7 +92,7 @@ export function MuscleGroupSuggestions({
   const handleLoadMore = () => {
     setDisplayCount(prev => prev + 5);
   };
-  const handleCopyExercise = async (exercise: WorkoutExercise & { workout_date?: string }) => {
+  const handleCopyExercise = async (exercise: WorkoutExercise & { workout_date?: string; client_name?: string; exercise_client_id?: string }) => {
     if (!disabled) {
       await addExerciseToWorkout(workoutId, {
         muscle_group_id: exercise.muscle_group_id,
@@ -167,6 +167,7 @@ export function MuscleGroupSuggestions({
                     note={exercise.note || undefined}
                     type={exercise.type || 'exercise'}
                     workoutDate={exercise.workout_date}
+                    clientName={exercise.exercise_client_id !== clientId ? exercise.client_name : undefined}
                     variant="suggested" 
                     onAdd={() => handleCopyExercise(exercise)} 
                     disabled={disabled} 

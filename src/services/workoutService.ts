@@ -432,13 +432,13 @@ export class WorkoutService {
     limit = 5, 
     offset = 0,
     allClients = false
-  ): Promise<Array<WorkoutExercise & { workout_date?: string }>> {
-    // Build query to get exercises with workout dates
+  ): Promise<Array<WorkoutExercise & { workout_date?: string; client_name?: string; exercise_client_id?: string }>> {
+    // Build query to get exercises with workout dates and client info
     const { data, error } = await supabase
       .from('workout_exercise')
       .select(`
         *,
-        workout!inner(client_id, date)
+        workout!inner(client_id, date, client!inner(name))
       `)
       .eq('muscle_group_id', muscleGroupId)
       .order('created_at', { ascending: false });
@@ -446,14 +446,16 @@ export class WorkoutService {
     if (error) throw error;
     
     // Separate exercises by client and get unique exercises by name
-    const currentClientExercises = new Map<string, WorkoutExercise & { workout_date?: string }>();
-    const otherClientExercises = new Map<string, WorkoutExercise & { workout_date?: string }>();
+    const currentClientExercises = new Map<string, WorkoutExercise & { workout_date?: string; client_name?: string; exercise_client_id?: string }>();
+    const otherClientExercises = new Map<string, WorkoutExercise & { workout_date?: string; client_name?: string; exercise_client_id?: string }>();
     
     (data || []).forEach((exercise: any) => {
       const exerciseName = exercise.exercise_name;
       const exerciseWithDate = {
         ...exercise,
-        workout_date: exercise.workout?.date
+        workout_date: exercise.workout?.date,
+        client_name: exercise.workout?.client?.name,
+        exercise_client_id: exercise.workout?.client_id
       };
       
       if (exercise.workout.client_id === clientId) {
@@ -468,7 +470,7 @@ export class WorkoutService {
     });
     
     // Filter based on allClients parameter
-    let result: Array<WorkoutExercise & { workout_date?: string }>;
+    let result: Array<WorkoutExercise & { workout_date?: string; client_name?: string; exercise_client_id?: string }>;
     if (allClients) {
       // Show all: current client exercises first, then others
       result = [
