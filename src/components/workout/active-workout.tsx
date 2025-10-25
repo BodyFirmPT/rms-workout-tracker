@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown, Pencil, MoreVertical, XCircle } from "lucide-react";
+import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown, Pencil, MoreVertical, XCircle, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,12 @@ interface Location {
   id: string;
   name: string;
 }
+
+interface Equipment {
+  id: string;
+  name: string;
+  description: string | null;
+}
 interface ActiveWorkoutProps {
   workoutId: string; // Always required now
 }
@@ -45,6 +51,8 @@ export function ActiveWorkout({
   const [showEditInjury, setShowEditInjury] = useState(false);
   const [editingInjury, setEditingInjury] = useState<Injury | null>(null);
   const [workoutLocation, setWorkoutLocation] = useState<Location | null>(null);
+  const [availableEquipment, setAvailableEquipment] = useState<Equipment[]>([]);
+  const [equipmentOpen, setEquipmentOpen] = useState(false);
   const {
     workouts,
     workoutExercises,
@@ -86,21 +94,33 @@ export function ActiveWorkout({
   const loadWorkoutLocation = async () => {
     if (!currentWorkout?.location_id) {
       setWorkoutLocation(null);
+      setAvailableEquipment([]);
       return;
     }
     
     try {
-      const { data, error } = await supabase
+      const { data: locationData, error: locationError } = await supabase
         .from('location')
         .select('id, name')
         .eq('id', currentWorkout.location_id)
         .single();
 
-      if (error) throw error;
-      setWorkoutLocation(data);
+      if (locationError) throw locationError;
+      setWorkoutLocation(locationData);
+
+      // Load equipment for this location
+      const { data: equipmentData, error: equipmentError } = await supabase
+        .from('equipment')
+        .select('id, name, description')
+        .eq('location_id', currentWorkout.location_id)
+        .order('name');
+
+      if (equipmentError) throw equipmentError;
+      setAvailableEquipment(equipmentData || []);
     } catch (error) {
-      console.error('Error loading location:', error);
+      console.error('Error loading location and equipment:', error);
       setWorkoutLocation(null);
+      setAvailableEquipment([]);
     }
   };
   useEffect(() => {
@@ -431,6 +451,47 @@ export function ActiveWorkout({
                           <Pencil className="h-3 w-3" />
                         </Button>
                         <Badge variant="destructive">Active</Badge>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      )}
+
+      {/* Available Equipment Drawer */}
+      {availableEquipment.length > 0 && (
+        <Collapsible open={equipmentOpen} onOpenChange={setEquipmentOpen}>
+          <Card className={`border-border mx-4 relative z-0 rounded-md ${activeInjuries.length > 0 ? '-mt-5 sm:-mt-8' : '-mt-5 sm:-mt-8'}`}>
+            <CollapsibleTrigger className="w-full">
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors pt-4 pb-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Wrench className="h-4 w-4 text-primary" />
+                    <CardTitle className="text-sm font-medium">
+                      {availableEquipment.length} Available {availableEquipment.length === 1 ? 'Equipment' : 'Equipment Items'}
+                    </CardTitle>
+                  </div>
+                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${equipmentOpen ? 'rotate-180' : ''}`} />
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0 space-y-3">
+                {availableEquipment.map((equipment) => (
+                  <div key={equipment.id} className="p-3 bg-muted/50 rounded-lg border">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-foreground text-sm">
+                          {equipment.name}
+                        </h4>
+                        {equipment.description && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {equipment.description}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
