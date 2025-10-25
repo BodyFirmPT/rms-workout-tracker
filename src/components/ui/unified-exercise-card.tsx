@@ -1,5 +1,5 @@
-import { Check, Plus, Edit, Trash2, Zap, Dumbbell, MoreVertical, Wind } from "lucide-react";
-import { format } from "date-fns";
+import { Check, Plus, Edit, Trash2, Zap, Dumbbell, MoreVertical, Wind, Clock } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import { Button } from "./button";
 import { Badge } from "./badge";
 import { cn } from "@/lib/utils";
@@ -110,8 +110,9 @@ export function UnifiedExerciseCard({
           </div>
         )}
         {workoutDate && (
-          <div className="text-[10px] text-muted-foreground/70 mt-0.5">
-            Last used: {format(new Date(workoutDate + 'T00:00:00'), 'MMM d, yyyy')}
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground/70 mt-0.5">
+            <Clock className="h-2.5 w-2.5" />
+            {formatDistanceToNow(new Date(workoutDate + 'T00:00:00'), { addSuffix: true })}
           </div>
         )}
       </div>
