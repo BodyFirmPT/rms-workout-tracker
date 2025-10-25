@@ -751,7 +751,9 @@ export function ActiveWorkout({
                                    isLast={isLast} 
                                    hasContent={true} 
                                    onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} 
-                                   disabled={isCompleted} 
+                                   disabled={isCompleted}
+                                   muscleGroupId={muscleGroup.id}
+                                   clientId={currentWorkout.client_id}
                                  />
                                 
                                  {/* Exercise rows */}
@@ -764,7 +766,7 @@ export function ActiveWorkout({
                       } else {
                         // Show muscle group suggestions (only when no active workflow)
                         return <div key={muscleGroup.id} className="space-y-0">
-                                <MuscleGroupHeader name={muscleGroup.name} exerciseCount={0} isFirst={isFirst} isLast={isLast} hasContent={true} onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} disabled={isCompleted} />
+                                <MuscleGroupHeader name={muscleGroup.name} exerciseCount={0} isFirst={isFirst} isLast={isLast} hasContent={true} onAddExercise={() => handleAddExerciseForMuscleGroup(muscleGroup.id)} disabled={isCompleted} muscleGroupId={muscleGroup.id} clientId={currentWorkout.client_id} />
                                 
                                 {/* Content area */}
                                 <div className={`border-2 border-t-0 border-border/80 overflow-hidden ${isLast ? 'rounded-b-lg' : ''}`}>
