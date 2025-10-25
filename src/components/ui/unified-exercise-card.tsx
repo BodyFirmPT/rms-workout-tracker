@@ -1,5 +1,5 @@
 import { Check, Plus, Edit, Trash2, Zap, Dumbbell, MoreVertical, Wind } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { Button } from "./button";
 import { Badge } from "./badge";
 import { cn } from "@/lib/utils";
@@ -111,7 +111,7 @@ export function UnifiedExerciseCard({
         )}
         {workoutDate && (
           <div className="text-[10px] text-muted-foreground/70 mt-0.5">
-            Last used: {formatDistanceToNow(new Date(workoutDate + 'T00:00:00'), { addSuffix: true })}
+            Last used: {format(new Date(workoutDate + 'T00:00:00'), 'MMM d, yyyy')}
           </div>
         )}
       </div>
