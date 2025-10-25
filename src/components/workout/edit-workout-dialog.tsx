@@ -35,7 +35,7 @@ interface EditWorkoutDialogProps {
 export function EditWorkoutDialog({ open, onOpenChange, workout }: EditWorkoutDialogProps) {
   const [note, setNote] = useState(workout.note || "");
   const [date, setDate] = useState<Date>(new Date(workout.date + 'T00:00:00'));
-  const [locationId, setLocationId] = useState<string>(workout.location_id || "");
+  const [locationId, setLocationId] = useState<string>(workout.location_id || "none");
   const [locations, setLocations] = useState<Location[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -100,7 +100,7 @@ export function EditWorkoutDialog({ open, onOpenChange, workout }: EditWorkoutDi
       const updates: WorkoutUpdateInput = {
         note: note.trim(),
         date: format(date, 'yyyy-MM-dd'),
-        location_id: locationId || null,
+        location_id: locationId === "none" ? null : locationId,
       };
       await updateWorkout(workout.id, updates);
       onOpenChange(false);
@@ -238,7 +238,7 @@ export function EditWorkoutDialog({ open, onOpenChange, workout }: EditWorkoutDi
                 <SelectValue placeholder="Select a location" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="none">None</SelectItem>
                 {locations.map((location) => (
                   <SelectItem key={location.id} value={location.id}>
                     {location.name}
