@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Edit, CalendarIcon, XCircle, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { z } from "zod";
@@ -9,11 +9,17 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useWorkoutStore } from "@/stores/workoutStore";
-import { Workout } from "@/types/workout";
+import { Workout, WorkoutUpdateInput } from "@/types/workout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+
+interface Location {
+  id: string;
+  name: string;
+}
 
 const editWorkoutSchema = z.object({
   note: z.string().trim().max(500, { message: "Note must be less than 500 characters" }),
@@ -29,6 +35,8 @@ interface EditWorkoutDialogProps {
 export function EditWorkoutDialog({ open, onOpenChange, workout }: EditWorkoutDialogProps) {
   const [note, setNote] = useState(workout.note || "");
   const [date, setDate] = useState<Date>(new Date(workout.date + 'T00:00:00'));
+  const [locationId, setLocationId] = useState<string>(workout.location_id || "");
+  const [locations, setLocations] = useState<Location[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCancelDatePicker, setShowCancelDatePicker] = useState(false);
@@ -39,6 +47,29 @@ export function EditWorkoutDialog({ open, onOpenChange, workout }: EditWorkoutDi
   const { updateWorkout, getClientById, loadData } = useWorkoutStore();
 
   const client = getClientById(workout.client_id);
+
+  useEffect(() => {
+    if (open && client) {
+      loadLocations();
+    }
+  }, [open, client]);
+
+  const loadLocations = async () => {
+    if (!client) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('location')
+        .select('id, name')
+        .eq('client_id', client.id)
+        .order('name');
+
+      if (error) throw error;
+      setLocations(data || []);
+    } catch (error) {
+      console.error('Error loading locations:', error);
+    }
+  };
 
   const validateForm = () => {
     try {
@@ -66,10 +97,12 @@ export function EditWorkoutDialog({ open, onOpenChange, workout }: EditWorkoutDi
     
     setIsSubmitting(true);
     try {
-      await updateWorkout(workout.id, {
+      const updates: WorkoutUpdateInput = {
         note: note.trim(),
-        date: format(date, 'yyyy-MM-dd')
-      });
+        date: format(date, 'yyyy-MM-dd'),
+        location_id: locationId || null,
+      };
+      await updateWorkout(workout.id, updates);
       onOpenChange(false);
     } catch (error) {
       console.error('Failed to update workout:', error);
@@ -196,6 +229,23 @@ export function EditWorkoutDialog({ open, onOpenChange, workout }: EditWorkoutDi
             {errors.date && (
               <p className="text-sm text-destructive">{errors.date}</p>
             )}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="location">Location (optional)</Label>
+            <Select value={locationId} onValueChange={setLocationId}>
+              <SelectTrigger id="location">
+                <SelectValue placeholder="Select a location" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">None</SelectItem>
+                {locations.map((location) => (
+                  <SelectItem key={location.id} value={location.id}>
+                    {location.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           <div className="space-y-2">

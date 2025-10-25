@@ -26,10 +26,17 @@ export interface Workout {
   note: string;
   client_id: string;
   status: 'draft' | 'started' | 'completed';
+  location_id?: string | null;
   canceled_at?: string;
   late_cancelled?: boolean;
   created_at?: string;
   exercises?: WorkoutExercise[];
+}
+
+export interface WorkoutUpdateInput {
+  note?: string;
+  date?: string;
+  location_id?: string | null;
 }
 
 export interface WorkoutExercise {

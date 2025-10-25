@@ -5,7 +5,8 @@ import {
   MuscleGroup, 
   Workout, 
   WorkoutExercise, 
-  CreateWorkoutExerciseInput 
+  CreateWorkoutExerciseInput,
+  WorkoutUpdateInput
 } from '@/types/workout';
 import { WorkoutService } from '@/services/workoutService';
 import { toast } from '@/hooks/use-toast';
@@ -355,7 +356,7 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
     }
   },
 
-  updateWorkout: async (id: string, updates: Partial<{ note: string; date: string }>) => {
+  updateWorkout: async (id: string, updates: WorkoutUpdateInput) => {
     try {
       const updatedWorkout = await WorkoutService.updateWorkout(id, updates);
       set((state) => ({

@@ -5,7 +5,8 @@ import {
   MuscleGroup, 
   Workout, 
   WorkoutExercise, 
-  CreateWorkoutExerciseInput 
+  CreateWorkoutExerciseInput,
+  WorkoutUpdateInput
 } from '@/types/workout';
 
 export class WorkoutService {
@@ -118,7 +119,7 @@ export class WorkoutService {
     if (error) throw error;
   }
 
-  static async updateWorkout(id: string, updates: Partial<{ note: string; date: string }>): Promise<Workout> {
+  static async updateWorkout(id: string, updates: WorkoutUpdateInput): Promise<Workout> {
     const { data, error } = await supabase
       .from('workout')
       .update(updates)

@@ -46,6 +46,38 @@ export type Database = {
           },
         ]
       }
+      equipment: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          location_id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          location_id: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          location_id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "location"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       injury: {
         Row: {
           client_id: string
@@ -77,6 +109,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "injury_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      location: {
+        Row: {
+          client_id: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "location_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "client"
@@ -200,6 +264,7 @@ export type Database = {
           date: string
           id: string
           late_cancelled: boolean | null
+          location_id: string | null
           note: string
           status: string
         }
@@ -210,6 +275,7 @@ export type Database = {
           date?: string
           id?: string
           late_cancelled?: boolean | null
+          location_id?: string | null
           note: string
           status?: string
         }
@@ -220,6 +286,7 @@ export type Database = {
           date?: string
           id?: string
           late_cancelled?: boolean | null
+          location_id?: string | null
           note?: string
           status?: string
         }
@@ -229,6 +296,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "client"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "location"
             referencedColumns: ["id"]
           },
         ]
