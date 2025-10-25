@@ -480,7 +480,7 @@ export function ActiveWorkout({
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent className="pt-0">
-                <ul className="space-y-1 list-disc pl-5">
+                <ul className="space-y-1 list-disc pl-5 ml-8">
                   {availableEquipment.map((equipment) => (
                     <li key={equipment.id} className="text-sm">
                       <span className="font-semibold">{equipment.name}</span>
