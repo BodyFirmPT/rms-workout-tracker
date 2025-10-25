@@ -391,7 +391,7 @@ export function ActiveWorkout({
       {/* Active Injuries Drawer */}
       {activeInjuries.length > 0 && (
         <Collapsible open={injuriesOpen} onOpenChange={setInjuriesOpen}>
-          <Card className="border-border mx-4 -mt-5 sm:-mt-8 relative z-0 rounded-md">
+          <Card className="border-border mx-4 -mt-5 sm:-mt-8 relative z-10 rounded-md">
             <CollapsibleTrigger className="w-full">
               <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors pt-4 pb-1.5">
                 <div className="flex items-center justify-between">
@@ -464,7 +464,7 @@ export function ActiveWorkout({
       {/* Available Equipment Drawer */}
       {availableEquipment.length > 0 && (
         <Collapsible open={equipmentOpen} onOpenChange={setEquipmentOpen}>
-          <Card className={`border-border mx-4 relative ${activeInjuries.length > 0 ? '-mt-5 sm:-mt-8 z-[-1]' : '-mt-5 sm:-mt-8 z-0'} rounded-t-none`}>
+          <Card className={`border-border mx-4 relative rounded-t-none ${activeInjuries.length > 0 ? '-mt-5 sm:-mt-8 z-[5]' : '-mt-5 sm:-mt-8 z-0'}`}>
             <CollapsibleTrigger className="w-full">
               <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors pt-4 pb-1.5">
                 <div className="flex items-center justify-between">
