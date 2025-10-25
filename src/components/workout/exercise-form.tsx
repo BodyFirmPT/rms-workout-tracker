@@ -345,8 +345,8 @@ export function ExerciseForm({
         </div>
       )}
 
-      {/* Weight section - only show for non-band exercises */}
-      {exerciseType !== 'band' && (
+      {/* Weight section - only show for weight exercises */}
+      {exerciseType === 'weight' && (
         <div className="space-y-2">
           <div className={`grid gap-4 ${showLeftRight ? 'grid-cols-3' : 'grid-cols-2'}`}>
             <div className="space-y-2">
