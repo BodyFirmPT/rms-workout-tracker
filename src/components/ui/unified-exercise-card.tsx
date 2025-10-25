@@ -107,7 +107,7 @@ export function UnifiedExerciseCard({
           )}>
             {setCount} × {repsCount} {repsUnit}
             {isBand && bandColor && bandType 
-              ? ` • ${bandColor} ${bandType}` 
+              ? ` • ${bandColor} ${bandType} band` 
               : weightCount > 0 && leftWeight !== null && leftWeight !== undefined 
                 ? ` @ R:${weightCount} ${weightUnit} L:${leftWeight} ${weightUnit}` 
                 : weightCount > 0 
