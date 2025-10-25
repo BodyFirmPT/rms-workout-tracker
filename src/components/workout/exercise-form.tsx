@@ -345,66 +345,69 @@ export function ExerciseForm({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <div className={`grid gap-4 ${showLeftRight ? 'grid-cols-3' : 'grid-cols-2'}`}>
-          <div className="space-y-2">
-            <Label htmlFor="weight-count">{showLeftRight ? "Right Weight" : "Weight"}</Label>
-            <Input
-              id="weight-count"
-              type="number"
-              value={weightCount}
-              onChange={(e) => setWeightCount(Number(e.target.value))}
-              min="0"
-              step="any"
-              placeholder="e.g., 15, 22.5"
-            />
-          </div>
-          {showLeftRight && (
+      {/* Weight section - only show for non-band exercises */}
+      {exerciseType !== 'band' && (
+        <div className="space-y-2">
+          <div className={`grid gap-4 ${showLeftRight ? 'grid-cols-3' : 'grid-cols-2'}`}>
             <div className="space-y-2">
-              <Label htmlFor="left-weight">Left Weight</Label>
+              <Label htmlFor="weight-count">{showLeftRight ? "Right Weight" : "Weight"}</Label>
               <Input
-                id="left-weight"
+                id="weight-count"
                 type="number"
-                value={leftWeight ?? 0}
-                onChange={(e) => setLeftWeight(Number(e.target.value))}
+                value={weightCount}
+                onChange={(e) => setWeightCount(Number(e.target.value))}
                 min="0"
                 step="any"
                 placeholder="e.g., 15, 22.5"
               />
             </div>
-          )}
-          <div className="space-y-2">
-            <Label htmlFor="weight-unit">Weight Unit</Label>
-            <Select value={weightUnit} onValueChange={setWeightUnit}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="lbs">Pounds (lbs)</SelectItem>
-                <SelectItem value="kg">Kilograms (kg)</SelectItem>
-              </SelectContent>
-            </Select>
+            {showLeftRight && (
+              <div className="space-y-2">
+                <Label htmlFor="left-weight">Left Weight</Label>
+                <Input
+                  id="left-weight"
+                  type="number"
+                  value={leftWeight ?? 0}
+                  onChange={(e) => setLeftWeight(Number(e.target.value))}
+                  min="0"
+                  step="any"
+                  placeholder="e.g., 15, 22.5"
+                />
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="weight-unit">Weight Unit</Label>
+              <Select value={weightUnit} onValueChange={setWeightUnit}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="lbs">Pounds (lbs)</SelectItem>
+                  <SelectItem value="kg">Kilograms (kg)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              if (showLeftRight) {
+                setShowLeftRight(false);
+                setLeftWeight(null);
+              } else {
+                setShowLeftRight(true);
+                setLeftWeight(weightCount);
+              }
+            }}
+            className="text-xs h-auto py-1 px-2 text-primary hover:text-white"
+          >
+            <ArrowLeftRight className="h-3 w-3 mr-0.5" />
+            {showLeftRight ? "Reset left/right" : "Set right/left"}
+          </Button>
         </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            if (showLeftRight) {
-              setShowLeftRight(false);
-              setLeftWeight(null);
-            } else {
-              setShowLeftRight(true);
-              setLeftWeight(weightCount);
-            }
-          }}
-          className="text-xs h-auto py-1 px-2 text-primary hover:text-white"
-        >
-          <ArrowLeftRight className="h-3 w-3 mr-0.5" />
-          {showLeftRight ? "Reset left/right" : "Set right/left"}
-        </Button>
-      </div>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="sets">Sets</Label>
