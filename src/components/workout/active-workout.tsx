@@ -20,6 +20,11 @@ import { format } from "date-fns";
 import { CreateWorkoutExerciseInput, WorkoutExercise } from "@/types/workout";
 import { Injury } from "@/types/injury";
 import { supabase } from "@/integrations/supabase/client";
+
+interface Location {
+  id: string;
+  name: string;
+}
 interface ActiveWorkoutProps {
   workoutId: string; // Always required now
 }
@@ -39,6 +44,7 @@ export function ActiveWorkout({
   const [showAddInjury, setShowAddInjury] = useState(false);
   const [showEditInjury, setShowEditInjury] = useState(false);
   const [editingInjury, setEditingInjury] = useState<Injury | null>(null);
+  const [workoutLocation, setWorkoutLocation] = useState<Location | null>(null);
   const {
     workouts,
     workoutExercises,
@@ -73,8 +79,30 @@ export function ActiveWorkout({
   useEffect(() => {
     if (currentWorkout) {
       loadWorkoutExercises(currentWorkout.id);
+      loadWorkoutLocation();
     }
   }, [currentWorkout, loadWorkoutExercises]);
+
+  const loadWorkoutLocation = async () => {
+    if (!currentWorkout?.location_id) {
+      setWorkoutLocation(null);
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('location')
+        .select('id, name')
+        .eq('id', currentWorkout.location_id)
+        .single();
+
+      if (error) throw error;
+      setWorkoutLocation(data);
+    } catch (error) {
+      console.error('Error loading location:', error);
+      setWorkoutLocation(null);
+    }
+  };
   useEffect(() => {
     const updateProgress = async () => {
       if (currentWorkout) {
@@ -286,6 +314,7 @@ export function ActiveWorkout({
               <CardTitle className="flex items-center gap-2">
                 <Timer className="h-5 w-5" />
                 {format(new Date(currentWorkout.date + 'T00:00:00'), 'MMMM d, yyyy')}
+                {workoutLocation && <> · {workoutLocation.name}</>}
               </CardTitle>
               <CardDescription className="text-primary-foreground/80">
                 {client?.name}{currentWorkout.note && ` • ${currentWorkout.note}`}
