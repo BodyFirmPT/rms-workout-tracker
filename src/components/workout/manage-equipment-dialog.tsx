@@ -170,7 +170,7 @@ export function ManageEquipmentDialog({
             ) : (
               <div className="space-y-2">
                 {equipment.map((item) => (
-                  <div key={item.id} className="flex items-start justify-between gap-3 p-3 border rounded-lg">
+                  <div key={item.id} className={`flex ${item.description ? 'items-start' : 'items-center'} justify-between gap-3 p-3 border rounded-lg`}>
                     <div className="flex-1">
                       <p className="font-medium text-sm">{item.name}</p>
                       {item.description && (
