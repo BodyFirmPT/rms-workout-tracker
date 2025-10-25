@@ -66,6 +66,8 @@ export function AddExerciseDialog({ open, onOpenChange, workoutId, clientId, pre
             onMuscleGroupChange={handleMuscleGroupChange}
             submitLabel="Add Exercise"
             preselectedMuscleGroupId={preselectedMuscleGroupId}
+            clientId={clientId}
+            isEditing={false}
           />
 
           {/* Show suggestions only when a muscle group is selected */}

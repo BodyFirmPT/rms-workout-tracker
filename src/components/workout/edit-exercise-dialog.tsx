@@ -86,6 +86,7 @@ export function EditExerciseDialog({
             onCancel={() => onOpenChange(false)}
             initialValues={initialValues}
             submitLabel="Update Exercise"
+            isEditing={true}
           />
         </div>
       </DialogContent>

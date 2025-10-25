@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, ArrowLeftRight } from "lucide-react";
+import { Plus, ArrowLeftRight, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { CreateWorkoutExerciseInput } from "@/types/workout";
+import { supabase } from "@/integrations/supabase/client";
+import { ViewRestrictionsDialog } from "@/components/workout/view-restrictions-dialog";
+
+interface Restriction {
+  id: string;
+  name: string;
+}
 
 interface ExerciseFormProps {
   onSubmit: (data: CreateWorkoutExerciseInput, newMuscleGroupName?: string) => Promise<void>;
@@ -27,6 +34,8 @@ interface ExerciseFormProps {
   };
   submitLabel?: string;
   preselectedMuscleGroupId?: string | null;
+  clientId?: string;
+  isEditing?: boolean;
 }
 
 export function ExerciseForm({
@@ -36,6 +45,8 @@ export function ExerciseForm({
   initialValues,
   submitLabel = "Add Exercise",
   preselectedMuscleGroupId,
+  clientId,
+  isEditing = false,
 }: ExerciseFormProps) {
   const [exerciseName, setExerciseName] = useState(initialValues?.exerciseName || "");
   const [muscleGroupId, setMuscleGroupId] = useState(initialValues?.muscleGroupId || "");
@@ -53,8 +64,10 @@ export function ExerciseForm({
   const [note, setNote] = useState(initialValues?.note || "");
   const [showNewMuscleGroup, setShowNewMuscleGroup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [restrictions, setRestrictions] = useState<Restriction[]>([]);
+  const [showRestrictionsDialog, setShowRestrictionsDialog] = useState(false);
 
-  const { muscleGroups, loadData } = useWorkoutStore();
+  const { muscleGroups, loadData, getMuscleGroupById } = useWorkoutStore();
 
   useEffect(() => {
     loadData();
@@ -126,6 +139,31 @@ export function ExerciseForm({
     }
   };
 
+  // Load restrictions when muscle group changes
+  useEffect(() => {
+    if (muscleGroupId && clientId && !isEditing) {
+      loadRestrictions(muscleGroupId, clientId);
+    } else {
+      setRestrictions([]);
+    }
+  }, [muscleGroupId, clientId, isEditing]);
+
+  const loadRestrictions = async (muscleGroupId: string, clientId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('restricted_exercise')
+        .select('id, name')
+        .eq('client_id', clientId)
+        .eq('muscle_group_id', muscleGroupId);
+
+      if (error) throw error;
+      setRestrictions(data || []);
+    } catch (error) {
+      console.error('Error loading restrictions:', error);
+      setRestrictions([]);
+    }
+  };
+
   const handleMuscleGroupChange = (value: string) => {
     if (value === "new" || value === "__new__") {
       setShowNewMuscleGroup(true);
@@ -169,7 +207,25 @@ export function ExerciseForm({
             className="mt-2"
           />
         )}
+        
+        {!isEditing && !showNewMuscleGroup && muscleGroupId && restrictions.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setShowRestrictionsDialog(true)}
+            className="text-xs text-destructive hover:underline mt-1 inline-flex items-center gap-1"
+          >
+            <Ban className="h-3 w-3" />
+            Show restrictions ({restrictions.length})
+          </button>
+        )}
       </div>
+      
+      <ViewRestrictionsDialog
+        open={showRestrictionsDialog}
+        onOpenChange={setShowRestrictionsDialog}
+        restrictions={restrictions}
+        muscleGroupName={getMuscleGroupById(muscleGroupId)?.name || ""}
+      />
 
       <div className="space-y-2">
         <Label htmlFor="exercise-name">{exerciseType === 'stretch' ? 'Stretch Name' : 'Exercise Name'}</Label>
