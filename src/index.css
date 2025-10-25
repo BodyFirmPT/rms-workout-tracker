@@ -8,7 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
+    --background: 270 30% 98%;
     --foreground: 224 71.4% 4.1%;
 
     --card: 0 0% 100%;
@@ -51,7 +51,7 @@ All colors MUST be HSL.
     --shadow-success: 0 10px 30px -10px hsl(var(--success) / 0.3);
     --shadow-card: 0 4px 6px -1px hsl(270 8.9% 46.1% / 0.1);
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 270 30% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
     --sidebar-primary-foreground: 0 0% 98%;
