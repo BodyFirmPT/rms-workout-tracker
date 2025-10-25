@@ -7,6 +7,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import ClientDetails from "./pages/ClientDetails";
 import ClientInjuries from "./pages/ClientInjuries";
+import ClientRestrictedExercises from "./pages/ClientRestrictedExercises";
 import ActiveWorkout from "./pages/ActiveWorkout";
 import PrintWorkout from "./pages/PrintWorkout";
 import MuscleGroups from "./pages/MuscleGroups";
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
           <Route path="/client/:clientId" element={<ProtectedRoute><ClientDetails /></ProtectedRoute>} />
           <Route path="/client/:clientId/injuries" element={<ProtectedRoute><ClientInjuries /></ProtectedRoute>} />
+          <Route path="/client/:clientId/restricted-exercises" element={<ProtectedRoute><ClientRestrictedExercises /></ProtectedRoute>} />
           <Route path="/workout/:id?" element={<ProtectedRoute><ActiveWorkout /></ProtectedRoute>} />
           <Route path="/workout/:id/print" element={<ProtectedRoute><PrintWorkout /></ProtectedRoute>} />
           <Route path="/muscle-groups" element={<ProtectedRoute><MuscleGroups /></ProtectedRoute>} />
