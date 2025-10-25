@@ -212,10 +212,10 @@ export function ExerciseForm({
           <button
             type="button"
             onClick={() => setShowRestrictionsDialog(true)}
-            className="text-xs text-destructive hover:underline mt-1 inline-flex items-center gap-1"
+            className="text-xs text-primary hover:underline mt-1 inline-flex items-center gap-1"
           >
             <Ban className="h-3 w-3" />
-            Show restrictions ({restrictions.length})
+            {restrictions.length} {restrictions.length === 1 ? 'restriction' : 'restrictions'}
           </button>
         )}
       </div>
