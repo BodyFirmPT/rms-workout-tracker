@@ -327,7 +327,7 @@ export function ActiveWorkout({
       )}
 
       {/* Workout Header */}
-      <Card className={`text-primary-foreground shadow-primary relative z-10 ${isCompleted ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' : 'bg-primary-gradient'}`}>
+      <Card className={`text-primary-foreground shadow-primary relative z-20 ${isCompleted ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' : 'bg-primary-gradient'}`}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex-1">
