@@ -1,4 +1,4 @@
-import { Check, Plus, Edit, Trash2, Zap, Dumbbell, MoreVertical, Wind, Clock } from "lucide-react";
+import { Check, Plus, Edit, Trash2, Zap, Dumbbell, MoreVertical, Wind, Clock, Cable } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "./button";
 import { Badge } from "./badge";
@@ -80,6 +80,8 @@ export function UnifiedExerciseCard({
       {/* Icon */}
       {isSuggested ? (
         <Zap className="h-3 w-3 text-muted-foreground/70 shrink-0" />
+      ) : isBand ? (
+        <Cable className="h-3 w-3 text-muted-foreground/60 shrink-0" />
       ) : isStretch ? (
         <Wind className="h-3 w-3 text-muted-foreground/60 shrink-0" />
       ) : (
