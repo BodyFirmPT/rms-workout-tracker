@@ -279,6 +279,35 @@ export function ExerciseForm({
         </div>
       </div>
 
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="reps-count">Reps/Duration</Label>
+          <Input
+            id="reps-count"
+            type="number"
+            value={repsCount}
+            onChange={(e) => setRepsCount(Number(e.target.value))}
+            placeholder="e.g., 12, 30"
+            min="1"
+            required
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="reps-unit">Unit</Label>
+          <Select value={repsUnit} onValueChange={setRepsUnit}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="reps">Reps</SelectItem>
+              <SelectItem value="seconds">Seconds</SelectItem>
+              <SelectItem value="minutes">Minutes</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {/* Band-specific fields */}
       {exerciseType === 'band' && (
         <div className="grid grid-cols-2 gap-4">
@@ -315,35 +344,6 @@ export function ExerciseForm({
           </div>
         </div>
       )}
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="reps-count">Reps/Duration</Label>
-          <Input
-            id="reps-count"
-            type="number"
-            value={repsCount}
-            onChange={(e) => setRepsCount(Number(e.target.value))}
-            placeholder="e.g., 12, 30"
-            min="1"
-            required
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="reps-unit">Unit</Label>
-          <Select value={repsUnit} onValueChange={setRepsUnit}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="reps">Reps</SelectItem>
-              <SelectItem value="seconds">Seconds</SelectItem>
-              <SelectItem value="minutes">Minutes</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
 
       {/* Weight section - only show for non-band exercises */}
       {exerciseType !== 'band' && (
