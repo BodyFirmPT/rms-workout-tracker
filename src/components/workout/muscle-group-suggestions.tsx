@@ -29,13 +29,40 @@ export function MuscleGroupSuggestions({
   const [clientFilter, setClientFilter] = useState<'this' | 'all'>('this');
   const [displayCount, setDisplayCount] = useState(5);
   const [hasMore, setHasMore] = useState(false);
+  const [initialCheckDone, setInitialCheckDone] = useState(false);
   
   const {
     getRecentExercisesForMuscleGroup,
     addExerciseToWorkout
   } = useWorkoutStore();
   
+  // Initial check: if client has no exercises, default to "all"
   useEffect(() => {
+    const checkClientExercises = async () => {
+      try {
+        const clientExercises = await getRecentExercisesForMuscleGroup(
+          clientId, 
+          muscleGroup.id, 
+          1,
+          0,
+          false // Check only this client
+        );
+        
+        if (clientExercises.length === 0) {
+          setClientFilter('all');
+        }
+      } catch (error) {
+        console.error('Failed to check client exercises:', error);
+      } finally {
+        setInitialCheckDone(true);
+      }
+    };
+    checkClientExercises();
+  }, [clientId, muscleGroup.id, getRecentExercisesForMuscleGroup]);
+  
+  useEffect(() => {
+    if (!initialCheckDone) return;
+    
     const loadSuggestions = async () => {
       setLoading(true);
       try {
@@ -60,7 +87,7 @@ export function MuscleGroupSuggestions({
       }
     };
     loadSuggestions();
-  }, [clientId, muscleGroup.id, getRecentExercisesForMuscleGroup, clientFilter, displayCount]);
+  }, [clientId, muscleGroup.id, getRecentExercisesForMuscleGroup, clientFilter, displayCount, initialCheckDone]);
   
   const handleLoadMore = () => {
     setDisplayCount(prev => prev + 5);
@@ -86,7 +113,7 @@ export function MuscleGroupSuggestions({
   
   return (
     <>
-      {suggestions.length > 0 && (
+      {(suggestions.length > 0 || showClientFilter) && (
         <div>
           <div className="px-3 py-2 border-b border-border/30 space-y-2">
             <div className="flex items-center justify-between">
@@ -124,45 +151,57 @@ export function MuscleGroupSuggestions({
             )}
           </div>
           
-          <div>
-            {suggestions.map((exercise, index) => (
-              <UnifiedExerciseCard 
-                key={index}
-                exerciseName={exercise.exercise_name} 
-                repsCount={exercise.reps_count || 1} 
-                repsUnit={exercise.reps_unit || "reps"} 
-                weightCount={exercise.weight_count || 0} 
-                weightUnit={exercise.weight_unit || "lbs"} 
-                leftWeight={exercise.left_weight}
-                setCount={exercise.set_count} 
-                note={exercise.note || undefined}
-                type={exercise.type || 'exercise'}
-                workoutDate={exercise.workout_date}
-                variant="suggested" 
-                onAdd={() => handleCopyExercise(exercise)} 
-                disabled={disabled} 
-              />
-            ))}
-          </div>
-          
-          {hasMore && (
-            <div className="px-3 py-2 border-t border-border/30">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleLoadMore}
-                className="w-full text-xs"
-              >
-                <Plus className="h-3 w-3 mr-1" />
-                Show 5 more
-              </Button>
-            </div>
+          {suggestions.length > 0 ? (
+            <>
+              <div>
+                {suggestions.map((exercise, index) => (
+                  <UnifiedExerciseCard 
+                    key={index}
+                    exerciseName={exercise.exercise_name} 
+                    repsCount={exercise.reps_count || 1} 
+                    repsUnit={exercise.reps_unit || "reps"} 
+                    weightCount={exercise.weight_count || 0} 
+                    weightUnit={exercise.weight_unit || "lbs"} 
+                    leftWeight={exercise.left_weight}
+                    setCount={exercise.set_count} 
+                    note={exercise.note || undefined}
+                    type={exercise.type || 'exercise'}
+                    workoutDate={exercise.workout_date}
+                    variant="suggested" 
+                    onAdd={() => handleCopyExercise(exercise)} 
+                    disabled={disabled} 
+                  />
+                ))}
+              </div>
+              
+              {hasMore && (
+                <div className="px-3 py-2 border-t border-border/30">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleLoadMore}
+                    className="w-full text-xs"
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    Show 5 more
+                  </Button>
+                </div>
+              )}
+            </>
+          ) : (
+            !loading && (
+              <div className="text-xs text-muted-foreground text-center py-3 px-3">
+                {clientFilter === 'this' 
+                  ? 'No previous exercises for this client'
+                  : 'No previous exercises for this muscle group'}
+              </div>
+            )
           )}
         </div>
       )}
       
-      {!loading && suggestions.length === 0 && !hasExistingExercises && (
+      {!loading && suggestions.length === 0 && !hasExistingExercises && !showClientFilter && (
         <div className="text-xs text-muted-foreground text-center py-3 px-3">
           No previous exercises for this muscle group
         </div>
