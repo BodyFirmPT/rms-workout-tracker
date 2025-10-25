@@ -15,6 +15,9 @@ interface RestrictedExercise {
   id: string;
   name: string;
   created_at: string;
+  muscle_group: {
+    name: string;
+  } | null;
 }
 
 export default function ClientRestrictedExercises() {
@@ -44,7 +47,7 @@ export default function ClientRestrictedExercises() {
     try {
       const { data, error } = await supabase
         .from('restricted_exercise')
-        .select('*')
+        .select('*, muscle_group(name)')
         .eq('client_id', clientId)
         .order('created_at', { ascending: false });
 
@@ -147,6 +150,7 @@ export default function ClientRestrictedExercises() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Exercise Name</TableHead>
+                      <TableHead>Muscle Group</TableHead>
                       <TableHead>Added On</TableHead>
                       <TableHead className="w-[100px]"></TableHead>
                     </TableRow>
@@ -155,6 +159,9 @@ export default function ClientRestrictedExercises() {
                     {restrictedExercises.map((exercise) => (
                       <TableRow key={exercise.id}>
                         <TableCell className="font-medium">{exercise.name}</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {exercise.muscle_group?.name || 'N/A'}
+                        </TableCell>
                         <TableCell className="text-muted-foreground">
                           {format(new Date(exercise.created_at), 'MMM d, yyyy')}
                         </TableCell>

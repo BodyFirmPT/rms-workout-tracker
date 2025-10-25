@@ -113,18 +113,21 @@ export type Database = {
           client_id: string
           created_at: string
           id: string
+          muscle_group_id: string | null
           name: string
         }
         Insert: {
           client_id: string
           created_at?: string
           id?: string
+          muscle_group_id?: string | null
           name: string
         }
         Update: {
           client_id?: string
           created_at?: string
           id?: string
+          muscle_group_id?: string | null
           name?: string
         }
         Relationships: [
@@ -133,6 +136,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "client"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restricted_exercise_muscle_group_id_fkey"
+            columns: ["muscle_group_id"]
+            isOneToOne: false
+            referencedRelation: "muscle_group"
             referencedColumns: ["id"]
           },
         ]
