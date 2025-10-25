@@ -188,7 +188,7 @@ export default function ClientDetails() {
               </div>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant="outline"
                 onClick={() => navigate(`/client/${clientId}/injuries`)}
