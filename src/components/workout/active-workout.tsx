@@ -15,6 +15,7 @@ import { CategoryHeader } from "@/components/workout/category-header";
 import { CopyExercisesDialog } from "@/components/workout/copy-exercises-dialog";
 import { AddInjuryDialog } from "@/components/injury/add-injury-dialog";
 import { EditInjuryDialog } from "@/components/injury/edit-injury-dialog";
+import { ManageEquipmentDialog } from "@/components/workout/manage-equipment-dialog";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { format } from "date-fns";
 import { CreateWorkoutExerciseInput, WorkoutExercise } from "@/types/workout";
@@ -53,6 +54,7 @@ export function ActiveWorkout({
   const [workoutLocation, setWorkoutLocation] = useState<Location | null>(null);
   const [availableEquipment, setAvailableEquipment] = useState<Equipment[]>([]);
   const [equipmentOpen, setEquipmentOpen] = useState(false);
+  const [showManageEquipment, setShowManageEquipment] = useState(false);
   const {
     workouts,
     workoutExercises,
@@ -474,7 +476,25 @@ export function ActiveWorkout({
                       {availableEquipment.length} Available {availableEquipment.length === 1 ? 'Equipment' : 'Equipment Items'}
                     </CardTitle>
                   </div>
-                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${equipmentOpen ? 'rotate-180' : ''}`} />
+                  <div className="flex items-center gap-1">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          setShowManageEquipment(true);
+                        }}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add New Equipment
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${equipmentOpen ? 'rotate-180' : ''}`} />
+                  </div>
                 </div>
               </CardHeader>
             </CollapsibleTrigger>
@@ -959,6 +979,19 @@ export function ActiveWorkout({
           }}
           injury={editingInjury}
           onSuccess={handleInjuryUpdated}
+        />
+      )}
+
+      {/* Equipment Dialog */}
+      {workoutLocation && (
+        <ManageEquipmentDialog
+          open={showManageEquipment}
+          onOpenChange={setShowManageEquipment}
+          location={workoutLocation}
+          onSuccess={() => {
+            loadWorkoutLocation();
+            setShowManageEquipment(false);
+          }}
         />
       )}
     </div>;
