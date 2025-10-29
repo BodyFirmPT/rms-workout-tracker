@@ -171,7 +171,7 @@ export default function Admin() {
                 <TableHead>Email</TableHead>
                 <TableHead>Full Name</TableHead>
                 <TableHead>Trainer</TableHead>
-                <TableHead>Role</TableHead>
+                <TableHead>Admin</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -198,15 +198,10 @@ export default function Admin() {
                     </Select>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={isUserAdmin(user.id)}
-                        onCheckedChange={(checked) => handleAdminToggle(user.id, isUserAdmin(user.id))}
-                      />
-                      {isUserAdmin(user.id) && (
-                        <span className="text-sm">Admin</span>
-                      )}
-                    </div>
+                    <Switch
+                      checked={isUserAdmin(user.id)}
+                      onCheckedChange={(checked) => handleAdminToggle(user.id, isUserAdmin(user.id))}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
