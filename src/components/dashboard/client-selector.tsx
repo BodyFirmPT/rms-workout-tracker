@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import React from "react";
 import { Users, Settings, Target, Calendar, Plus, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +19,7 @@ export function ClientSelector() {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [deletingClient, setDeletingClient] = useState<Client | null>(null);
   const [userClientId, setUserClientId] = useState<string | null>(null);
+  const [userClient, setUserClient] = useState<Client | null>(null);
   
   const { 
     clients, 
@@ -28,13 +30,24 @@ export function ClientSelector() {
 
   useEffect(() => {
     loadData();
-    loadUserClientId();
+    loadUserClient();
   }, [loadData, emulatedUser]);
 
-  const loadUserClientId = async () => {
+  const loadUserClient = async () => {
     // Check if we're emulating a user
     if (emulatedUser?.client_id) {
       setUserClientId(emulatedUser.client_id);
+      
+      // Fetch the emulated user's client
+      const { data } = await supabase
+        .from('client')
+        .select('*')
+        .eq('id', emulatedUser.client_id)
+        .maybeSingle();
+      
+      if (data) {
+        setUserClient(data as Client);
+      }
       return;
     }
 
@@ -49,6 +62,17 @@ export function ClientSelector() {
       
       if (data?.client_id) {
         setUserClientId(data.client_id);
+        
+        // Fetch the user's client
+        const { data: clientData } = await supabase
+          .from('client')
+          .select('*')
+          .eq('id', data.client_id)
+          .maybeSingle();
+        
+        if (clientData) {
+          setUserClient(clientData as Client);
+        }
       }
     }
   };
@@ -71,6 +95,18 @@ export function ClientSelector() {
     }
     return client.name;
   };
+
+  // Merge user's own client with other clients, ensuring it's always visible
+  const allClients = React.useMemo(() => {
+    const clientList = [...clients];
+    
+    // Add user's client if it's not already in the list
+    if (userClient && !clientList.some(c => c.id === userClient.id)) {
+      clientList.unshift(userClient); // Add at the beginning
+    }
+    
+    return clientList;
+  }, [clients, userClient]);
 
   return (
     <div className="space-y-6">
@@ -145,7 +181,7 @@ export function ClientSelector() {
             </div>
           ) : (
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-              {clients.map((client) => {
+              {allClients.map((client) => {
                 const workoutCount = getClientWorkoutCount(client.id);
                 
                 return (
