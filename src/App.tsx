@@ -14,6 +14,7 @@ import PrintWorkout from "./pages/PrintWorkout";
 import MuscleGroups from "./pages/MuscleGroups";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/workout/:id/print" element={<ProtectedRoute><PrintWorkout /></ProtectedRoute>} />
           <Route path="/muscle-groups" element={<ProtectedRoute><MuscleGroups /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
