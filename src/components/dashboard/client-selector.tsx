@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import React from "react";
-import { Users, Settings, Target, Calendar, Plus, Edit, Trash2 } from "lucide-react";
+import { Users, Settings, Target, Calendar, Plus, Edit, Trash2, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWorkoutStore } from "@/stores/workoutStore";
@@ -91,18 +91,18 @@ export function ClientSelector() {
 
   const getClientDisplayName = (client: Client) => {
     if (client.id === userClientId) {
-      return `${client.name} (me)`;
+      return "My workouts";
     }
     return client.name;
   };
 
-  // Merge user's own client with other clients, ensuring it's always visible
+  // Merge user's own client with other clients, ensuring it's always visible at the end
   const allClients = React.useMemo(() => {
     const clientList = [...clients];
     
     // Add user's client if it's not already in the list
     if (userClient && !clientList.some(c => c.id === userClient.id)) {
-      clientList.unshift(userClient); // Add at the beginning
+      clientList.push(userClient); // Add at the end
     }
     
     return clientList;
@@ -217,7 +217,10 @@ export function ClientSelector() {
 
                     <div onClick={() => handleClientSelect(client.id)}>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-lg pr-16">
+                        <CardTitle className="text-lg pr-16 flex items-center gap-2">
+                          {client.id === userClientId && (
+                            <UserCircle className="h-5 w-5 text-primary" />
+                          )}
                           {getClientDisplayName(client)}
                         </CardTitle>
                       </CardHeader>
