@@ -9,9 +9,11 @@ import { EditClientDialog } from "@/components/workout/edit-client-dialog";
 import { DeleteClientDialog } from "@/components/workout/delete-client-dialog";
 import { Client } from "@/types/workout";
 import { supabase } from "@/integrations/supabase/client";
+import { useEmulation } from "@/contexts/EmulationContext";
 
 export function ClientSelector() {
   const navigate = useNavigate();
+  const { emulatedUser } = useEmulation();
   const [showCreateClient, setShowCreateClient] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [deletingClient, setDeletingClient] = useState<Client | null>(null);
@@ -27,9 +29,16 @@ export function ClientSelector() {
   useEffect(() => {
     loadData();
     loadUserClientId();
-  }, [loadData]);
+  }, [loadData, emulatedUser]);
 
   const loadUserClientId = async () => {
+    // Check if we're emulating a user
+    if (emulatedUser?.client_id) {
+      setUserClientId(emulatedUser.client_id);
+      return;
+    }
+
+    // Otherwise, get the actual logged-in user's client_id
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       const { data } = await supabase
