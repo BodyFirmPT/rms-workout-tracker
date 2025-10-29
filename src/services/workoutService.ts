@@ -9,6 +9,20 @@ import {
   WorkoutUpdateInput
 } from '@/types/workout';
 
+// Helper to get emulated user's trainer_id from localStorage
+const getEmulatedTrainerId = (): string | null => {
+  try {
+    const emulatedData = localStorage.getItem('emulated_user');
+    if (emulatedData) {
+      const parsed = JSON.parse(emulatedData);
+      return parsed?.trainer_id || null;
+    }
+  } catch (e) {
+    console.error('Error parsing emulated user data:', e);
+  }
+  return null;
+};
+
 export class WorkoutService {
   // Trainers
   static async getTrainers(): Promise<Trainer[]> {
@@ -34,11 +48,18 @@ export class WorkoutService {
 
   // Clients
   static async getClients(): Promise<Client[]> {
-    const { data, error } = await supabase
+    let query = supabase
       .from('client')
       .select('*')
       .order('name');
-    
+
+    // Filter by emulated trainer if in emulation mode
+    const emulatedTrainerId = getEmulatedTrainerId();
+    if (emulatedTrainerId) {
+      query = query.eq('trainer_id', emulatedTrainerId);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
     return data || [];
   }
@@ -155,11 +176,30 @@ export class WorkoutService {
   static async getWorkouts(): Promise<Workout[]> {
     const { data, error } = await supabase
       .from('workout')
-      .select('*')
+      .select(`
+        *,
+        client:client_id (
+          id,
+          name,
+          trainer_id
+        )
+      `)
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return (data || []) as Workout[];
+    
+    let workouts = (data || []).map(workout => ({
+      ...workout,
+      client: Array.isArray(workout.client) ? workout.client[0] : workout.client
+    })) as Workout[];
+
+    // Filter by emulated trainer if in emulation mode
+    const emulatedTrainerId = getEmulatedTrainerId();
+    if (emulatedTrainerId) {
+      workouts = workouts.filter(w => (w as any).client?.trainer_id === emulatedTrainerId);
+    }
+
+    return workouts;
   }
 
   static async createWorkout(clientId: string, note: string, date?: string, locationId?: string | null): Promise<Workout> {

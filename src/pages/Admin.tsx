@@ -6,8 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Trash2 } from "lucide-react";
+import { Trash2, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { useEmulation } from "@/contexts/EmulationContext";
 
 interface User {
   id: string;
@@ -34,6 +35,7 @@ interface UserRole {
 
 export default function Admin() {
   const navigate = useNavigate();
+  const { setEmulatedUser } = useEmulation();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
@@ -172,6 +174,17 @@ export default function Admin() {
     }
   };
 
+  const handleEmulateUser = (user: User) => {
+    setEmulatedUser({
+      id: user.id,
+      email: user.email,
+      full_name: user.full_name,
+      trainer_id: user.trainer_id,
+      client_id: user.client_id,
+    });
+    navigate("/");
+  };
+
   const handleDeleteUser = async () => {
     if (!deleteUserId) return;
 
@@ -236,7 +249,7 @@ export default function Admin() {
                 <TableHead>Trainer</TableHead>
                 <TableHead>Client</TableHead>
                 <TableHead>Admin</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -286,15 +299,27 @@ export default function Admin() {
                       onCheckedChange={(checked) => handleAdminToggle(user.id, isUserAdmin(user.id))}
                     />
                   </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setDeleteUserId(user.id)}
-                      className="hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEmulateUser(user)}
+                        className="hover:text-primary"
+                        title="Emulate this user"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeleteUserId(user.id)}
+                        className="hover:text-destructive"
+                        title="Delete user"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
