@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
@@ -205,7 +204,7 @@ export default function Admin() {
                         onCheckedChange={(checked) => handleAdminToggle(user.id, isUserAdmin(user.id))}
                       />
                       {isUserAdmin(user.id) && (
-                        <Badge variant="default">Admin</Badge>
+                        <span className="text-sm">Admin</span>
                       )}
                     </div>
                   </TableCell>
