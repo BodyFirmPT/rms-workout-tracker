@@ -12,9 +12,11 @@ const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingName, setLoadingName] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -22,9 +24,61 @@ const Profile = () => {
       if (user?.email) {
         setEmail(user.email);
       }
+      
+      if (user?.id) {
+        const { data } = await supabase
+          .from('users')
+          .select('full_name')
+          .eq('id', user.id)
+          .maybeSingle();
+        
+        if (data?.full_name) {
+          setFullName(data.full_name);
+        }
+      }
     };
     getUser();
   }, []);
+
+  const handleUpdateName = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!fullName.trim()) {
+      toast({
+        title: "Error",
+        description: "Name cannot be empty",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoadingName(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from('users')
+        .update({ full_name: fullName.trim() })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Name updated successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingName(false);
+    }
+  };
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,11 +155,26 @@ const Profile = () => {
               <CardTitle>Account Information</CardTitle>
               <CardDescription>Your account details</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Email</Label>
                 <Input value={email} disabled />
               </div>
+              
+              <form onSubmit={handleUpdateName} className="space-y-2">
+                <Label htmlFor="full-name">Full Name</Label>
+                <Input
+                  id="full-name"
+                  type="text"
+                  placeholder="Your full name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                />
+                <Button type="submit" disabled={loadingName}>
+                  {loadingName ? "Updating..." : "Update Name"}
+                </Button>
+              </form>
             </CardContent>
           </Card>
 

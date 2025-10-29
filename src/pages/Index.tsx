@@ -1,9 +1,32 @@
 import { useNavigate } from "react-router-dom";
-import { Settings, User } from "lucide-react";
+import { Settings, User, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ClientSelector } from "@/components/dashboard/client-selector";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
 const Index = () => {
   const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    checkAdminStatus();
+  }, []);
+
+  const checkAdminStatus = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    setIsAdmin(!!data);
+  };
+
   return <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="mb-8">
@@ -15,6 +38,12 @@ const Index = () => {
             </p>
           </div>
           <div className="flex gap-2">
+            {isAdmin && (
+              <Button variant="outline" onClick={() => navigate("/admin")} className="flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                Admin
+              </Button>
+            )}
             <Button variant="outline" onClick={() => navigate("/profile")} className="flex items-center gap-2">
               <User className="h-4 w-4" />
               Profile

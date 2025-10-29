@@ -8,12 +8,14 @@ import { CreateClientDialog } from "@/components/workout/create-client-dialog";
 import { EditClientDialog } from "@/components/workout/edit-client-dialog";
 import { DeleteClientDialog } from "@/components/workout/delete-client-dialog";
 import { Client } from "@/types/workout";
+import { supabase } from "@/integrations/supabase/client";
 
 export function ClientSelector() {
   const navigate = useNavigate();
   const [showCreateClient, setShowCreateClient] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [deletingClient, setDeletingClient] = useState<Client | null>(null);
+  const [userClientId, setUserClientId] = useState<string | null>(null);
   
   const { 
     clients, 
@@ -24,7 +26,23 @@ export function ClientSelector() {
 
   useEffect(() => {
     loadData();
+    loadUserClientId();
   }, [loadData]);
+
+  const loadUserClientId = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data } = await supabase
+        .from('users')
+        .select('client_id')
+        .eq('id', user.id)
+        .maybeSingle();
+      
+      if (data?.client_id) {
+        setUserClientId(data.client_id);
+      }
+    }
+  };
 
   const getClientWorkoutCount = (clientId: string) => {
     return workouts.filter(w => w.client_id === clientId).length;
@@ -36,6 +54,13 @@ export function ClientSelector() {
 
   const handleClientSelect = (clientId: string) => {
     navigate(`/client/${clientId}`);
+  };
+
+  const getClientDisplayName = (client: Client) => {
+    if (client.id === userClientId) {
+      return `${client.name} (me)`;
+    }
+    return client.name;
   };
 
   return (
@@ -147,7 +172,9 @@ export function ClientSelector() {
 
                     <div onClick={() => handleClientSelect(client.id)}>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-lg pr-16">{client.name}</CardTitle>
+                        <CardTitle className="text-lg pr-16">
+                          {getClientDisplayName(client)}
+                        </CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="flex items-center justify-between">
