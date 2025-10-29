@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
 interface User {
@@ -113,6 +114,35 @@ export default function Admin() {
     return userRoles.some(role => role.user_id === userId);
   };
 
+  const handleAdminToggle = async (userId: string, isCurrentlyAdmin: boolean) => {
+    try {
+      if (isCurrentlyAdmin) {
+        // Remove admin role
+        const { error } = await supabase
+          .from("user_roles")
+          .delete()
+          .eq("user_id", userId)
+          .eq("role", "admin");
+
+        if (error) throw error;
+        toast.success("Admin role removed");
+      } else {
+        // Add admin role
+        const { error } = await supabase
+          .from("user_roles")
+          .insert({ user_id: userId, role: "admin" });
+
+        if (error) throw error;
+        toast.success("Admin role granted");
+      }
+
+      await loadData();
+    } catch (error) {
+      console.error("Error toggling admin status:", error);
+      toast.error("Failed to update admin status");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -169,9 +199,15 @@ export default function Admin() {
                     </Select>
                   </TableCell>
                   <TableCell>
-                    {isUserAdmin(user.id) && (
-                      <Badge variant="default">Admin</Badge>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={isUserAdmin(user.id)}
+                        onCheckedChange={(checked) => handleAdminToggle(user.id, isUserAdmin(user.id))}
+                      />
+                      {isUserAdmin(user.id) && (
+                        <Badge variant="default">Admin</Badge>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
