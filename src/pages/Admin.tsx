@@ -12,9 +12,15 @@ interface User {
   email: string | null;
   full_name: string | null;
   trainer_id: string | null;
+  client_id: string | null;
 }
 
 interface Trainer {
+  id: string;
+  name: string;
+}
+
+interface Client {
   id: string;
   name: string;
 }
@@ -30,6 +36,7 @@ export default function Admin() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [trainers, setTrainers] = useState<Trainer[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
 
   useEffect(() => {
@@ -73,18 +80,21 @@ export default function Admin() {
 
   const loadData = async () => {
     try {
-      const [usersResponse, trainersResponse, rolesResponse] = await Promise.all([
-        supabase.from("users").select("id, email, full_name, trainer_id"),
+      const [usersResponse, trainersResponse, clientsResponse, rolesResponse] = await Promise.all([
+        supabase.from("users").select("id, email, full_name, trainer_id, client_id"),
         supabase.from("trainer").select("id, name"),
+        supabase.from("client").select("id, name"),
         supabase.from("user_roles").select("user_id, role").eq("role", "admin")
       ]);
 
       if (usersResponse.error) throw usersResponse.error;
       if (trainersResponse.error) throw trainersResponse.error;
+      if (clientsResponse.error) throw clientsResponse.error;
       if (rolesResponse.error) throw rolesResponse.error;
 
       setUsers(usersResponse.data || []);
       setTrainers(trainersResponse.data || []);
+      setClients(clientsResponse.data || []);
       setUserRoles(rolesResponse.data || []);
     } catch (error) {
       console.error("Error loading data:", error);
@@ -106,6 +116,23 @@ export default function Admin() {
     } catch (error) {
       console.error("Error updating trainer:", error);
       toast.error("Failed to update trainer");
+    }
+  };
+
+  const handleClientChange = async (userId: string, clientId: string | null) => {
+    try {
+      const { error } = await supabase
+        .from("users")
+        .update({ client_id: clientId === "none" ? null : clientId })
+        .eq("id", userId);
+
+      if (error) throw error;
+
+      toast.success("Client updated successfully");
+      await loadData();
+    } catch (error) {
+      console.error("Error updating client:", error);
+      toast.error("Failed to update client");
     }
   };
 
@@ -171,6 +198,7 @@ export default function Admin() {
                 <TableHead>Email</TableHead>
                 <TableHead>Full Name</TableHead>
                 <TableHead>Trainer</TableHead>
+                <TableHead>Client</TableHead>
                 <TableHead>Admin</TableHead>
               </TableRow>
             </TableHeader>
@@ -192,6 +220,24 @@ export default function Admin() {
                         {trainers.map((trainer) => (
                           <SelectItem key={trainer.id} value={trainer.id}>
                             {trainer.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell>
+                    <Select
+                      value={user.client_id || "none"}
+                      onValueChange={(value) => handleClientChange(user.id, value)}
+                    >
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Select client" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No Client</SelectItem>
+                        {clients.map((client) => (
+                          <SelectItem key={client.id} value={client.id}>
+                            {client.name}
                           </SelectItem>
                         ))}
                       </SelectContent>

@@ -278,6 +278,7 @@ export type Database = {
       users: {
         Row: {
           avatar_url: string | null
+          client_id: string | null
           created_at: string
           email: string | null
           full_name: string | null
@@ -287,6 +288,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          client_id?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
@@ -296,6 +298,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          client_id?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
@@ -304,6 +307,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "users_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "users_trainer_id_fkey"
             columns: ["trainer_id"]
