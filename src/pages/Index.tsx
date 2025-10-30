@@ -4,23 +4,26 @@ import { Button } from "@/components/ui/button";
 import { ClientSelector } from "@/components/dashboard/client-selector";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useEmulation } from "@/contexts/EmulationContext";
 
 const Index = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
+  const { emulatedUser } = useEmulation();
 
   useEffect(() => {
     checkAdminStatus();
-  }, []);
+  }, [emulatedUser]);
 
   const checkAdminStatus = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    // Check admin status for emulated user if emulating, otherwise check actual user
+    const userId = emulatedUser?.id || (await supabase.auth.getUser()).data.user?.id;
+    if (!userId) return;
 
     const { data } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .eq("role", "admin")
       .maybeSingle();
 
