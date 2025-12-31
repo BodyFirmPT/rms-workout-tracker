@@ -1,18 +1,22 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Upload, Loader2, CheckCircle, AlertCircle, CalendarIcon } from "lucide-react";
-import { format, parse } from "date-fns";
+import { ArrowLeft, Upload, Loader2, CheckCircle, AlertCircle, CalendarIcon, Edit, Trash2 } from "lucide-react";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { supabase } from "@/integrations/supabase/client";
+import { ExerciseForm } from "@/components/workout/exercise-form";
+import { CreateWorkoutExerciseInput } from "@/types/workout";
 
 interface ParsedExercise {
   muscle_group: string;
+  muscle_group_id?: string;
   exercise_name: string;
   reps_count: number;
   reps_unit: string;
@@ -39,12 +43,14 @@ export default function ImportWorkout() {
   const [parsedExercises, setParsedExercises] = useState<ParsedExercise[]>([]);
   const [parsedDate, setParsedDate] = useState<string | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
   const client = clientId ? getClientById(clientId) : null;
+  const editingExercise = editingIndex !== null ? parsedExercises[editingIndex] : null;
 
   const handleParse = async () => {
     if (!rawText.trim()) {
@@ -76,7 +82,18 @@ export default function ImportWorkout() {
         throw new Error("No exercises could be parsed from the provided text.");
       }
 
-      setParsedExercises(data.exercises);
+      // Try to match muscle groups to existing ones
+      const exercisesWithMuscleGroupIds = data.exercises.map((ex: ParsedExercise) => {
+        const matchedGroup = muscleGroups.find(
+          mg => mg.name.toLowerCase() === ex.muscle_group.toLowerCase()
+        );
+        return {
+          ...ex,
+          muscle_group_id: matchedGroup?.id || undefined,
+        };
+      });
+
+      setParsedExercises(exercisesWithMuscleGroupIds);
       setParsedDate(data.date);
       
       toast({
@@ -94,6 +111,59 @@ export default function ImportWorkout() {
     } finally {
       setIsParsing(false);
     }
+  };
+
+  const handleEditSubmit = async (exerciseData: CreateWorkoutExerciseInput, newMuscleGroupName?: string) => {
+    if (editingIndex === null) return;
+
+    // Get muscle group name
+    let muscleGroupName = editingExercise?.muscle_group || "Other";
+    let muscleGroupId = exerciseData.muscle_group_id;
+
+    if (newMuscleGroupName) {
+      muscleGroupName = newMuscleGroupName;
+      muscleGroupId = undefined; // Will be created on import
+    } else if (muscleGroupId) {
+      const group = muscleGroups.find(mg => mg.id === muscleGroupId);
+      if (group) muscleGroupName = group.name;
+    }
+
+    const updatedExercise: ParsedExercise = {
+      muscle_group: muscleGroupName,
+      muscle_group_id: muscleGroupId,
+      exercise_name: exerciseData.exercise_name,
+      reps_count: exerciseData.reps_count,
+      reps_unit: exerciseData.reps_unit,
+      weight_count: exerciseData.weight_count,
+      weight_unit: exerciseData.weight_unit,
+      left_weight: exerciseData.left_weight ?? null,
+      set_count: exerciseData.set_count,
+      type: (exerciseData.type === 'exercise' ? 'weight' : exerciseData.type) || 'weight',
+      band_color: exerciseData.band_color || null,
+      band_type: exerciseData.band_type || null,
+      note: exerciseData.note || "",
+      raw_import_data: editingExercise?.raw_import_data || "",
+    };
+
+    setParsedExercises(prev => {
+      const updated = [...prev];
+      updated[editingIndex] = updatedExercise;
+      return updated;
+    });
+
+    setEditingIndex(null);
+    toast({
+      title: "Exercise updated",
+      description: "The exercise has been updated.",
+    });
+  };
+
+  const handleDeleteExercise = (index: number) => {
+    setParsedExercises(prev => prev.filter((_, i) => i !== index));
+    toast({
+      title: "Exercise removed",
+      description: "The exercise has been removed from the import.",
+    });
   };
 
   const handleImport = async () => {
@@ -128,7 +198,7 @@ export default function ImportWorkout() {
       // Get or create muscle groups and insert exercises
       for (const exercise of parsedExercises) {
         // Find existing muscle group or create new one
-        let muscleGroupId = muscleGroups.find(
+        let muscleGroupId = exercise.muscle_group_id || muscleGroups.find(
           mg => mg.name.toLowerCase() === exercise.muscle_group.toLowerCase()
         )?.id;
 
@@ -149,14 +219,13 @@ export default function ImportWorkout() {
             weight_unit: exercise.weight_unit,
             left_weight: exercise.left_weight,
             set_count: exercise.set_count,
-            completed_sets: exercise.set_count, // Mark as completed since it's historical
+            completed_sets: exercise.set_count,
             is_completed: true,
             type: exercise.type,
             band_color: exercise.band_color,
             band_type: exercise.band_type,
             note: exercise.note,
             raw_import_data: exercise.raw_import_data,
-            // Legacy fields - required by schema
             reps: String(exercise.reps_count),
             unit: exercise.weight_unit,
             count: exercise.weight_count,
@@ -173,7 +242,6 @@ export default function ImportWorkout() {
         description: `Created workout with ${parsedExercises.length} exercises.`,
       });
 
-      // Navigate to the workout
       navigate(`/workout/${workoutData.id}`);
     } catch (error) {
       console.error("Import error:", error);
@@ -185,6 +253,34 @@ export default function ImportWorkout() {
     } finally {
       setIsImporting(false);
     }
+  };
+
+  const getEditInitialValues = () => {
+    if (!editingExercise) return undefined;
+    
+    // Find muscle group ID if we have it, otherwise find by name
+    let muscleGroupId = editingExercise.muscle_group_id;
+    if (!muscleGroupId) {
+      const matchedGroup = muscleGroups.find(
+        mg => mg.name.toLowerCase() === editingExercise.muscle_group.toLowerCase()
+      );
+      muscleGroupId = matchedGroup?.id;
+    }
+
+    return {
+      exerciseName: editingExercise.exercise_name,
+      muscleGroupId: muscleGroupId || "",
+      exerciseType: editingExercise.type as 'weight' | 'band' | 'stretch',
+      repsCount: editingExercise.reps_count,
+      repsUnit: editingExercise.reps_unit,
+      weightCount: editingExercise.weight_count,
+      weightUnit: editingExercise.weight_unit,
+      leftWeight: editingExercise.left_weight,
+      sets: editingExercise.set_count,
+      note: editingExercise.note,
+      bandColor: editingExercise.band_color || "",
+      bandType: editingExercise.band_type || "",
+    };
   };
 
   if (!client) {
@@ -290,25 +386,54 @@ export default function ImportWorkout() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">Click an exercise to edit it before importing.</p>
                 <div className="divide-y divide-border rounded-md border">
                   {parsedExercises.map((exercise, index) => (
-                    <div key={index} className="p-3 space-y-1">
+                    <div 
+                      key={index} 
+                      className="p-3 space-y-1 hover:bg-muted/50 cursor-pointer group"
+                      onClick={() => setEditingIndex(index)}
+                    >
                       <div className="flex items-start justify-between gap-2">
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium">{exercise.exercise_name}</p>
                           <p className="text-sm text-muted-foreground">
                             {exercise.muscle_group} · {exercise.set_count} sets × {exercise.reps_count} {exercise.reps_unit}
                             {exercise.weight_count > 0 && ` @ ${exercise.weight_count} ${exercise.weight_unit}`}
                           </p>
                         </div>
-                        <span className={cn(
-                          "text-xs px-2 py-1 rounded-full",
-                          exercise.type === 'weight' && "bg-blue-500/10 text-blue-600",
-                          exercise.type === 'band' && "bg-purple-500/10 text-purple-600",
-                          exercise.type === 'stretch' && "bg-green-500/10 text-green-600",
-                        )}>
-                          {exercise.type}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className={cn(
+                            "text-xs px-2 py-1 rounded-full",
+                            exercise.type === 'weight' && "bg-blue-500/10 text-blue-600",
+                            exercise.type === 'band' && "bg-purple-500/10 text-purple-600",
+                            exercise.type === 'stretch' && "bg-green-500/10 text-green-600",
+                          )}>
+                            {exercise.type}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="opacity-0 group-hover:opacity-100 h-8 w-8 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingIndex(index);
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="opacity-0 group-hover:opacity-100 h-8 w-8 p-0 text-destructive hover:text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteExercise(index);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                       {exercise.note && (
                         <p className="text-xs text-muted-foreground italic">{exercise.note}</p>
@@ -339,6 +464,35 @@ export default function ImportWorkout() {
             </Card>
           )}
         </div>
+
+        {/* Edit Exercise Dialog */}
+        <Dialog open={editingIndex !== null} onOpenChange={(open) => !open && setEditingIndex(null)}>
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
+            <DialogHeader className="flex-shrink-0">
+              <DialogTitle>Edit Exercise</DialogTitle>
+              <DialogDescription>
+                Update the exercise details before importing.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="overflow-y-auto flex-1 -mx-6 px-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-track]:bg-transparent">
+              {editingExercise?.raw_import_data && (
+                <div className="mb-4 p-3 bg-muted/50 rounded-md border border-border">
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Original Import Data</p>
+                  <p className="text-sm font-mono">{editingExercise.raw_import_data}</p>
+                </div>
+              )}
+              {editingIndex !== null && (
+                <ExerciseForm
+                  onSubmit={handleEditSubmit}
+                  onCancel={() => setEditingIndex(null)}
+                  initialValues={getEditInitialValues()}
+                  submitLabel="Update Exercise"
+                  isEditing={true}
+                />
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
