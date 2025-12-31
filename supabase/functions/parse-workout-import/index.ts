@@ -77,7 +77,7 @@ For each exercise found in the text, extract:
 - weight_unit: "lbs" or "kg" (default "lbs")
 - left_weight: Different left weight if specified, null otherwise
 - set_count: Number of sets (default 1 if not specified)
-- type: "weight", "band", or "stretch"
+- type: "weight", "band", or "stretch" (ONLY use "stretch" if the word "stretch" explicitly appears in the exercise name/description; otherwise default to "weight")
 - band_color: For band exercises, the color (null otherwise)
 - band_type: For band exercises, the type like "1-handle", "2-handle", "flat" (null otherwise)
 - note: Any additional instructions or notes about the exercise
@@ -87,11 +87,12 @@ Rules:
 1. Skip empty rows or rows without an exercise name
 2. If a row has a muscle group but no exercise, skip it
 3. Look for patterns like "15 reps", "3 sets", "10 lbs", etc.
-4. Band exercises often mention colors like "Green", "Blue", "Red"
-5. Stretches typically have duration in seconds
-6. Parse natural language descriptions carefully
-7. ALWAYS include the original_line field with the exact text from the input
-8. Only use muscle groups from the provided list - if no match, use null
+4. Band exercises often mention colors like "Green", "Blue", "Red" - classify as "band"
+5. ONLY classify as "stretch" if the word "stretch" is explicitly in the exercise name or description
+6. Default to "weight" for most exercises (dumbbells, machines, bodyweight exercises, etc.)
+7. Parse natural language descriptions carefully
+8. ALWAYS include the original_line field with the exact text from the input
+9. Only use muscle groups from the provided list - if no match, use null
 
 Return a JSON object with this structure:
 {
