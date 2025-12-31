@@ -339,6 +339,8 @@ export function ExerciseForm({
                 <SelectItem value="2-handle">2-handle</SelectItem>
                 <SelectItem value="flat">Flat</SelectItem>
                 <SelectItem value="figure-8">Figure-8</SelectItem>
+                <SelectItem value="double-leg-cuff">Double leg cuff</SelectItem>
+                <SelectItem value="single-leg-cuff">Single leg cuff</SelectItem>
               </SelectContent>
             </Select>
           </div>

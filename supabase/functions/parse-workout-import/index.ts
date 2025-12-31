@@ -79,7 +79,7 @@ For each exercise found in the text, extract:
 - set_count: Number of sets (default 1 if not specified)
 - type: "weight", "band", or "stretch" (ONLY use "stretch" if the word "stretch" explicitly appears in the exercise name/description; otherwise default to "weight")
 - band_color: For band exercises, the color (null otherwise)
-- band_type: For band exercises, the type like "1-handle", "2-handle", "flat" (null otherwise)
+- band_type: For band exercises, the type like "1-handle", "2-handle", "flat", "figure-8", "double-leg-cuff", "single-leg-cuff" (null otherwise)
 - note: Any additional instructions or notes about the exercise
 - original_line: THE EXACT ORIGINAL LINE from the input data that this exercise came from. Copy it verbatim, including all text, commas, and formatting. This is critical for verification.
 
