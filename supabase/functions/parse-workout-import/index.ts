@@ -32,7 +32,7 @@ serve(async (req) => {
   }
 
   try {
-    const { rawText } = await req.json();
+    const { rawText, muscleGroups } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -40,6 +40,9 @@ serve(async (req) => {
     }
 
     console.log("Parsing workout import text:", rawText.substring(0, 200) + "...");
+    console.log("Available muscle groups:", muscleGroups);
+
+    const muscleGroupList = (muscleGroups || []).join(", ");
 
     const systemPrompt = `You are a workout data parser. Parse the provided workout text into structured exercise data.
 
@@ -51,8 +54,22 @@ IMPORTANT: First, look for a date in the data. Common formats include:
 
 Return the date in YYYY-MM-DD format, or null if no date is found.
 
+CRITICAL - MUSCLE GROUPS:
+You MUST use one of these exact muscle group names (case-sensitive): ${muscleGroupList}
+
+If the input mentions a muscle group that doesn't exactly match one of the above, find the closest match:
+- "Hams", "Hamstring", "Hams/Deadlift" → "Hamstrings"
+- "Abs", "Ab", "Abdominal" → "Abdominals" (or closest match from the list)
+- "Tri", "Tris" → "Triceps"
+- "Bi", "Bis" → "Biceps"
+- "Quads", "Quad" → "Quadriceps" (or closest match)
+- "Lats", "Lat" → "Latissimus" (or closest match)
+- etc.
+
+If there is NO good match in the provided list, set muscle_group to null. Do not invent muscle groups that aren't in the list.
+
 For each exercise found in the text, extract:
-- muscle_group: The muscle group being worked (e.g., "Chest", "Back", "Legs", "Abdominal", "Tricep", "Bicep")
+- muscle_group: One of the exact muscle group names from the list above, or null if no match
 - exercise_name: The specific exercise name
 - reps_count: Number of reps (default 12 if not specified)
 - reps_unit: "reps", "seconds", or "minutes" (default "reps")
@@ -74,6 +91,7 @@ Rules:
 5. Stretches typically have duration in seconds
 6. Parse natural language descriptions carefully
 7. ALWAYS include the original_line field with the exact text from the input
+8. Only use muscle groups from the provided list - if no match, use null
 
 Return a JSON object with this structure:
 {

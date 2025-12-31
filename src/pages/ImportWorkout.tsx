@@ -15,7 +15,7 @@ import { ExerciseForm } from "@/components/workout/exercise-form";
 import { CreateWorkoutExerciseInput } from "@/types/workout";
 
 interface ParsedExercise {
-  muscle_group: string;
+  muscle_group: string | null;
   muscle_group_id?: string;
   exercise_name: string;
   reps_count: number;
@@ -29,6 +29,7 @@ interface ParsedExercise {
   band_type: string | null;
   note: string;
   raw_import_data: string;
+  hasError?: boolean;
 }
 
 export default function ImportWorkout() {
@@ -51,6 +52,7 @@ export default function ImportWorkout() {
 
   const client = clientId ? getClientById(clientId) : null;
   const editingExercise = editingIndex !== null ? parsedExercises[editingIndex] : null;
+  const hasExerciseErrors = parsedExercises.some(ex => ex.hasError);
 
   const handleParse = async () => {
     if (!rawText.trim()) {
@@ -68,8 +70,11 @@ export default function ImportWorkout() {
     setParsedDate(null);
 
     try {
+      // Pass muscle group names to the edge function
+      const muscleGroupNames = muscleGroups.map(mg => mg.name);
+      
       const { data, error } = await supabase.functions.invoke('parse-workout-import', {
-        body: { rawText },
+        body: { rawText, muscleGroups: muscleGroupNames },
       });
 
       if (error) throw error;
@@ -82,23 +87,28 @@ export default function ImportWorkout() {
         throw new Error("No exercises could be parsed from the provided text.");
       }
 
-      // Try to match muscle groups to existing ones
+      // Match muscle groups to existing ones and mark errors
       const exercisesWithMuscleGroupIds = data.exercises.map((ex: ParsedExercise) => {
-        const matchedGroup = muscleGroups.find(
-          mg => mg.name.toLowerCase() === ex.muscle_group.toLowerCase()
-        );
+        const matchedGroup = ex.muscle_group 
+          ? muscleGroups.find(mg => mg.name.toLowerCase() === ex.muscle_group!.toLowerCase())
+          : null;
+        
         return {
           ...ex,
           muscle_group_id: matchedGroup?.id || undefined,
+          hasError: !matchedGroup,
         };
       });
 
       setParsedExercises(exercisesWithMuscleGroupIds);
       setParsedDate(data.date);
       
+      const errorCount = exercisesWithMuscleGroupIds.filter((ex: ParsedExercise) => ex.hasError).length;
+      
       toast({
         title: "Parsing complete",
-        description: `Found ${data.exercises.length} exercises${data.date ? ` for ${format(new Date(data.date + 'T00:00:00'), 'MMM d, yyyy')}` : ''}.`,
+        description: `Found ${data.exercises.length} exercises${data.date ? ` for ${format(new Date(data.date + 'T00:00:00'), 'MMM d, yyyy')}` : ''}${errorCount > 0 ? `. ${errorCount} need muscle group selection.` : ''}.`,
+        variant: errorCount > 0 ? "default" : "default",
       });
     } catch (error) {
       console.error("Parse error:", error);
@@ -116,16 +126,21 @@ export default function ImportWorkout() {
   const handleEditSubmit = async (exerciseData: CreateWorkoutExerciseInput, newMuscleGroupName?: string) => {
     if (editingIndex === null) return;
 
-    // Get muscle group name
-    let muscleGroupName = editingExercise?.muscle_group || "Other";
+    // Get muscle group name and determine if we have a valid muscle group
+    let muscleGroupName: string | null = editingExercise?.muscle_group || null;
     let muscleGroupId = exerciseData.muscle_group_id;
+    let hasError = true;
 
     if (newMuscleGroupName) {
       muscleGroupName = newMuscleGroupName;
       muscleGroupId = undefined; // Will be created on import
+      hasError = false; // New muscle group will be created
     } else if (muscleGroupId) {
       const group = muscleGroups.find(mg => mg.id === muscleGroupId);
-      if (group) muscleGroupName = group.name;
+      if (group) {
+        muscleGroupName = group.name;
+        hasError = false;
+      }
     }
 
     const updatedExercise: ParsedExercise = {
@@ -143,6 +158,7 @@ export default function ImportWorkout() {
       band_type: exerciseData.band_type || null,
       note: exerciseData.note || "",
       raw_import_data: editingExercise?.raw_import_data || "",
+      hasError,
     };
 
     setParsedExercises(prev => {
@@ -371,17 +387,26 @@ export default function ImportWorkout() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
+                  {hasExerciseErrors ? (
+                    <AlertCircle className="h-5 w-5 text-destructive" />
+                  ) : (
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  )}
                   Parsed Exercises ({parsedExercises.length})
                 </CardTitle>
-                <CardDescription className="flex items-center gap-2">
+                <CardDescription className="flex flex-col gap-1">
                   {parsedDate ? (
-                    <>
+                    <span className="flex items-center gap-2">
                       <CalendarIcon className="h-4 w-4" />
                       Workout date: {format(new Date(parsedDate + 'T00:00:00'), 'MMMM d, yyyy')}
-                    </>
+                    </span>
                   ) : (
                     <span className="text-destructive">No date found in the data. Please include a date.</span>
+                  )}
+                  {hasExerciseErrors && (
+                    <span className="text-destructive">
+                      {parsedExercises.filter(e => e.hasError).length} exercise(s) need a muscle group selected before importing.
+                    </span>
                   )}
                 </CardDescription>
               </CardHeader>
@@ -391,14 +416,27 @@ export default function ImportWorkout() {
                   {parsedExercises.map((exercise, index) => (
                     <div 
                       key={index} 
-                      className="p-3 space-y-1 hover:bg-muted/50 cursor-pointer group"
+                      className={cn(
+                        "p-3 space-y-1 hover:bg-muted/50 cursor-pointer group",
+                        exercise.hasError && "bg-destructive/5 border-l-2 border-l-destructive"
+                      )}
                       onClick={() => setEditingIndex(index)}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
-                          <p className="font-medium">{exercise.exercise_name}</p>
+                          <p className="font-medium flex items-center gap-2">
+                            {exercise.exercise_name}
+                            {exercise.hasError && (
+                              <span className="text-xs text-destructive font-normal">(needs muscle group)</span>
+                            )}
+                          </p>
                           <p className="text-sm text-muted-foreground">
-                            {exercise.muscle_group} · {exercise.set_count} sets × {exercise.reps_count} {exercise.reps_unit}
+                            {exercise.hasError ? (
+                              <span className="text-destructive">No muscle group</span>
+                            ) : (
+                              exercise.muscle_group
+                            )}
+                            {" · "}{exercise.set_count} sets × {exercise.reps_count} {exercise.reps_unit}
                             {exercise.weight_count > 0 && ` @ ${exercise.weight_count} ${exercise.weight_unit}`}
                           </p>
                         </div>
@@ -414,7 +452,10 @@ export default function ImportWorkout() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="opacity-0 group-hover:opacity-100 h-8 w-8 p-0"
+                            className={cn(
+                              "h-8 w-8 p-0",
+                              exercise.hasError ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                            )}
                             onClick={(e) => {
                               e.stopPropagation();
                               setEditingIndex(index);
@@ -444,7 +485,7 @@ export default function ImportWorkout() {
 
                 <Button 
                   onClick={handleImport} 
-                  disabled={isImporting || !parsedDate}
+                  disabled={isImporting || !parsedDate || hasExerciseErrors}
                   className="w-full"
                   size="lg"
                 >
@@ -452,6 +493,11 @@ export default function ImportWorkout() {
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Importing...
+                    </>
+                  ) : hasExerciseErrors ? (
+                    <>
+                      <AlertCircle className="mr-2 h-4 w-4" />
+                      Fix {parsedExercises.filter(e => e.hasError).length} Exercise(s) Before Importing
                     </>
                   ) : (
                     <>
