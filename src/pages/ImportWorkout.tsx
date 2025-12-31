@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Upload, Loader2, CheckCircle, AlertCircle, CalendarIcon, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Upload, Loader2, CheckCircle, AlertCircle, CalendarIcon, Edit, Trash2, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +32,12 @@ interface ParsedExercise {
   hasError?: boolean;
 }
 
+interface ImportedWorkout {
+  id: string;
+  date: string;
+  exerciseCount: number;
+}
+
 export default function ImportWorkout() {
   const { clientId } = useParams<{ clientId: string }>();
   const navigate = useNavigate();
@@ -45,6 +51,7 @@ export default function ImportWorkout() {
   const [parsedDate, setParsedDate] = useState<string | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [importedWorkouts, setImportedWorkouts] = useState<ImportedWorkout[]>([]);
 
   useEffect(() => {
     loadData();
@@ -253,12 +260,26 @@ export default function ImportWorkout() {
         }
       }
 
+      // Add to imported workouts list
+      setImportedWorkouts(prev => [
+        {
+          id: workoutData.id,
+          date: parsedDate,
+          exerciseCount: parsedExercises.length,
+        },
+        ...prev,
+      ]);
+
+      // Reset the form for another import
+      setRawText("");
+      setParsedExercises([]);
+      setParsedDate(null);
+      setParseError(null);
+
       toast({
         title: "Import successful",
-        description: `Created workout with ${parsedExercises.length} exercises.`,
+        description: `Created workout with ${parsedExercises.length} exercises for ${format(new Date(parsedDate + 'T00:00:00'), 'MMM d, yyyy')}.`,
       });
-
-      navigate(`/workout/${workoutData.id}`);
     } catch (error) {
       console.error("Import error:", error);
       toast({
@@ -506,6 +527,49 @@ export default function ImportWorkout() {
                     </>
                   )}
                 </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Imported Workouts List */}
+          {importedWorkouts.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                  Imported Workouts ({importedWorkouts.length})
+                </CardTitle>
+                <CardDescription>
+                  Workouts imported during this session
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="divide-y divide-border rounded-md border">
+                  {importedWorkouts.map((workout) => (
+                    <div 
+                      key={workout.id} 
+                      className="p-3 flex items-center justify-between hover:bg-muted/50"
+                    >
+                      <div>
+                        <p className="font-medium">
+                          {format(new Date(workout.date + 'T00:00:00'), 'MMMM d, yyyy')}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {workout.exerciseCount} exercises
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/workout/${workout.id}`)}
+                        className="flex items-center gap-2"
+                      >
+                        <Eye className="h-4 w-4" />
+                        View
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           )}
