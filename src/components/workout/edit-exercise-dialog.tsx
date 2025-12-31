@@ -83,6 +83,12 @@ export function EditExerciseDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="overflow-y-auto flex-1 -mx-6 px-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-track]:bg-transparent">
+          {exercise?.raw_import_data && (
+            <div className="mb-4 p-3 bg-muted/50 rounded-md border border-border">
+              <p className="text-xs font-medium text-muted-foreground mb-1">Original Import Data</p>
+              <p className="text-sm font-mono">{exercise.raw_import_data}</p>
+            </div>
+          )}
           <ExerciseForm
             onSubmit={handleSubmit}
             onCancel={() => onOpenChange(false)}
