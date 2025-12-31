@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Calendar, Clock, Play, Plus, Target, ArrowLeft, Settings, Trash2, Timer, Edit, Copy, User, Search, AlertCircle, XCircle, Ban, MapPin } from "lucide-react";
+import { Calendar, Clock, Play, Plus, Target, ArrowLeft, Settings, Trash2, Timer, Edit, Copy, User, Search, AlertCircle, XCircle, Ban, MapPin, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgressRing } from "@/components/ui/progress-ring";
@@ -219,6 +219,14 @@ export default function ClientDetails() {
               >
                 <MapPin className="h-4 w-4" />
                 Locations
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/client/${clientId}/import`)}
+                className="flex items-center gap-2"
+              >
+                <Upload className="h-4 w-4" />
+                Import Workout
               </Button>
             </div>
           </div>

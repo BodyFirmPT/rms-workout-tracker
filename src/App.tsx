@@ -11,6 +11,7 @@ import ClientDetails from "./pages/ClientDetails";
 import ClientInjuries from "./pages/ClientInjuries";
 import ClientRestrictedExercises from "./pages/ClientRestrictedExercises";
 import ClientLocations from "./pages/ClientLocations";
+import ImportWorkout from "./pages/ImportWorkout";
 import ActiveWorkout from "./pages/ActiveWorkout";
 import PrintWorkout from "./pages/PrintWorkout";
 import MuscleGroups from "./pages/MuscleGroups";
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/client/:clientId/injuries" element={<ProtectedRoute><ClientInjuries /></ProtectedRoute>} />
             <Route path="/client/:clientId/restricted-exercises" element={<ProtectedRoute><ClientRestrictedExercises /></ProtectedRoute>} />
             <Route path="/client/:clientId/locations" element={<ProtectedRoute><ClientLocations /></ProtectedRoute>} />
+            <Route path="/client/:clientId/import" element={<ProtectedRoute><ImportWorkout /></ProtectedRoute>} />
             <Route path="/workout/:id?" element={<ProtectedRoute><ActiveWorkout /></ProtectedRoute>} />
             <Route path="/workout/:id/print" element={<ProtectedRoute><PrintWorkout /></ProtectedRoute>} />
             <Route path="/muscle-groups" element={<ProtectedRoute><MuscleGroups /></ProtectedRoute>} />

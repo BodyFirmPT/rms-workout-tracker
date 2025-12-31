@@ -56,6 +56,7 @@ export interface WorkoutExercise {
   type: 'exercise' | 'weight' | 'band' | 'stretch';
   band_color?: string | null;
   band_type?: string | null;
+  raw_import_data?: string | null;
   created_at?: string;
   // Keep old fields for migration compatibility
   reps?: string;

@@ -387,6 +387,7 @@ export type Database = {
           left_weight: number | null
           muscle_group_id: string
           note: string | null
+          raw_import_data: string | null
           reps: string
           reps_count: number
           reps_unit: string
@@ -409,6 +410,7 @@ export type Database = {
           left_weight?: number | null
           muscle_group_id: string
           note?: string | null
+          raw_import_data?: string | null
           reps: string
           reps_count: number
           reps_unit?: string
@@ -431,6 +433,7 @@ export type Database = {
           left_weight?: number | null
           muscle_group_id?: string
           note?: string | null
+          raw_import_data?: string | null
           reps?: string
           reps_count?: number
           reps_unit?: string
