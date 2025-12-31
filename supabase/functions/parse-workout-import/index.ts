@@ -64,6 +64,7 @@ For each exercise found in the text, extract:
 - band_color: For band exercises, the color (null otherwise)
 - band_type: For band exercises, the type like "1-handle", "2-handle", "flat" (null otherwise)
 - note: Any additional instructions or notes about the exercise
+- original_line: THE EXACT ORIGINAL LINE from the input data that this exercise came from. Copy it verbatim, including all text, commas, and formatting. This is critical for verification.
 
 Rules:
 1. Skip empty rows or rows without an exercise name
@@ -72,11 +73,12 @@ Rules:
 4. Band exercises often mention colors like "Green", "Blue", "Red"
 5. Stretches typically have duration in seconds
 6. Parse natural language descriptions carefully
+7. ALWAYS include the original_line field with the exact text from the input
 
 Return a JSON object with this structure:
 {
   "date": "YYYY-MM-DD" or null,
-  "exercises": [array of exercise objects]
+  "exercises": [array of exercise objects with original_line field]
 }
 
 Only return the JSON object, no other text.`;
@@ -159,7 +161,7 @@ Only return the JSON object, no other text.`;
       band_color: ex.band_color ? String(ex.band_color) : null,
       band_type: ex.band_type ? String(ex.band_type) : null,
       note: String(ex.note || ""),
-      raw_import_data: `${ex.muscle_group || ""}, ${ex.exercise_name || ""}, ${ex.reps_count || ""} ${ex.reps_unit || "reps"}`,
+      raw_import_data: String(ex.original_line || ex.raw_import_data || "").trim(),
     })).filter((ex: ParsedExercise) => ex.exercise_name.length > 0);
 
     console.log(`Parsed date: ${parsed.date}, ${normalizedExercises.length} exercises`);
