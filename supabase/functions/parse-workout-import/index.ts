@@ -178,11 +178,3 @@ Only return the JSON object, no other text.`;
     });
   }
 });
-  } catch (error) {
-    console.error("Error parsing workout import:", error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-});
