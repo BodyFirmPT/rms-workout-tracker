@@ -21,6 +21,11 @@ interface ParsedExercise {
   raw_import_data: string;
 }
 
+interface ParsedWorkout {
+  date: string | null;
+  exercises: ParsedExercise[];
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -37,6 +42,14 @@ serve(async (req) => {
     console.log("Parsing workout import text:", rawText.substring(0, 200) + "...");
 
     const systemPrompt = `You are a workout data parser. Parse the provided workout text into structured exercise data.
+
+IMPORTANT: First, look for a date in the data. Common formats include:
+- "Date,1/15/2019" or "Date: 1/15/2019"
+- "1/15/2019" or "01/15/2019" (MM/DD/YYYY)
+- "2019-01-15" (YYYY-MM-DD)
+- Any other date format
+
+Return the date in YYYY-MM-DD format, or null if no date is found.
 
 For each exercise found in the text, extract:
 - muscle_group: The muscle group being worked (e.g., "Chest", "Back", "Legs", "Abdominal", "Tricep", "Bicep")
@@ -60,7 +73,13 @@ Rules:
 5. Stretches typically have duration in seconds
 6. Parse natural language descriptions carefully
 
-Return a JSON array of exercises. Only return the JSON array, no other text.`;
+Return a JSON object with this structure:
+{
+  "date": "YYYY-MM-DD" or null,
+  "exercises": [array of exercise objects]
+}
+
+Only return the JSON object, no other text.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -72,7 +91,7 @@ Return a JSON array of exercises. Only return the JSON array, no other text.`;
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Parse this workout data and return a JSON array of exercises:\n\n${rawText}` }
+          { role: "user", content: `Parse this workout data and return a JSON object with date and exercises:\n\n${rawText}` }
         ],
       }),
     });
@@ -118,16 +137,16 @@ Return a JSON array of exercises. Only return the JSON array, no other text.`;
     }
     jsonContent = jsonContent.trim();
 
-    let exercises: ParsedExercise[];
+    let parsed: ParsedWorkout;
     try {
-      exercises = JSON.parse(jsonContent);
+      parsed = JSON.parse(jsonContent);
     } catch (parseError) {
       console.error("Failed to parse AI response as JSON:", parseError);
       throw new Error("Failed to parse workout data. The AI response was not valid JSON.");
     }
 
     // Validate and normalize exercises
-    const normalizedExercises = exercises.map((ex: any) => ({
+    const normalizedExercises = (parsed.exercises || []).map((ex: any) => ({
       muscle_group: String(ex.muscle_group || "Other").trim(),
       exercise_name: String(ex.exercise_name || "").trim(),
       reps_count: Number(ex.reps_count) || 12,
@@ -143,11 +162,22 @@ Return a JSON array of exercises. Only return the JSON array, no other text.`;
       raw_import_data: `${ex.muscle_group || ""}, ${ex.exercise_name || ""}, ${ex.reps_count || ""} ${ex.reps_unit || "reps"}`,
     })).filter((ex: ParsedExercise) => ex.exercise_name.length > 0);
 
-    console.log(`Parsed ${normalizedExercises.length} exercises`);
+    console.log(`Parsed date: ${parsed.date}, ${normalizedExercises.length} exercises`);
 
-    return new Response(JSON.stringify({ exercises: normalizedExercises }), {
+    return new Response(JSON.stringify({ 
+      date: parsed.date || null,
+      exercises: normalizedExercises 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+  } catch (error) {
+    console.error("Error parsing workout import:", error);
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
   } catch (error) {
     console.error("Error parsing workout import:", error);
     return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
