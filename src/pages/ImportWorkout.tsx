@@ -1,14 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Upload, Loader2, CheckCircle, AlertCircle } from "lucide-react";
-import { format } from "date-fns";
+import { ArrowLeft, Upload, Loader2, CheckCircle, AlertCircle, CalendarIcon } from "lucide-react";
+import { format, parse } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useWorkoutStore } from "@/stores/workoutStore";
@@ -36,11 +33,11 @@ export default function ImportWorkout() {
   const { toast } = useToast();
   const { getClientById, loadData, addMuscleGroup, muscleGroups } = useWorkoutStore();
   
-  const [workoutDate, setWorkoutDate] = useState<Date>(new Date());
   const [rawText, setRawText] = useState("");
   const [isParsing, setIsParsing] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [parsedExercises, setParsedExercises] = useState<ParsedExercise[]>([]);
+  const [parsedDate, setParsedDate] = useState<string | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -62,6 +59,7 @@ export default function ImportWorkout() {
     setIsParsing(true);
     setParseError(null);
     setParsedExercises([]);
+    setParsedDate(null);
 
     try {
       const { data, error } = await supabase.functions.invoke('parse-workout-import', {
@@ -79,9 +77,11 @@ export default function ImportWorkout() {
       }
 
       setParsedExercises(data.exercises);
+      setParsedDate(data.date);
+      
       toast({
         title: "Parsing complete",
-        description: `Found ${data.exercises.length} exercises.`,
+        description: `Found ${data.exercises.length} exercises${data.date ? ` for ${format(new Date(data.date + 'T00:00:00'), 'MMM d, yyyy')}` : ''}.`,
       });
     } catch (error) {
       console.error("Parse error:", error);
@@ -99,6 +99,15 @@ export default function ImportWorkout() {
   const handleImport = async () => {
     if (!clientId || parsedExercises.length === 0) return;
 
+    if (!parsedDate) {
+      toast({
+        title: "No date found",
+        description: "Please include a date in the pasted data (e.g., 'Date: 1/15/2019').",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsImporting(true);
 
     try {
@@ -107,7 +116,7 @@ export default function ImportWorkout() {
         .from('workout')
         .insert({
           client_id: clientId,
-          date: format(workoutDate, 'yyyy-MM-dd'),
+          date: parsedDate,
           note: 'Imported workout',
           status: 'completed',
         })
@@ -208,50 +217,17 @@ export default function ImportWorkout() {
           
           <h1 className="text-3xl font-bold text-foreground">Import Historical Workout</h1>
           <p className="text-muted-foreground mt-2">
-            Paste workout data to import it for {client.name}
+            Paste workout data to import it for {client.name}. Include the date in the data.
           </p>
         </div>
 
         <div className="space-y-6">
-          {/* Date Picker */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Workout Date</CardTitle>
-              <CardDescription>Select the date this workout occurred</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full sm:w-[280px] justify-start text-left font-normal",
-                      !workoutDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {workoutDate ? format(workoutDate, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={workoutDate}
-                    onSelect={(date) => date && setWorkoutDate(date)}
-                    initialFocus
-                    className="pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </CardContent>
-          </Card>
-
           {/* Raw Text Input */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Workout Data</CardTitle>
               <CardDescription>
-                Paste the workout details below. The AI will parse the exercises from natural language.
+                Paste the workout details below. Include the date (e.g., "Date: 1/15/2019"). The AI will parse the exercises from natural language.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -261,8 +237,8 @@ export default function ImportWorkout() {
                   id="raw-text"
                   value={rawText}
                   onChange={(e) => setRawText(e.target.value)}
-                  placeholder="Paste workout data here... e.g., muscle group, exercise name, reps"
-                  rows={10}
+                  placeholder="Paste workout data here... Include the date, e.g.:&#10;Date: 1/15/2019&#10;Abdominal, Ab Rollouts, 15 reps&#10;Chest, Push-ups, 20 reps"
+                  rows={12}
                   className="font-mono text-sm"
                 />
               </div>
@@ -302,8 +278,15 @@ export default function ImportWorkout() {
                   <CheckCircle className="h-5 w-5 text-green-500" />
                   Parsed Exercises ({parsedExercises.length})
                 </CardTitle>
-                <CardDescription>
-                  Review the parsed exercises before importing
+                <CardDescription className="flex items-center gap-2">
+                  {parsedDate ? (
+                    <>
+                      <CalendarIcon className="h-4 w-4" />
+                      Workout date: {format(new Date(parsedDate + 'T00:00:00'), 'MMMM d, yyyy')}
+                    </>
+                  ) : (
+                    <span className="text-destructive">No date found in the data. Please include a date.</span>
+                  )}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -336,7 +319,7 @@ export default function ImportWorkout() {
 
                 <Button 
                   onClick={handleImport} 
-                  disabled={isImporting}
+                  disabled={isImporting || !parsedDate}
                   className="w-full"
                   size="lg"
                 >
