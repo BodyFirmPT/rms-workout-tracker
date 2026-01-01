@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Upload, Loader2, CheckCircle, AlertCircle, CalendarIcon, Edit, Trash2, Eye } from "lucide-react";
+import { ArrowLeft, Upload, Loader2, CheckCircle, AlertCircle, CalendarIcon, Edit, Trash2, Eye, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +13,7 @@ import { useWorkoutStore } from "@/stores/workoutStore";
 import { supabase } from "@/integrations/supabase/client";
 import { ExerciseForm } from "@/components/workout/exercise-form";
 import { CreateWorkoutExerciseInput } from "@/types/workout";
+import { Badge } from "@/components/ui/badge";
 
 interface ParsedExercise {
   muscle_group: string | null;
@@ -32,6 +33,12 @@ interface ParsedExercise {
   hasError?: boolean;
 }
 
+interface ParsedWorkout {
+  date: string | null;
+  exercises: ParsedExercise[];
+  status: 'pending' | 'imported' | 'skipped';
+}
+
 interface ImportedWorkout {
   id: string;
   date: string;
@@ -47,8 +54,8 @@ export default function ImportWorkout() {
   const [rawText, setRawText] = useState("");
   const [isParsing, setIsParsing] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
-  const [parsedExercises, setParsedExercises] = useState<ParsedExercise[]>([]);
-  const [parsedDate, setParsedDate] = useState<string | null>(null);
+  const [parsedWorkouts, setParsedWorkouts] = useState<ParsedWorkout[]>([]);
+  const [currentWorkoutIndex, setCurrentWorkoutIndex] = useState(0);
   const [parseError, setParseError] = useState<string | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [importedWorkouts, setImportedWorkouts] = useState<ImportedWorkout[]>([]);
@@ -58,8 +65,11 @@ export default function ImportWorkout() {
   }, [loadData]);
 
   const client = clientId ? getClientById(clientId) : null;
-  const editingExercise = editingIndex !== null ? parsedExercises[editingIndex] : null;
-  const hasExerciseErrors = parsedExercises.some(ex => ex.hasError);
+  const currentWorkout = parsedWorkouts[currentWorkoutIndex];
+  const editingExercise = editingIndex !== null && currentWorkout ? currentWorkout.exercises[editingIndex] : null;
+  const hasExerciseErrors = currentWorkout?.exercises.some(ex => ex.hasError) || false;
+  const pendingWorkouts = parsedWorkouts.filter(w => w.status === 'pending');
+  const hasMoreWorkouts = pendingWorkouts.length > 0;
 
   const handleParse = async () => {
     if (!rawText.trim()) {
@@ -73,11 +83,10 @@ export default function ImportWorkout() {
 
     setIsParsing(true);
     setParseError(null);
-    setParsedExercises([]);
-    setParsedDate(null);
+    setParsedWorkouts([]);
+    setCurrentWorkoutIndex(0);
 
     try {
-      // Pass muscle group names to the edge function
       const muscleGroupNames = muscleGroups.map(mg => mg.name);
       
       const { data, error } = await supabase.functions.invoke('parse-workout-import', {
@@ -90,32 +99,41 @@ export default function ImportWorkout() {
         throw new Error(data.error);
       }
 
-      if (!data.exercises || data.exercises.length === 0) {
-        throw new Error("No exercises could be parsed from the provided text.");
+      if (!data.workouts || data.workouts.length === 0) {
+        throw new Error("No workouts could be parsed from the provided text.");
       }
 
-      // Match muscle groups to existing ones and mark errors
-      const exercisesWithMuscleGroupIds = data.exercises.map((ex: ParsedExercise) => {
-        const matchedGroup = ex.muscle_group 
-          ? muscleGroups.find(mg => mg.name.toLowerCase() === ex.muscle_group!.toLowerCase())
-          : null;
-        
+      // Match muscle groups to existing ones and mark errors for each workout
+      const workoutsWithMuscleGroupIds: ParsedWorkout[] = data.workouts.map((workout: any) => {
+        const exercisesWithIds = workout.exercises.map((ex: ParsedExercise) => {
+          const matchedGroup = ex.muscle_group 
+            ? muscleGroups.find(mg => mg.name.toLowerCase() === ex.muscle_group!.toLowerCase())
+            : null;
+          
+          return {
+            ...ex,
+            muscle_group_id: matchedGroup?.id || undefined,
+            hasError: !matchedGroup,
+          };
+        });
+
         return {
-          ...ex,
-          muscle_group_id: matchedGroup?.id || undefined,
-          hasError: !matchedGroup,
+          date: workout.date,
+          exercises: exercisesWithIds,
+          status: 'pending' as const,
         };
       });
 
-      setParsedExercises(exercisesWithMuscleGroupIds);
-      setParsedDate(data.date);
+      setParsedWorkouts(workoutsWithMuscleGroupIds);
+      setCurrentWorkoutIndex(0);
       
-      const errorCount = exercisesWithMuscleGroupIds.filter((ex: ParsedExercise) => ex.hasError).length;
+      const totalExercises = workoutsWithMuscleGroupIds.reduce((sum: number, w: ParsedWorkout) => sum + w.exercises.length, 0);
+      const totalErrors = workoutsWithMuscleGroupIds.reduce((sum: number, w: ParsedWorkout) => 
+        sum + w.exercises.filter(e => e.hasError).length, 0);
       
       toast({
         title: "Parsing complete",
-        description: `Found ${data.exercises.length} exercises${data.date ? ` for ${format(new Date(data.date + 'T00:00:00'), 'MMM d, yyyy')}` : ''}${errorCount > 0 ? `. ${errorCount} need muscle group selection.` : ''}.`,
-        variant: errorCount > 0 ? "default" : "default",
+        description: `Found ${workoutsWithMuscleGroupIds.length} workout${workoutsWithMuscleGroupIds.length > 1 ? 's' : ''} with ${totalExercises} total exercises${totalErrors > 0 ? `. ${totalErrors} need muscle group selection.` : ''}.`,
       });
     } catch (error) {
       console.error("Parse error:", error);
@@ -131,17 +149,16 @@ export default function ImportWorkout() {
   };
 
   const handleEditSubmit = async (exerciseData: CreateWorkoutExerciseInput, newMuscleGroupName?: string) => {
-    if (editingIndex === null) return;
+    if (editingIndex === null || !currentWorkout) return;
 
-    // Get muscle group name and determine if we have a valid muscle group
     let muscleGroupName: string | null = editingExercise?.muscle_group || null;
     let muscleGroupId = exerciseData.muscle_group_id;
     let hasError = true;
 
     if (newMuscleGroupName) {
       muscleGroupName = newMuscleGroupName;
-      muscleGroupId = undefined; // Will be created on import
-      hasError = false; // New muscle group will be created
+      muscleGroupId = undefined;
+      hasError = false;
     } else if (muscleGroupId) {
       const group = muscleGroups.find(mg => mg.id === muscleGroupId);
       if (group) {
@@ -168,9 +185,11 @@ export default function ImportWorkout() {
       hasError,
     };
 
-    setParsedExercises(prev => {
+    setParsedWorkouts(prev => {
       const updated = [...prev];
-      updated[editingIndex] = updatedExercise;
+      const workoutExercises = [...updated[currentWorkoutIndex].exercises];
+      workoutExercises[editingIndex] = updatedExercise;
+      updated[currentWorkoutIndex] = { ...updated[currentWorkoutIndex], exercises: workoutExercises };
       return updated;
     });
 
@@ -182,20 +201,25 @@ export default function ImportWorkout() {
   };
 
   const handleDeleteExercise = (index: number) => {
-    setParsedExercises(prev => prev.filter((_, i) => i !== index));
+    setParsedWorkouts(prev => {
+      const updated = [...prev];
+      const workoutExercises = updated[currentWorkoutIndex].exercises.filter((_, i) => i !== index);
+      updated[currentWorkoutIndex] = { ...updated[currentWorkoutIndex], exercises: workoutExercises };
+      return updated;
+    });
     toast({
       title: "Exercise removed",
       description: "The exercise has been removed from the import.",
     });
   };
 
-  const handleImport = async () => {
-    if (!clientId || parsedExercises.length === 0) return;
+  const handleImportCurrentWorkout = async () => {
+    if (!clientId || !currentWorkout || currentWorkout.exercises.length === 0) return;
 
-    if (!parsedDate) {
+    if (!currentWorkout.date) {
       toast({
         title: "No date found",
-        description: "Please include a date in the pasted data (e.g., 'Date: 1/15/2019').",
+        description: "This workout has no date. Please include a date in the pasted data.",
         variant: "destructive",
       });
       return;
@@ -204,12 +228,11 @@ export default function ImportWorkout() {
     setIsImporting(true);
 
     try {
-      // Create the workout
       const { data: workoutData, error: workoutError } = await supabase
         .from('workout')
         .insert({
           client_id: clientId,
-          date: parsedDate,
+          date: currentWorkout.date,
           note: 'Imported workout',
           status: 'completed',
         })
@@ -218,18 +241,15 @@ export default function ImportWorkout() {
 
       if (workoutError) throw workoutError;
 
-      // Get or create muscle groups and insert exercises
-      for (const exercise of parsedExercises) {
-        // Find existing muscle group or create new one
+      for (const exercise of currentWorkout.exercises) {
         let muscleGroupId = exercise.muscle_group_id || muscleGroups.find(
-          mg => mg.name.toLowerCase() === exercise.muscle_group.toLowerCase()
+          mg => mg.name.toLowerCase() === exercise.muscle_group?.toLowerCase()
         )?.id;
 
-        if (!muscleGroupId) {
+        if (!muscleGroupId && exercise.muscle_group) {
           muscleGroupId = await addMuscleGroup(exercise.muscle_group, false);
         }
 
-        // Insert the exercise
         const { error: exerciseError } = await supabase
           .from('workout_exercise')
           .insert({
@@ -264,22 +284,26 @@ export default function ImportWorkout() {
       setImportedWorkouts(prev => [
         {
           id: workoutData.id,
-          date: parsedDate,
-          exerciseCount: parsedExercises.length,
+          date: currentWorkout.date!,
+          exerciseCount: currentWorkout.exercises.length,
         },
         ...prev,
       ]);
 
-      // Reset the form for another import
-      setRawText("");
-      setParsedExercises([]);
-      setParsedDate(null);
-      setParseError(null);
+      // Mark current workout as imported
+      setParsedWorkouts(prev => {
+        const updated = [...prev];
+        updated[currentWorkoutIndex] = { ...updated[currentWorkoutIndex], status: 'imported' };
+        return updated;
+      });
 
       toast({
         title: "Import successful",
-        description: `Created workout with ${parsedExercises.length} exercises for ${format(new Date(parsedDate + 'T00:00:00'), 'MMM d, yyyy')}.`,
+        description: `Created workout with ${currentWorkout.exercises.length} exercises for ${format(new Date(currentWorkout.date + 'T00:00:00'), 'MMM d, yyyy')}.`,
       });
+
+      // Move to next pending workout
+      moveToNextPendingWorkout();
     } catch (error) {
       console.error("Import error:", error);
       toast({
@@ -292,14 +316,53 @@ export default function ImportWorkout() {
     }
   };
 
+  const handleSkipCurrentWorkout = () => {
+    setParsedWorkouts(prev => {
+      const updated = [...prev];
+      updated[currentWorkoutIndex] = { ...updated[currentWorkoutIndex], status: 'skipped' };
+      return updated;
+    });
+
+    toast({
+      title: "Workout skipped",
+      description: "This workout has been skipped.",
+    });
+
+    moveToNextPendingWorkout();
+  };
+
+  const moveToNextPendingWorkout = () => {
+    const nextPendingIndex = parsedWorkouts.findIndex((w, i) => i > currentWorkoutIndex && w.status === 'pending');
+    if (nextPendingIndex !== -1) {
+      setCurrentWorkoutIndex(nextPendingIndex);
+    } else {
+      // Check if there are any pending workouts at all
+      const anyPendingIndex = parsedWorkouts.findIndex(w => w.status === 'pending');
+      if (anyPendingIndex !== -1 && anyPendingIndex !== currentWorkoutIndex) {
+        setCurrentWorkoutIndex(anyPendingIndex);
+      } else {
+        // All done - reset
+        setRawText("");
+        setParsedWorkouts([]);
+        setCurrentWorkoutIndex(0);
+      }
+    }
+  };
+
+  const handleClearAll = () => {
+    setRawText("");
+    setParsedWorkouts([]);
+    setCurrentWorkoutIndex(0);
+    setParseError(null);
+  };
+
   const getEditInitialValues = () => {
     if (!editingExercise) return undefined;
     
-    // Find muscle group ID if we have it, otherwise find by name
     let muscleGroupId = editingExercise.muscle_group_id;
-    if (!muscleGroupId) {
+    if (!muscleGroupId && editingExercise.muscle_group) {
       const matchedGroup = muscleGroups.find(
-        mg => mg.name.toLowerCase() === editingExercise.muscle_group.toLowerCase()
+        mg => mg.name.toLowerCase() === editingExercise.muscle_group!.toLowerCase()
       );
       muscleGroupId = matchedGroup?.id;
     }
@@ -348,187 +411,249 @@ export default function ImportWorkout() {
             Back to {client.name}
           </Button>
           
-          <h1 className="text-3xl font-bold text-foreground">Import Historical Workout</h1>
+          <h1 className="text-3xl font-bold text-foreground">Import Historical Workouts</h1>
           <p className="text-muted-foreground mt-2">
-            Paste workout data to import it for {client.name}. Include the date in the data.
+            Paste workout data (up to 10 workouts) for {client.name}. Each workout should include a date.
           </p>
         </div>
 
         <div className="space-y-6">
-          {/* Raw Text Input */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Workout Data</CardTitle>
-              <CardDescription>
-                Paste the workout details below. Include the date (e.g., "Date: 1/15/2019"). The AI will parse the exercises from natural language.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="raw-text">Raw workout data</Label>
-                <Textarea
-                  id="raw-text"
-                  value={rawText}
-                  onChange={(e) => setRawText(e.target.value)}
-                  placeholder="Paste workout data here... Include the date, e.g.:&#10;Date: 1/15/2019&#10;Abdominal, Ab Rollouts, 15 reps&#10;Chest, Push-ups, 20 reps"
-                  rows={12}
-                  className="font-mono text-sm"
-                />
-              </div>
-              
-              <Button 
-                onClick={handleParse} 
-                disabled={isParsing || !rawText.trim()}
-                className="w-full sm:w-auto"
-              >
-                {isParsing ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Parsing...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Parse Workout Data
-                  </>
-                )}
-              </Button>
-
-              {parseError && (
-                <div className="flex items-start gap-2 p-3 bg-destructive/10 text-destructive rounded-md">
-                  <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm">{parseError}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Parsed Results */}
-          {parsedExercises.length > 0 && (
+          {/* Raw Text Input - only show when no workouts are being reviewed */}
+          {pendingWorkouts.length === 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  {hasExerciseErrors ? (
-                    <AlertCircle className="h-5 w-5 text-destructive" />
-                  ) : (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                  )}
-                  Parsed Exercises ({parsedExercises.length})
-                </CardTitle>
-                <CardDescription className="flex flex-col gap-1">
-                  {parsedDate ? (
-                    <span className="flex items-center gap-2">
-                      <CalendarIcon className="h-4 w-4" />
-                      Workout date: {format(new Date(parsedDate + 'T00:00:00'), 'MMMM d, yyyy')}
-                    </span>
-                  ) : (
-                    <span className="text-destructive">No date found in the data. Please include a date.</span>
-                  )}
-                  {hasExerciseErrors && (
-                    <span className="text-destructive">
-                      {parsedExercises.filter(e => e.hasError).length} exercise(s) need a muscle group selected before importing.
-                    </span>
-                  )}
+                <CardTitle className="text-lg">Workout Data</CardTitle>
+                <CardDescription>
+                  Paste one or more workouts below. Include dates (e.g., "Date: 1/15/2019") to separate multiple workouts. Up to 10 workouts can be imported at once.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">Click an exercise to edit it before importing.</p>
-                <div className="divide-y divide-border rounded-md border">
-                  {parsedExercises.map((exercise, index) => (
-                    <div 
-                      key={index} 
-                      className={cn(
-                        "p-3 space-y-1 hover:bg-muted/50 cursor-pointer group",
-                        exercise.hasError && "bg-destructive/5 border-l-2 border-l-destructive"
-                      )}
-                      onClick={() => setEditingIndex(index)}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1">
-                          <p className="font-medium flex items-center gap-2">
-                            {exercise.exercise_name}
-                            {exercise.hasError && (
-                              <span className="text-xs text-destructive font-normal">(needs muscle group)</span>
-                            )}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {exercise.hasError ? (
-                              <span className="text-destructive">No muscle group</span>
-                            ) : (
-                              exercise.muscle_group
-                            )}
-                            {" · "}{exercise.set_count} sets × {exercise.reps_count} {exercise.reps_unit}
-                            {exercise.weight_count > 0 && ` @ ${exercise.weight_count} ${exercise.weight_unit}`}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={cn(
-                            "text-xs px-2 py-1 rounded-full",
-                            exercise.type === 'weight' && "bg-blue-500/10 text-blue-600",
-                            exercise.type === 'band' && "bg-purple-500/10 text-purple-600",
-                            exercise.type === 'stretch' && "bg-green-500/10 text-green-600",
-                          )}>
-                            {exercise.type}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className={cn(
-                              "h-8 w-8 p-0",
-                              exercise.hasError ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                            )}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setEditingIndex(index);
-                            }}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="opacity-0 group-hover:opacity-100 h-8 w-8 p-0 text-destructive hover:text-destructive"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteExercise(index);
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      {exercise.note && (
-                        <p className="text-xs text-muted-foreground italic">{exercise.note}</p>
-                      )}
-                    </div>
-                  ))}
+                <div className="space-y-2">
+                  <Label htmlFor="raw-text">Raw workout data</Label>
+                  <Textarea
+                    id="raw-text"
+                    value={rawText}
+                    onChange={(e) => setRawText(e.target.value)}
+                    placeholder="Paste workout data here... Include dates to separate workouts, e.g.:&#10;&#10;Date: 1/15/2019&#10;Abdominal, Ab Rollouts, 15 reps&#10;Chest, Push-ups, 20 reps&#10;&#10;Date: 1/17/2019&#10;Back, Pull-ups, 10 reps&#10;Biceps, Curls, 12 reps @ 25 lbs"
+                    rows={14}
+                    className="font-mono text-sm"
+                  />
                 </div>
-
+                
                 <Button 
-                  onClick={handleImport} 
-                  disabled={isImporting || !parsedDate || hasExerciseErrors}
-                  className="w-full"
-                  size="lg"
+                  onClick={handleParse} 
+                  disabled={isParsing || !rawText.trim()}
+                  className="w-full sm:w-auto"
                 >
-                  {isImporting ? (
+                  {isParsing ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Importing...
-                    </>
-                  ) : hasExerciseErrors ? (
-                    <>
-                      <AlertCircle className="mr-2 h-4 w-4" />
-                      Fix {parsedExercises.filter(e => e.hasError).length} Exercise(s) Before Importing
+                      Parsing...
                     </>
                   ) : (
                     <>
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      Import {parsedExercises.length} Exercises
+                      <Upload className="mr-2 h-4 w-4" />
+                      Parse Workout Data
                     </>
                   )}
                 </Button>
+
+                {parseError && (
+                  <div className="flex items-start gap-2 p-3 bg-destructive/10 text-destructive rounded-md">
+                    <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm">{parseError}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
+          )}
+
+          {/* Workout Review Section */}
+          {pendingWorkouts.length > 0 && currentWorkout && currentWorkout.status === 'pending' && (
+            <>
+              {/* Workout Navigation */}
+              <Card>
+                <CardContent className="py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-muted-foreground">
+                        Reviewing workout {parsedWorkouts.filter((w, i) => i <= currentWorkoutIndex && w.status === 'pending').length} of {pendingWorkouts.length} remaining
+                      </span>
+                      <div className="flex gap-1">
+                        {parsedWorkouts.map((workout, index) => (
+                          <button
+                            key={index}
+                            onClick={() => workout.status === 'pending' && setCurrentWorkoutIndex(index)}
+                            className={cn(
+                              "w-3 h-3 rounded-full transition-colors",
+                              index === currentWorkoutIndex && "ring-2 ring-offset-2 ring-primary",
+                              workout.status === 'imported' && "bg-green-500",
+                              workout.status === 'skipped' && "bg-muted-foreground/50",
+                              workout.status === 'pending' && index === currentWorkoutIndex && "bg-primary",
+                              workout.status === 'pending' && index !== currentWorkoutIndex && "bg-muted-foreground/30 hover:bg-muted-foreground/50 cursor-pointer"
+                            )}
+                            disabled={workout.status !== 'pending'}
+                            title={`Workout ${index + 1}: ${workout.date || 'No date'} (${workout.status})`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={handleClearAll}>
+                      <X className="h-4 w-4 mr-1" />
+                      Cancel All
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Current Workout */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      {hasExerciseErrors ? (
+                        <AlertCircle className="h-5 w-5 text-destructive" />
+                      ) : (
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                      )}
+                      Parsed Exercises ({currentWorkout.exercises.length})
+                    </span>
+                    <Badge variant="outline" className="font-normal">
+                      {currentWorkout.date 
+                        ? format(new Date(currentWorkout.date + 'T00:00:00'), 'MMMM d, yyyy')
+                        : 'No date found'
+                      }
+                    </Badge>
+                  </CardTitle>
+                  <CardDescription className="flex flex-col gap-1">
+                    {currentWorkout.date ? (
+                      <span className="flex items-center gap-2">
+                        <CalendarIcon className="h-4 w-4" />
+                        Workout date: {format(new Date(currentWorkout.date + 'T00:00:00'), 'MMMM d, yyyy')}
+                      </span>
+                    ) : (
+                      <span className="text-destructive">No date found in the data. This workout cannot be imported.</span>
+                    )}
+                    {hasExerciseErrors && (
+                      <span className="text-destructive">
+                        {currentWorkout.exercises.filter(e => e.hasError).length} exercise(s) need a muscle group selected before importing.
+                      </span>
+                    )}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">Click an exercise to edit it before importing.</p>
+                  <div className="divide-y divide-border rounded-md border">
+                    {currentWorkout.exercises.map((exercise, index) => (
+                      <div 
+                        key={index} 
+                        className={cn(
+                          "p-3 space-y-1 hover:bg-muted/50 cursor-pointer group",
+                          exercise.hasError && "bg-destructive/5 border-l-2 border-l-destructive"
+                        )}
+                        onClick={() => setEditingIndex(index)}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <p className="font-medium flex items-center gap-2">
+                              {exercise.exercise_name}
+                              {exercise.hasError && (
+                                <span className="text-xs text-destructive font-normal">(needs muscle group)</span>
+                              )}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {exercise.hasError ? (
+                                <span className="text-destructive">No muscle group</span>
+                              ) : (
+                                exercise.muscle_group
+                              )}
+                              {" · "}{exercise.set_count} sets × {exercise.reps_count} {exercise.reps_unit}
+                              {exercise.weight_count > 0 && ` @ ${exercise.weight_count} ${exercise.weight_unit}`}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={cn(
+                              "text-xs px-2 py-1 rounded-full",
+                              exercise.type === 'weight' && "bg-blue-500/10 text-blue-600",
+                              exercise.type === 'band' && "bg-purple-500/10 text-purple-600",
+                              exercise.type === 'stretch' && "bg-green-500/10 text-green-600",
+                            )}>
+                              {exercise.type}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={cn(
+                                "h-8 w-8 p-0",
+                                exercise.hasError ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                              )}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingIndex(index);
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="opacity-0 group-hover:opacity-100 h-8 w-8 p-0 text-destructive hover:text-destructive"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteExercise(index);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        {exercise.note && (
+                          <p className="text-xs text-muted-foreground italic">{exercise.note}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button 
+                      onClick={handleImportCurrentWorkout} 
+                      disabled={isImporting || !currentWorkout.date || hasExerciseErrors}
+                      className="flex-1"
+                      size="lg"
+                    >
+                      {isImporting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Importing...
+                        </>
+                      ) : hasExerciseErrors ? (
+                        <>
+                          <AlertCircle className="mr-2 h-4 w-4" />
+                          Fix {currentWorkout.exercises.filter(e => e.hasError).length} Exercise(s)
+                        </>
+                      ) : !currentWorkout.date ? (
+                        <>
+                          <AlertCircle className="mr-2 h-4 w-4" />
+                          No Date - Cannot Import
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          Import This Workout
+                        </>
+                      )}
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={handleSkipCurrentWorkout}
+                      disabled={isImporting}
+                    >
+                      Skip
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
           )}
 
           {/* Imported Workouts List */}
