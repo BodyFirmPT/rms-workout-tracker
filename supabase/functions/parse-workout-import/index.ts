@@ -202,20 +202,20 @@ Only return the JSON object, no other text.`;
     }
     jsonContent = jsonContent.trim();
 
-    // Sanitize control characters that break JSON parsing
-    // The AI sometimes returns literal tabs/newlines inside string values
-    // We need to escape them properly for JSON.parse to work
-    jsonContent = jsonContent.replace(/[\x00-\x1F\x7F]/g, (char) => {
-      // Keep actual newlines between JSON elements (outside of strings)
-      // This regex approach replaces control chars inside string values
-      const escapes: Record<string, string> = {
-        '\t': '\\t',
-        '\n': '\\n',
-        '\r': '\\r',
-        '\b': '\\b',
-        '\f': '\\f',
-      };
-      return escapes[char] || '';
+    // Sanitize control characters inside JSON string values that break JSON parsing
+    // The AI sometimes returns literal tabs inside string values (in original_line field)
+    // Strategy: Find string values and escape control chars only within them
+    // We use a regex to find content between quotes and escape tabs/other control chars there
+    jsonContent = jsonContent.replace(/"([^"\\]|\\.)*"/g, (match) => {
+      // Within each string value, escape unescaped control characters
+      return match.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, (char) => {
+        // Map control characters to their escape sequences
+        const code = char.charCodeAt(0);
+        if (code === 0x09) return '\\t';  // tab
+        if (code === 0x08) return '\\b';  // backspace
+        if (code === 0x0C) return '\\f';  // form feed
+        return ''; // Remove other control characters
+      });
     });
 
     let parsed: { workouts?: ParsedWorkout[]; date?: string | null; exercises?: any[] };
