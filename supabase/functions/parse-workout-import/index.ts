@@ -102,8 +102,8 @@ If there is NO good match in the provided list, set muscle_group to null. Do not
 For each exercise found in the text, extract:
 - muscle_group: One of the exact muscle group names from the list above, or null if no match
 - exercise_name: The specific exercise name
-- reps_count: Number of reps (default 12 if not specified)
-- reps_unit: "reps", "seconds", or "minutes" (default "reps")
+- reps_count: Number of reps (default 12 if not specified for weight/band exercises, default 30 for stretches)
+- reps_unit: "reps", "seconds", or "minutes" (default "reps" for weight/band, default "seconds" for stretches)
 - weight_count: Weight amount (0 if not specified or bodyweight)
 - weight_unit: "lbs" or "kg" (default "lbs")
 - left_weight: Different left weight if specified, null otherwise
@@ -126,6 +126,14 @@ Rules:
 9. ALWAYS include the original_line field with the exact text from the input
 10. Only use muscle groups from the provided list - if no match, use null
 11. When you encounter a new date, start a new workout. Group all exercises under the most recent date until a new date is found.
+
+CRITICAL - SPLITTING COMPOUND STRETCHES:
+12. When you see a stretch exercise with multiple stretches separated by "/" (e.g., "Pigeon Stretch/Hip Flexor Stretch/Hamstring Strap/Piriformis Stretch"), you MUST split these into SEPARATE exercise entries.
+    - Each stretch becomes its own exercise row
+    - For each individual stretch, determine the appropriate muscle_group from the list based on what that specific stretch targets
+    - All split stretches share the same original_line from the source row
+    - Each stretch defaults to 30 seconds if no duration/reps specified
+    - Example: "Pigeon Stretch/Hip Flexor Stretch" becomes TWO exercises: "Pigeon Stretch" (targeting Glutes or Hips) and "Hip Flexor Stretch" (targeting Hips/Hip Lift or similar)
 
 Also look for any workout description or note. This could be:
 - Text after the date line but before the first exercise
@@ -276,62 +284,38 @@ Only return the JSON object, no other text.`;
         
         if (exerciseName.length === 0) continue;
         
-        // For stretch exercises, split by "/" into individual stretches
-        if (exerciseType === 'stretch' && exerciseName.includes('/')) {
-          const stretchNames = exerciseName.split('/').map((s: string) => s.trim()).filter((s: string) => s.length > 0);
-          
-          for (const stretchName of stretchNames) {
-            normalizedExercises.push({
-              muscle_group: String(ex.muscle_group || "Other").trim(),
-              exercise_name: stretchName,
-              reps_count: (!ex.reps_count || ex.reps_count === 0) ? 30 : Number(ex.reps_count),
-              reps_unit: (!ex.reps_count || ex.reps_count === 0) ? 'seconds' : String(ex.reps_unit || "reps"),
-              weight_count: 0,
-              weight_unit: String(ex.weight_unit || "lbs"),
-              left_weight: null,
-              set_count: Number(ex.set_count) || 1,
-              type: 'stretch',
-              band_color: null,
-              band_type: null,
-              note: String(ex.note || ""),
-              raw_import_data: String(ex.original_line || ex.raw_import_data || "").trim(),
-            });
-          }
-        } else {
-          // Regular exercise processing
-          let repsCount = Number(ex.reps_count) || 0;
-          let repsUnit = String(ex.reps_unit || "reps");
-          let reviewReason: string | undefined = undefined;
-          
-          // For stretch exercises with no reps, default to 30 seconds
-          if (exerciseType === 'stretch' && repsCount === 0) {
-            repsCount = 30;
-            repsUnit = 'seconds';
-          }
-          
-          // For weight/band exercises with no reps, flag for review
-          if ((exerciseType === 'weight' || exerciseType === 'band') && repsCount === 0) {
-            repsCount = 12; // Default but flag for review
-            reviewReason = 'No reps specified for exercise';
-          }
-          
-          normalizedExercises.push({
-            muscle_group: String(ex.muscle_group || "Other").trim(),
-            exercise_name: exerciseName,
-            reps_count: repsCount,
-            reps_unit: repsUnit,
-            weight_count: Number(ex.weight_count) || 0,
-            weight_unit: String(ex.weight_unit || "lbs"),
-            left_weight: ex.left_weight !== null ? Number(ex.left_weight) : null,
-            set_count: Number(ex.set_count) || 1,
-            type: exerciseType,
-            band_color: normalizeBandColor(ex.band_color),
-            band_type: normalizeBandType(ex.band_type),
-            note: String(ex.note || ""),
-            raw_import_data: String(ex.original_line || ex.raw_import_data || "").trim(),
-            review_reason: reviewReason,
-          });
+        let repsCount = Number(ex.reps_count) || 0;
+        let repsUnit = String(ex.reps_unit || "reps");
+        let reviewReason: string | undefined = undefined;
+        
+        // For stretch exercises with no reps, default to 30 seconds
+        if (exerciseType === 'stretch' && repsCount === 0) {
+          repsCount = 30;
+          repsUnit = 'seconds';
         }
+        
+        // For weight/band exercises with no reps, flag for review
+        if ((exerciseType === 'weight' || exerciseType === 'band') && repsCount === 0) {
+          repsCount = 12; // Default but flag for review
+          reviewReason = 'No reps specified for exercise';
+        }
+        
+        normalizedExercises.push({
+          muscle_group: String(ex.muscle_group || "Other").trim(),
+          exercise_name: exerciseName,
+          reps_count: repsCount,
+          reps_unit: repsUnit,
+          weight_count: Number(ex.weight_count) || 0,
+          weight_unit: String(ex.weight_unit || "lbs"),
+          left_weight: ex.left_weight !== null ? Number(ex.left_weight) : null,
+          set_count: Number(ex.set_count) || 1,
+          type: exerciseType,
+          band_color: normalizeBandColor(ex.band_color),
+          band_type: normalizeBandType(ex.band_type),
+          note: String(ex.note || ""),
+          raw_import_data: String(ex.original_line || ex.raw_import_data || "").trim(),
+          review_reason: reviewReason,
+        });
       }
 
       const needsReview = normalizedExercises.some(ex => ex.review_reason);
