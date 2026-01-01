@@ -202,11 +202,28 @@ Only return the JSON object, no other text.`;
     }
     jsonContent = jsonContent.trim();
 
+    // Sanitize control characters that break JSON parsing
+    // The AI sometimes returns literal tabs/newlines inside string values
+    // We need to escape them properly for JSON.parse to work
+    jsonContent = jsonContent.replace(/[\x00-\x1F\x7F]/g, (char) => {
+      // Keep actual newlines between JSON elements (outside of strings)
+      // This regex approach replaces control chars inside string values
+      const escapes: Record<string, string> = {
+        '\t': '\\t',
+        '\n': '\\n',
+        '\r': '\\r',
+        '\b': '\\b',
+        '\f': '\\f',
+      };
+      return escapes[char] || '';
+    });
+
     let parsed: { workouts?: ParsedWorkout[]; date?: string | null; exercises?: any[] };
     try {
       parsed = JSON.parse(jsonContent);
     } catch (parseError) {
       console.error("Failed to parse AI response as JSON:", parseError);
+      console.error("Problematic JSON content:", jsonContent.substring(0, 1000));
       throw new Error("Failed to parse workout data. The AI response was not valid JSON.");
     }
 
