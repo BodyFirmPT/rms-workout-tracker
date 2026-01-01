@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Upload, Loader2, CheckCircle, AlertCircle, CalendarIcon, Edit, Trash2, Eye, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ArrowLeft, Upload, Loader2, CheckCircle, AlertCircle, CalendarIcon, Edit, Trash2, Eye, ChevronLeft, ChevronRight, X, Zap } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,6 +60,7 @@ export default function ImportWorkout() {
   const [parseError, setParseError] = useState<string | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [importedWorkouts, setImportedWorkouts] = useState<ImportedWorkout[]>([]);
+  const [autoImport, setAutoImport] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -70,6 +72,120 @@ export default function ImportWorkout() {
   const hasExerciseErrors = currentWorkout?.exercises.some(ex => ex.hasError) || false;
   const pendingWorkouts = parsedWorkouts.filter(w => w.status === 'pending');
   const hasMoreWorkouts = pendingWorkouts.length > 0;
+
+  // Helper function for auto-importing a workout directly
+  const importWorkoutDirectly = async (workout: ParsedWorkout, targetClientId: string): Promise<ImportedWorkout | null> => {
+    if (!workout.date || workout.exercises.length === 0) return null;
+
+    let workoutId: string | null = null;
+
+    try {
+      // Prepare exercises
+      const preparedExercises: Array<{
+        muscle_group_id: string;
+        exercise_name: string;
+        reps_count: number;
+        reps_unit: string;
+        weight_count: number;
+        weight_unit: string;
+        left_weight: number | null;
+        set_count: number;
+        type: string;
+        band_color: string | null;
+        band_type: string | null;
+        note: string;
+        raw_import_data: string;
+      }> = [];
+
+      for (const exercise of workout.exercises) {
+        let muscleGroupId = exercise.muscle_group_id || muscleGroups.find(
+          mg => mg.name.toLowerCase() === exercise.muscle_group?.toLowerCase()
+        )?.id;
+
+        if (!muscleGroupId && exercise.muscle_group) {
+          muscleGroupId = await addMuscleGroup(exercise.muscle_group, false);
+        }
+
+        if (!muscleGroupId) {
+          throw new Error(`Could not resolve muscle group for exercise: ${exercise.exercise_name}`);
+        }
+
+        preparedExercises.push({
+          muscle_group_id: muscleGroupId,
+          exercise_name: exercise.exercise_name,
+          reps_count: exercise.reps_count,
+          reps_unit: exercise.reps_unit,
+          weight_count: exercise.weight_count,
+          weight_unit: exercise.weight_unit,
+          left_weight: exercise.left_weight,
+          set_count: exercise.set_count,
+          type: exercise.type,
+          band_color: exercise.band_color,
+          band_type: exercise.band_type,
+          note: exercise.note,
+          raw_import_data: exercise.raw_import_data,
+        });
+      }
+
+      // Create workout
+      const { data: workoutData, error: workoutError } = await supabase
+        .from('workout')
+        .insert({
+          client_id: targetClientId,
+          date: workout.date,
+          note: 'Imported workout',
+          status: 'completed',
+        })
+        .select()
+        .single();
+
+      if (workoutError) throw workoutError;
+      workoutId = workoutData.id;
+
+      // Insert exercises
+      const exercisesToInsert = preparedExercises.map(exercise => ({
+        workout_id: workoutId!,
+        muscle_group_id: exercise.muscle_group_id,
+        exercise_name: exercise.exercise_name,
+        reps_count: exercise.reps_count,
+        reps_unit: exercise.reps_unit,
+        weight_count: exercise.weight_count,
+        weight_unit: exercise.weight_unit,
+        left_weight: exercise.left_weight,
+        set_count: exercise.set_count,
+        completed_sets: exercise.set_count,
+        is_completed: true,
+        type: exercise.type,
+        band_color: exercise.band_color,
+        band_type: exercise.band_type,
+        note: exercise.note,
+        raw_import_data: exercise.raw_import_data,
+        reps: String(exercise.reps_count),
+        unit: exercise.weight_unit,
+        count: exercise.weight_count,
+      }));
+
+      const { error: exercisesError } = await supabase
+        .from('workout_exercise')
+        .insert(exercisesToInsert);
+
+      if (exercisesError) {
+        throw exercisesError;
+      }
+
+      return {
+        id: workoutData.id,
+        date: workout.date,
+        exerciseCount: workout.exercises.length,
+      };
+    } catch (error) {
+      console.error("Auto-import error:", error);
+      if (workoutId) {
+        await supabase.from('workout').delete().eq('id', workoutId);
+      }
+      return null;
+    }
+  };
 
   const handleParse = async () => {
     if (!rawText.trim()) {
@@ -124,17 +240,70 @@ export default function ImportWorkout() {
         };
       });
 
-      setParsedWorkouts(workoutsWithMuscleGroupIds);
-      setCurrentWorkoutIndex(0);
-      
-      const totalExercises = workoutsWithMuscleGroupIds.reduce((sum: number, w: ParsedWorkout) => sum + w.exercises.length, 0);
-      const totalErrors = workoutsWithMuscleGroupIds.reduce((sum: number, w: ParsedWorkout) => 
-        sum + w.exercises.filter(e => e.hasError).length, 0);
-      
-      toast({
-        title: "Parsing complete",
-        description: `Found ${workoutsWithMuscleGroupIds.length} workout${workoutsWithMuscleGroupIds.length > 1 ? 's' : ''} with ${totalExercises} total exercises${totalErrors > 0 ? `. ${totalErrors} need muscle group selection.` : ''}.`,
-      });
+      // If auto-import is enabled, automatically import workouts with no errors
+      if (autoImport) {
+        const workoutsToAutoImport: ParsedWorkout[] = [];
+        const workoutsNeedingReview: ParsedWorkout[] = [];
+
+        for (const workout of workoutsWithMuscleGroupIds) {
+          const hasErrors = workout.exercises.some(ex => ex.hasError);
+          const hasDate = !!workout.date;
+          
+          if (!hasErrors && hasDate) {
+            workoutsToAutoImport.push(workout);
+          } else {
+            workoutsNeedingReview.push(workout);
+          }
+        }
+
+        // Auto-import error-free workouts
+        let autoImportedCount = 0;
+        for (const workout of workoutsToAutoImport) {
+          const result = await importWorkoutDirectly(workout, clientId!);
+          if (result) {
+            setImportedWorkouts(prev => [result, ...prev]);
+            autoImportedCount++;
+          }
+        }
+
+        if (autoImportedCount > 0) {
+          toast({
+            title: "Auto-imported",
+            description: `${autoImportedCount} workout${autoImportedCount > 1 ? 's' : ''} imported automatically.`,
+          });
+        }
+
+        // Set remaining workouts for manual review
+        const remainingWorkouts = workoutsNeedingReview.map(w => ({ ...w, status: 'pending' as const }));
+        setParsedWorkouts(remainingWorkouts);
+        setCurrentWorkoutIndex(0);
+
+        if (remainingWorkouts.length === 0) {
+          // All workouts were auto-imported, reset input
+          setRawText("");
+        }
+
+        const totalExercises = workoutsWithMuscleGroupIds.reduce((sum: number, w: ParsedWorkout) => sum + w.exercises.length, 0);
+        const totalErrors = workoutsNeedingReview.reduce((sum: number, w: ParsedWorkout) => 
+          sum + w.exercises.filter(e => e.hasError).length, 0);
+        
+        toast({
+          title: "Parsing complete",
+          description: `Found ${workoutsWithMuscleGroupIds.length} workout${workoutsWithMuscleGroupIds.length > 1 ? 's' : ''} with ${totalExercises} total exercises. ${autoImportedCount} auto-imported. ${workoutsNeedingReview.length} need review${totalErrors > 0 ? ` (${totalErrors} exercise errors)` : ''}.`,
+        });
+      } else {
+        setParsedWorkouts(workoutsWithMuscleGroupIds);
+        setCurrentWorkoutIndex(0);
+        
+        const totalExercises = workoutsWithMuscleGroupIds.reduce((sum: number, w: ParsedWorkout) => sum + w.exercises.length, 0);
+        const totalErrors = workoutsWithMuscleGroupIds.reduce((sum: number, w: ParsedWorkout) => 
+          sum + w.exercises.filter(e => e.hasError).length, 0);
+        
+        toast({
+          title: "Parsing complete",
+          description: `Found ${workoutsWithMuscleGroupIds.length} workout${workoutsWithMuscleGroupIds.length > 1 ? 's' : ''} with ${totalExercises} total exercises${totalErrors > 0 ? `. ${totalErrors} need muscle group selection.` : ''}.`,
+        });
+      }
     } catch (error) {
       console.error("Parse error:", error);
       setParseError(error instanceof Error ? error.message : "Failed to parse workout data");
@@ -490,6 +659,24 @@ export default function ImportWorkout() {
                     className="font-mono text-sm"
                   />
                 </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="auto-import" 
+                    checked={autoImport}
+                    onCheckedChange={(checked) => setAutoImport(checked === true)}
+                  />
+                  <label 
+                    htmlFor="auto-import" 
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 cursor-pointer"
+                  >
+                    <Zap className="h-4 w-4 text-yellow-500" />
+                    Import automatically when possible
+                  </label>
+                </div>
+                <p className="text-xs text-muted-foreground -mt-2">
+                  Workouts with no errors will be imported automatically. Only those with errors will require manual review.
+                </p>
                 
                 <Button 
                   onClick={handleParse} 
