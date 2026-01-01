@@ -242,6 +242,28 @@ Only return the JSON object, no other text.`;
       workouts = [];
     }
 
+    // Valid band colors (must match database constraint)
+    const validBandColors = ['Black', 'Blue', 'Purple', 'Red', 'Green', 'Yellow'];
+    
+    // Valid band types (must match database constraint)
+    const validBandTypes = ['1-handle', '2-handle', 'flat', 'figure-8', 'double-leg-cuff', 'single-leg-cuff'];
+
+    // Normalize band color to match valid options (case-insensitive)
+    const normalizeBandColor = (color: string | null): string | null => {
+      if (!color) return null;
+      const normalized = color.trim().toLowerCase();
+      const match = validBandColors.find(c => c.toLowerCase() === normalized);
+      return match || null;
+    };
+
+    // Normalize band type to match valid options (case-insensitive)
+    const normalizeBandType = (type: string | null): string | null => {
+      if (!type) return null;
+      const normalized = type.trim().toLowerCase();
+      const match = validBandTypes.find(t => t.toLowerCase() === normalized);
+      return match || null;
+    };
+
     // Normalize all workouts
     const normalizedWorkouts = workouts.map((workout: any) => {
       const normalizedExercises = (workout.exercises || []).map((ex: any) => ({
@@ -254,8 +276,8 @@ Only return the JSON object, no other text.`;
         left_weight: ex.left_weight !== null ? Number(ex.left_weight) : null,
         set_count: Number(ex.set_count) || 1,
         type: ["weight", "band", "stretch"].includes(ex.type) ? ex.type : "weight",
-        band_color: ex.band_color ? String(ex.band_color) : null,
-        band_type: ex.band_type ? String(ex.band_type) : null,
+        band_color: normalizeBandColor(ex.band_color),
+        band_type: normalizeBandType(ex.band_type),
         note: String(ex.note || ""),
         raw_import_data: String(ex.original_line || ex.raw_import_data || "").trim(),
       })).filter((ex: ParsedExercise) => ex.exercise_name.length > 0);
