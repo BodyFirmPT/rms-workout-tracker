@@ -266,21 +266,33 @@ Only return the JSON object, no other text.`;
 
     // Normalize all workouts
     const normalizedWorkouts = workouts.map((workout: any) => {
-      const normalizedExercises = (workout.exercises || []).map((ex: any) => ({
-        muscle_group: String(ex.muscle_group || "Other").trim(),
-        exercise_name: String(ex.exercise_name || "").trim(),
-        reps_count: Number(ex.reps_count) || 12,
-        reps_unit: String(ex.reps_unit || "reps"),
-        weight_count: Number(ex.weight_count) || 0,
-        weight_unit: String(ex.weight_unit || "lbs"),
-        left_weight: ex.left_weight !== null ? Number(ex.left_weight) : null,
-        set_count: Number(ex.set_count) || 1,
-        type: ["weight", "band", "stretch"].includes(ex.type) ? ex.type : "weight",
-        band_color: normalizeBandColor(ex.band_color),
-        band_type: normalizeBandType(ex.band_type),
-        note: String(ex.note || ""),
-        raw_import_data: String(ex.original_line || ex.raw_import_data || "").trim(),
-      })).filter((ex: ParsedExercise) => ex.exercise_name.length > 0);
+      const normalizedExercises = (workout.exercises || []).map((ex: any) => {
+        const exerciseType = ["weight", "band", "stretch"].includes(ex.type) ? ex.type : "weight";
+        
+        // For stretch exercises with no reps, default to 30 seconds
+        let repsCount = Number(ex.reps_count) || 12;
+        let repsUnit = String(ex.reps_unit || "reps");
+        if (exerciseType === 'stretch' && (!ex.reps_count || ex.reps_count === 0)) {
+          repsCount = 30;
+          repsUnit = 'seconds';
+        }
+        
+        return {
+          muscle_group: String(ex.muscle_group || "Other").trim(),
+          exercise_name: String(ex.exercise_name || "").trim(),
+          reps_count: repsCount,
+          reps_unit: repsUnit,
+          weight_count: Number(ex.weight_count) || 0,
+          weight_unit: String(ex.weight_unit || "lbs"),
+          left_weight: ex.left_weight !== null ? Number(ex.left_weight) : null,
+          set_count: Number(ex.set_count) || 1,
+          type: exerciseType,
+          band_color: normalizeBandColor(ex.band_color),
+          band_type: normalizeBandType(ex.band_type),
+          note: String(ex.note || ""),
+          raw_import_data: String(ex.original_line || ex.raw_import_data || "").trim(),
+        };
+      }).filter((ex: ParsedExercise) => ex.exercise_name.length > 0);
 
       return {
         date: workout.date || null,
