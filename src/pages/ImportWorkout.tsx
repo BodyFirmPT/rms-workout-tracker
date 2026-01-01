@@ -32,6 +32,7 @@ interface ParsedExercise {
   note: string;
   raw_import_data: string;
   hasError?: boolean;
+  review_reason?: string;
 }
 
 interface ParsedWorkout {
@@ -40,6 +41,7 @@ interface ParsedWorkout {
   exercises: ParsedExercise[];
   status: 'pending' | 'imported' | 'skipped';
   hasDateConflict?: boolean;
+  needs_review?: boolean;
 }
 
 interface ImportedWorkout {
@@ -275,9 +277,10 @@ export default function ImportWorkout() {
           const hasErrors = workout.exercises.some(ex => ex.hasError);
           const hasDate = !!workout.date;
           const hasConflict = workout.hasDateConflict;
+          const needsReview = workout.needs_review || workout.exercises.some(ex => ex.review_reason);
           
-          // Don't auto-import if there are errors, no date, or a date conflict
-          if (!hasErrors && hasDate && !hasConflict) {
+          // Don't auto-import if there are errors, no date, a date conflict, or needs review
+          if (!hasErrors && hasDate && !hasConflict && !needsReview) {
             workoutsToAutoImport.push(workout);
           } else {
             workoutsNeedingReview.push(workout);
@@ -380,6 +383,7 @@ export default function ImportWorkout() {
       note: exerciseData.note || "",
       raw_import_data: editingExercise?.raw_import_data || "",
       hasError,
+      review_reason: undefined, // Clear review reason when user edits
     };
 
     setParsedWorkouts(prev => {
@@ -750,23 +754,26 @@ export default function ImportWorkout() {
                         Reviewing workout {parsedWorkouts.filter((w, i) => i <= currentWorkoutIndex && w.status === 'pending').length} of {pendingWorkouts.length} remaining
                       </span>
                       <div className="flex gap-1">
-                        {parsedWorkouts.map((workout, index) => (
-                          <button
-                            key={index}
-                            onClick={() => workout.status === 'pending' && setCurrentWorkoutIndex(index)}
-                            className={cn(
-                              "w-3 h-3 rounded-full transition-colors",
-                              index === currentWorkoutIndex && "ring-2 ring-offset-2 ring-primary",
-                              workout.status === 'imported' && "bg-green-500",
-                              workout.status === 'skipped' && "bg-muted-foreground/50",
-                              workout.status === 'pending' && workout.hasDateConflict && "bg-amber-500",
-                              workout.status === 'pending' && !workout.hasDateConflict && index === currentWorkoutIndex && "bg-primary",
-                              workout.status === 'pending' && !workout.hasDateConflict && index !== currentWorkoutIndex && "bg-muted-foreground/30 hover:bg-muted-foreground/50 cursor-pointer"
-                            )}
-                            disabled={workout.status !== 'pending'}
-                            title={`Workout ${index + 1}: ${workout.date || 'No date'} (${workout.status})${workout.hasDateConflict ? ' - Date conflict!' : ''}`}
-                          />
-                        ))}
+                        {parsedWorkouts.map((workout, index) => {
+                          const hasReviewItems = workout.exercises.some(ex => ex.review_reason);
+                          return (
+                            <button
+                              key={index}
+                              onClick={() => workout.status === 'pending' && setCurrentWorkoutIndex(index)}
+                              className={cn(
+                                "w-3 h-3 rounded-full transition-colors",
+                                index === currentWorkoutIndex && "ring-2 ring-offset-2 ring-primary",
+                                workout.status === 'imported' && "bg-green-500",
+                                workout.status === 'skipped' && "bg-muted-foreground/50",
+                                workout.status === 'pending' && (workout.hasDateConflict || hasReviewItems) && "bg-amber-500",
+                                workout.status === 'pending' && !workout.hasDateConflict && !hasReviewItems && index === currentWorkoutIndex && "bg-primary",
+                                workout.status === 'pending' && !workout.hasDateConflict && !hasReviewItems && index !== currentWorkoutIndex && "bg-muted-foreground/30 hover:bg-muted-foreground/50 cursor-pointer"
+                              )}
+                              disabled={workout.status !== 'pending'}
+                              title={`Workout ${index + 1}: ${workout.date || 'No date'} (${workout.status})${workout.hasDateConflict ? ' - Date conflict!' : ''}${hasReviewItems ? ' - Needs review' : ''}`}
+                            />
+                          );
+                        })}
                       </div>
                     </div>
                     <Button variant="ghost" size="sm" onClick={handleClearAll}>
@@ -816,6 +823,12 @@ export default function ImportWorkout() {
                         {currentWorkout.exercises.filter(e => e.hasError).length} exercise(s) need a muscle group selected before importing.
                       </span>
                     )}
+                    {currentWorkout.exercises.some(e => e.review_reason) && (
+                      <span className="text-amber-600 dark:text-amber-500 flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4" />
+                        {currentWorkout.exercises.filter(e => e.review_reason).length} exercise(s) flagged for review. Edit or delete before importing.
+                      </span>
+                    )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -826,7 +839,8 @@ export default function ImportWorkout() {
                         key={index} 
                         className={cn(
                           "p-3 space-y-1 hover:bg-muted/50 cursor-pointer group",
-                          exercise.hasError && "bg-destructive/5 border-l-2 border-l-destructive"
+                          exercise.hasError && "bg-destructive/5 border-l-2 border-l-destructive",
+                          !exercise.hasError && exercise.review_reason && "bg-amber-500/5 border-l-2 border-l-amber-500"
                         )}
                         onClick={() => setEditingIndex(index)}
                       >
@@ -836,6 +850,9 @@ export default function ImportWorkout() {
                               {exercise.exercise_name}
                               {exercise.hasError && (
                                 <span className="text-xs text-destructive font-normal">(needs muscle group)</span>
+                              )}
+                              {!exercise.hasError && exercise.review_reason && (
+                                <span className="text-xs text-amber-600 dark:text-amber-500 font-normal">(review)</span>
                               )}
                             </p>
                             <p className="text-sm text-muted-foreground">
@@ -847,6 +864,9 @@ export default function ImportWorkout() {
                               {" · "}{exercise.set_count} sets × {exercise.reps_count} {exercise.reps_unit}
                               {exercise.weight_count > 0 && ` @ ${exercise.weight_count} ${exercise.weight_unit}`}
                             </p>
+                            {exercise.review_reason && (
+                              <p className="text-xs text-amber-600 dark:text-amber-500">{exercise.review_reason}</p>
+                            )}
                           </div>
                           <div className="flex items-center gap-2">
                             <span className={cn(
@@ -862,7 +882,7 @@ export default function ImportWorkout() {
                               size="sm"
                               className={cn(
                                 "h-8 w-8 p-0",
-                                exercise.hasError ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                                (exercise.hasError || exercise.review_reason) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                               )}
                               onClick={(e) => {
                                 e.stopPropagation();
