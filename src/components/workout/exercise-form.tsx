@@ -324,6 +324,7 @@ export function ExerciseForm({
                 <SelectItem value="Red">Red</SelectItem>
                 <SelectItem value="Green">Green</SelectItem>
                 <SelectItem value="Yellow">Yellow</SelectItem>
+                <SelectItem value="Pink">Pink</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -341,6 +342,7 @@ export function ExerciseForm({
                 <SelectItem value="figure-8">Figure-8</SelectItem>
                 <SelectItem value="double-leg-cuff">Double leg cuff</SelectItem>
                 <SelectItem value="single-leg-cuff">Single leg cuff</SelectItem>
+                <SelectItem value="ankle-weight">Ankle weight</SelectItem>
               </SelectContent>
             </Select>
           </div>
