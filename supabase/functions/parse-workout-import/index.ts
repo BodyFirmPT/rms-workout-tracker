@@ -19,12 +19,14 @@ interface ParsedExercise {
   band_type: string | null;
   note: string;
   raw_import_data: string;
+  review_reason?: string;
 }
 
 interface ParsedWorkout {
   date: string | null;
   note: string | null;
   exercises: ParsedExercise[];
+  needs_review?: boolean;
 }
 
 serve(async (req) => {
@@ -266,38 +268,79 @@ Only return the JSON object, no other text.`;
 
     // Normalize all workouts
     const normalizedWorkouts = workouts.map((workout: any) => {
-      const normalizedExercises = (workout.exercises || []).map((ex: any) => {
+      const normalizedExercises: ParsedExercise[] = [];
+      
+      for (const ex of (workout.exercises || [])) {
         const exerciseType = ["weight", "band", "stretch"].includes(ex.type) ? ex.type : "weight";
+        const exerciseName = String(ex.exercise_name || "").trim();
         
-        // For stretch exercises with no reps, default to 30 seconds
-        let repsCount = Number(ex.reps_count) || 12;
-        let repsUnit = String(ex.reps_unit || "reps");
-        if (exerciseType === 'stretch' && (!ex.reps_count || ex.reps_count === 0)) {
-          repsCount = 30;
-          repsUnit = 'seconds';
+        if (exerciseName.length === 0) continue;
+        
+        // For stretch exercises, split by "/" into individual stretches
+        if (exerciseType === 'stretch' && exerciseName.includes('/')) {
+          const stretchNames = exerciseName.split('/').map((s: string) => s.trim()).filter((s: string) => s.length > 0);
+          
+          for (const stretchName of stretchNames) {
+            normalizedExercises.push({
+              muscle_group: String(ex.muscle_group || "Other").trim(),
+              exercise_name: stretchName,
+              reps_count: (!ex.reps_count || ex.reps_count === 0) ? 30 : Number(ex.reps_count),
+              reps_unit: (!ex.reps_count || ex.reps_count === 0) ? 'seconds' : String(ex.reps_unit || "reps"),
+              weight_count: 0,
+              weight_unit: String(ex.weight_unit || "lbs"),
+              left_weight: null,
+              set_count: Number(ex.set_count) || 1,
+              type: 'stretch',
+              band_color: null,
+              band_type: null,
+              note: String(ex.note || ""),
+              raw_import_data: String(ex.original_line || ex.raw_import_data || "").trim(),
+            });
+          }
+        } else {
+          // Regular exercise processing
+          let repsCount = Number(ex.reps_count) || 0;
+          let repsUnit = String(ex.reps_unit || "reps");
+          let reviewReason: string | undefined = undefined;
+          
+          // For stretch exercises with no reps, default to 30 seconds
+          if (exerciseType === 'stretch' && repsCount === 0) {
+            repsCount = 30;
+            repsUnit = 'seconds';
+          }
+          
+          // For weight/band exercises with no reps, flag for review
+          if ((exerciseType === 'weight' || exerciseType === 'band') && repsCount === 0) {
+            repsCount = 12; // Default but flag for review
+            reviewReason = 'No reps specified for exercise';
+          }
+          
+          normalizedExercises.push({
+            muscle_group: String(ex.muscle_group || "Other").trim(),
+            exercise_name: exerciseName,
+            reps_count: repsCount,
+            reps_unit: repsUnit,
+            weight_count: Number(ex.weight_count) || 0,
+            weight_unit: String(ex.weight_unit || "lbs"),
+            left_weight: ex.left_weight !== null ? Number(ex.left_weight) : null,
+            set_count: Number(ex.set_count) || 1,
+            type: exerciseType,
+            band_color: normalizeBandColor(ex.band_color),
+            band_type: normalizeBandType(ex.band_type),
+            note: String(ex.note || ""),
+            raw_import_data: String(ex.original_line || ex.raw_import_data || "").trim(),
+            review_reason: reviewReason,
+          });
         }
-        
-        return {
-          muscle_group: String(ex.muscle_group || "Other").trim(),
-          exercise_name: String(ex.exercise_name || "").trim(),
-          reps_count: repsCount,
-          reps_unit: repsUnit,
-          weight_count: Number(ex.weight_count) || 0,
-          weight_unit: String(ex.weight_unit || "lbs"),
-          left_weight: ex.left_weight !== null ? Number(ex.left_weight) : null,
-          set_count: Number(ex.set_count) || 1,
-          type: exerciseType,
-          band_color: normalizeBandColor(ex.band_color),
-          band_type: normalizeBandType(ex.band_type),
-          note: String(ex.note || ""),
-          raw_import_data: String(ex.original_line || ex.raw_import_data || "").trim(),
-        };
-      }).filter((ex: ParsedExercise) => ex.exercise_name.length > 0);
+      }
+
+      const needsReview = normalizedExercises.some(ex => ex.review_reason);
 
       return {
         date: workout.date || null,
         note: workout.note ? String(workout.note).trim() : null,
-        exercises: normalizedExercises
+        exercises: normalizedExercises,
+        needs_review: needsReview,
       };
     }).filter((workout: ParsedWorkout) => workout.exercises.length > 0);
 
