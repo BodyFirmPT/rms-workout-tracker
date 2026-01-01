@@ -23,6 +23,7 @@ interface ParsedExercise {
 
 interface ParsedWorkout {
   date: string | null;
+  note: string | null;
   exercises: ParsedExercise[];
 }
 
@@ -98,11 +99,17 @@ Rules:
 10. Only use muscle groups from the provided list - if no match, use null
 11. When you encounter a new date, start a new workout. Group all exercises under the most recent date until a new date is found.
 
+Also look for any workout description or note. This could be:
+- Text after the date line but before the first exercise
+- A line starting with "Note:", "Notes:", "Description:", or similar
+- Any header text describing the workout session
+
 Return a JSON object with this structure:
 {
   "workouts": [
     {
       "date": "YYYY-MM-DD" or null,
+      "note": "any description/note found for this workout" or null,
       "exercises": [array of exercise objects with original_line field]
     },
     ...more workouts if multiple dates found
@@ -185,6 +192,7 @@ Only return the JSON object, no other text.`;
       // Old format - single workout
       workouts = [{
         date: parsed.date || null,
+        note: (parsed as any).note || null,
         exercises: parsed.exercises
       }];
     } else {
@@ -211,6 +219,7 @@ Only return the JSON object, no other text.`;
 
       return {
         date: workout.date || null,
+        note: workout.note ? String(workout.note).trim() : null,
         exercises: normalizedExercises
       };
     }).filter((workout: ParsedWorkout) => workout.exercises.length > 0);

@@ -36,6 +36,7 @@ interface ParsedExercise {
 
 interface ParsedWorkout {
   date: string | null;
+  note: string | null;
   exercises: ParsedExercise[];
   status: 'pending' | 'imported' | 'skipped';
 }
@@ -127,13 +128,17 @@ export default function ImportWorkout() {
         });
       }
 
-      // Create workout
+      // Create workout with combined note
+      const workoutNote = workout.note 
+        ? `Imported workout - ${workout.note}`
+        : 'Imported workout';
+      
       const { data: workoutData, error: workoutError } = await supabase
         .from('workout')
         .insert({
           client_id: targetClientId,
           date: workout.date,
-          note: 'Imported workout',
+          note: workoutNote,
           status: 'completed',
         })
         .select()
@@ -235,6 +240,7 @@ export default function ImportWorkout() {
 
         return {
           date: workout.date,
+          note: workout.note || null,
           exercises: exercisesWithIds,
           status: 'pending' as const,
         };
@@ -446,13 +452,17 @@ export default function ImportWorkout() {
         });
       }
 
-      // Create the workout
+      // Create the workout with combined note
+      const workoutNote = currentWorkout.note 
+        ? `Imported workout - ${currentWorkout.note}`
+        : 'Imported workout';
+      
       const { data: workoutData, error: workoutError } = await supabase
         .from('workout')
         .insert({
           client_id: clientId,
           date: currentWorkout.date,
-          note: 'Imported workout',
+          note: workoutNote,
           status: 'completed',
         })
         .select()
