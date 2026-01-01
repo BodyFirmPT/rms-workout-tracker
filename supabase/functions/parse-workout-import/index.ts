@@ -46,13 +46,15 @@ serve(async (req) => {
 
     const systemPrompt = `You are a workout data parser. Parse the provided workout text into structured exercise data.
 
-IMPORTANT: First, look for a date in the data. Common formats include:
+IMPORTANT: The input may contain MULTIPLE workouts separated by different dates. Parse ALL workouts and return them as an array.
+
+For each workout found, look for a date. Common formats include:
 - "Date,1/15/2019" or "Date: 1/15/2019"
 - "1/15/2019" or "01/15/2019" (MM/DD/YYYY)
 - "2019-01-15" (YYYY-MM-DD)
 - Any other date format
 
-Return the date in YYYY-MM-DD format, or null if no date is found.
+Return each date in YYYY-MM-DD format, or null if no date is found for that workout.
 
 CRITICAL - MUSCLE GROUPS:
 You MUST use one of these exact muscle group names (case-sensitive): ${muscleGroupList}
@@ -94,12 +96,20 @@ Rules:
 8. Parse natural language descriptions carefully
 9. ALWAYS include the original_line field with the exact text from the input
 10. Only use muscle groups from the provided list - if no match, use null
+11. When you encounter a new date, start a new workout. Group all exercises under the most recent date until a new date is found.
 
 Return a JSON object with this structure:
 {
-  "date": "YYYY-MM-DD" or null,
-  "exercises": [array of exercise objects with original_line field]
+  "workouts": [
+    {
+      "date": "YYYY-MM-DD" or null,
+      "exercises": [array of exercise objects with original_line field]
+    },
+    ...more workouts if multiple dates found
+  ]
 }
+
+If there's only one date or no dates, still return the workouts array with a single workout object.
 
 Only return the JSON object, no other text.`;
 
@@ -113,7 +123,7 @@ Only return the JSON object, no other text.`;
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Parse this workout data and return a JSON object with date and exercises:\n\n${rawText}` }
+          { role: "user", content: `Parse this workout data and return a JSON object with workouts array. Each workout has a date and exercises. Group exercises by their date:\n\n${rawText}` }
         ],
       }),
     });
@@ -159,7 +169,7 @@ Only return the JSON object, no other text.`;
     }
     jsonContent = jsonContent.trim();
 
-    let parsed: ParsedWorkout;
+    let parsed: { workouts?: ParsedWorkout[]; date?: string | null; exercises?: any[] };
     try {
       parsed = JSON.parse(jsonContent);
     } catch (parseError) {
@@ -167,28 +177,54 @@ Only return the JSON object, no other text.`;
       throw new Error("Failed to parse workout data. The AI response was not valid JSON.");
     }
 
-    // Validate and normalize exercises
-    const normalizedExercises = (parsed.exercises || []).map((ex: any) => ({
-      muscle_group: String(ex.muscle_group || "Other").trim(),
-      exercise_name: String(ex.exercise_name || "").trim(),
-      reps_count: Number(ex.reps_count) || 12,
-      reps_unit: String(ex.reps_unit || "reps"),
-      weight_count: Number(ex.weight_count) || 0,
-      weight_unit: String(ex.weight_unit || "lbs"),
-      left_weight: ex.left_weight !== null ? Number(ex.left_weight) : null,
-      set_count: Number(ex.set_count) || 1,
-      type: ["weight", "band", "stretch"].includes(ex.type) ? ex.type : "weight",
-      band_color: ex.band_color ? String(ex.band_color) : null,
-      band_type: ex.band_type ? String(ex.band_type) : null,
-      note: String(ex.note || ""),
-      raw_import_data: String(ex.original_line || ex.raw_import_data || "").trim(),
-    })).filter((ex: ParsedExercise) => ex.exercise_name.length > 0);
+    // Handle both old format (single workout) and new format (multiple workouts)
+    let workouts: ParsedWorkout[];
+    if (parsed.workouts && Array.isArray(parsed.workouts)) {
+      workouts = parsed.workouts;
+    } else if (parsed.exercises) {
+      // Old format - single workout
+      workouts = [{
+        date: parsed.date || null,
+        exercises: parsed.exercises
+      }];
+    } else {
+      workouts = [];
+    }
 
-    console.log(`Parsed date: ${parsed.date}, ${normalizedExercises.length} exercises`);
+    // Normalize all workouts
+    const normalizedWorkouts = workouts.map((workout: any) => {
+      const normalizedExercises = (workout.exercises || []).map((ex: any) => ({
+        muscle_group: String(ex.muscle_group || "Other").trim(),
+        exercise_name: String(ex.exercise_name || "").trim(),
+        reps_count: Number(ex.reps_count) || 12,
+        reps_unit: String(ex.reps_unit || "reps"),
+        weight_count: Number(ex.weight_count) || 0,
+        weight_unit: String(ex.weight_unit || "lbs"),
+        left_weight: ex.left_weight !== null ? Number(ex.left_weight) : null,
+        set_count: Number(ex.set_count) || 1,
+        type: ["weight", "band", "stretch"].includes(ex.type) ? ex.type : "weight",
+        band_color: ex.band_color ? String(ex.band_color) : null,
+        band_type: ex.band_type ? String(ex.band_type) : null,
+        note: String(ex.note || ""),
+        raw_import_data: String(ex.original_line || ex.raw_import_data || "").trim(),
+      })).filter((ex: ParsedExercise) => ex.exercise_name.length > 0);
+
+      return {
+        date: workout.date || null,
+        exercises: normalizedExercises
+      };
+    }).filter((workout: ParsedWorkout) => workout.exercises.length > 0);
+
+    // Limit to 10 workouts max
+    const limitedWorkouts = normalizedWorkouts.slice(0, 10);
+
+    console.log(`Parsed ${limitedWorkouts.length} workouts`);
+    limitedWorkouts.forEach((w: ParsedWorkout, i: number) => {
+      console.log(`  Workout ${i + 1}: date=${w.date}, ${w.exercises.length} exercises`);
+    });
 
     return new Response(JSON.stringify({ 
-      date: parsed.date || null,
-      exercises: normalizedExercises 
+      workouts: limitedWorkouts 
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
