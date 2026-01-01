@@ -227,7 +227,57 @@ export default function ImportWorkout() {
 
     setIsImporting(true);
 
+    let workoutId: string | null = null;
+
     try {
+      // First, prepare all exercises (resolve muscle group IDs)
+      const preparedExercises: Array<{
+        muscle_group_id: string;
+        exercise_name: string;
+        reps_count: number;
+        reps_unit: string;
+        weight_count: number;
+        weight_unit: string;
+        left_weight: number | null;
+        set_count: number;
+        type: string;
+        band_color: string | null;
+        band_type: string | null;
+        note: string;
+        raw_import_data: string;
+      }> = [];
+
+      for (const exercise of currentWorkout.exercises) {
+        let muscleGroupId = exercise.muscle_group_id || muscleGroups.find(
+          mg => mg.name.toLowerCase() === exercise.muscle_group?.toLowerCase()
+        )?.id;
+
+        if (!muscleGroupId && exercise.muscle_group) {
+          muscleGroupId = await addMuscleGroup(exercise.muscle_group, false);
+        }
+
+        if (!muscleGroupId) {
+          throw new Error(`Could not resolve muscle group for exercise: ${exercise.exercise_name}`);
+        }
+
+        preparedExercises.push({
+          muscle_group_id: muscleGroupId,
+          exercise_name: exercise.exercise_name,
+          reps_count: exercise.reps_count,
+          reps_unit: exercise.reps_unit,
+          weight_count: exercise.weight_count,
+          weight_unit: exercise.weight_unit,
+          left_weight: exercise.left_weight,
+          set_count: exercise.set_count,
+          type: exercise.type,
+          band_color: exercise.band_color,
+          band_type: exercise.band_type,
+          note: exercise.note,
+          raw_import_data: exercise.raw_import_data,
+        });
+      }
+
+      // Create the workout
       const { data: workoutData, error: workoutError } = await supabase
         .from('workout')
         .insert({
@@ -240,44 +290,38 @@ export default function ImportWorkout() {
         .single();
 
       if (workoutError) throw workoutError;
+      workoutId = workoutData.id;
 
-      for (const exercise of currentWorkout.exercises) {
-        let muscleGroupId = exercise.muscle_group_id || muscleGroups.find(
-          mg => mg.name.toLowerCase() === exercise.muscle_group?.toLowerCase()
-        )?.id;
+      // Insert all exercises in a single batch operation
+      const exercisesToInsert = preparedExercises.map(exercise => ({
+        workout_id: workoutId!,
+        muscle_group_id: exercise.muscle_group_id,
+        exercise_name: exercise.exercise_name,
+        reps_count: exercise.reps_count,
+        reps_unit: exercise.reps_unit,
+        weight_count: exercise.weight_count,
+        weight_unit: exercise.weight_unit,
+        left_weight: exercise.left_weight,
+        set_count: exercise.set_count,
+        completed_sets: exercise.set_count,
+        is_completed: true,
+        type: exercise.type,
+        band_color: exercise.band_color,
+        band_type: exercise.band_type,
+        note: exercise.note,
+        raw_import_data: exercise.raw_import_data,
+        reps: String(exercise.reps_count),
+        unit: exercise.weight_unit,
+        count: exercise.weight_count,
+      }));
 
-        if (!muscleGroupId && exercise.muscle_group) {
-          muscleGroupId = await addMuscleGroup(exercise.muscle_group, false);
-        }
+      const { error: exercisesError } = await supabase
+        .from('workout_exercise')
+        .insert(exercisesToInsert);
 
-        const { error: exerciseError } = await supabase
-          .from('workout_exercise')
-          .insert({
-            workout_id: workoutData.id,
-            muscle_group_id: muscleGroupId,
-            exercise_name: exercise.exercise_name,
-            reps_count: exercise.reps_count,
-            reps_unit: exercise.reps_unit,
-            weight_count: exercise.weight_count,
-            weight_unit: exercise.weight_unit,
-            left_weight: exercise.left_weight,
-            set_count: exercise.set_count,
-            completed_sets: exercise.set_count,
-            is_completed: true,
-            type: exercise.type,
-            band_color: exercise.band_color,
-            band_type: exercise.band_type,
-            note: exercise.note,
-            raw_import_data: exercise.raw_import_data,
-            reps: String(exercise.reps_count),
-            unit: exercise.weight_unit,
-            count: exercise.weight_count,
-          });
-
-        if (exerciseError) {
-          console.error("Exercise insert error:", exerciseError);
-          throw exerciseError;
-        }
+      if (exercisesError) {
+        console.error("Exercise insert error:", exercisesError);
+        throw exercisesError;
       }
 
       // Add to imported workouts list
@@ -306,9 +350,16 @@ export default function ImportWorkout() {
       moveToNextPendingWorkout();
     } catch (error) {
       console.error("Import error:", error);
+      
+      // Rollback: delete the workout if it was created (exercises will cascade delete)
+      if (workoutId) {
+        console.log("Rolling back workout:", workoutId);
+        await supabase.from('workout').delete().eq('id', workoutId);
+      }
+      
       toast({
         title: "Import failed",
-        description: error instanceof Error ? error.message : "Failed to import workout",
+        description: error instanceof Error ? error.message : "Failed to import workout. No data was saved.",
         variant: "destructive",
       });
     } finally {
