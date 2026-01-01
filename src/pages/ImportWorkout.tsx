@@ -39,6 +39,7 @@ interface ParsedWorkout {
   note: string | null;
   exercises: ParsedExercise[];
   status: 'pending' | 'imported' | 'skipped';
+  hasDateConflict?: boolean;
 }
 
 interface ImportedWorkout {
@@ -224,6 +225,22 @@ export default function ImportWorkout() {
         throw new Error("No workouts could be parsed from the provided text.");
       }
 
+      // Check for existing workouts on the same dates for this client
+      const workoutDates = data.workouts
+        .map((w: any) => w.date)
+        .filter((d: string | null): d is string => d !== null);
+      
+      let existingWorkoutDates: string[] = [];
+      if (workoutDates.length > 0 && clientId) {
+        const { data: existingWorkouts } = await supabase
+          .from('workout')
+          .select('date')
+          .eq('client_id', clientId)
+          .in('date', workoutDates);
+        
+        existingWorkoutDates = (existingWorkouts || []).map(w => w.date);
+      }
+
       // Match muscle groups to existing ones and mark errors for each workout
       const workoutsWithMuscleGroupIds: ParsedWorkout[] = data.workouts.map((workout: any) => {
         const exercisesWithIds = workout.exercises.map((ex: ParsedExercise) => {
@@ -238,11 +255,14 @@ export default function ImportWorkout() {
           };
         });
 
+        const hasDateConflict = workout.date ? existingWorkoutDates.includes(workout.date) : false;
+
         return {
           date: workout.date,
           note: workout.note || null,
           exercises: exercisesWithIds,
           status: 'pending' as const,
+          hasDateConflict,
         };
       });
 
@@ -254,8 +274,10 @@ export default function ImportWorkout() {
         for (const workout of workoutsWithMuscleGroupIds) {
           const hasErrors = workout.exercises.some(ex => ex.hasError);
           const hasDate = !!workout.date;
+          const hasConflict = workout.hasDateConflict;
           
-          if (!hasErrors && hasDate) {
+          // Don't auto-import if there are errors, no date, or a date conflict
+          if (!hasErrors && hasDate && !hasConflict) {
             workoutsToAutoImport.push(workout);
           } else {
             workoutsNeedingReview.push(workout);
@@ -737,11 +759,12 @@ export default function ImportWorkout() {
                               index === currentWorkoutIndex && "ring-2 ring-offset-2 ring-primary",
                               workout.status === 'imported' && "bg-green-500",
                               workout.status === 'skipped' && "bg-muted-foreground/50",
-                              workout.status === 'pending' && index === currentWorkoutIndex && "bg-primary",
-                              workout.status === 'pending' && index !== currentWorkoutIndex && "bg-muted-foreground/30 hover:bg-muted-foreground/50 cursor-pointer"
+                              workout.status === 'pending' && workout.hasDateConflict && "bg-amber-500",
+                              workout.status === 'pending' && !workout.hasDateConflict && index === currentWorkoutIndex && "bg-primary",
+                              workout.status === 'pending' && !workout.hasDateConflict && index !== currentWorkoutIndex && "bg-muted-foreground/30 hover:bg-muted-foreground/50 cursor-pointer"
                             )}
                             disabled={workout.status !== 'pending'}
-                            title={`Workout ${index + 1}: ${workout.date || 'No date'} (${workout.status})`}
+                            title={`Workout ${index + 1}: ${workout.date || 'No date'} (${workout.status})${workout.hasDateConflict ? ' - Date conflict!' : ''}`}
                           />
                         ))}
                       </div>
@@ -781,6 +804,12 @@ export default function ImportWorkout() {
                       </span>
                     ) : (
                       <span className="text-destructive">No date found in the data. This workout cannot be imported.</span>
+                    )}
+                    {currentWorkout.hasDateConflict && (
+                      <span className="text-amber-600 dark:text-amber-500 flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4" />
+                        A workout already exists for this date. Importing will create a duplicate.
+                      </span>
                     )}
                     {hasExerciseErrors && (
                       <span className="text-destructive">
