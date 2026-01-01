@@ -33,7 +33,33 @@ serve(async (req) => {
   }
 
   try {
-    const { rawText, muscleGroups } = await req.json();
+    // Safely parse request body
+    let body;
+    try {
+      const text = await req.text();
+      if (!text || text.trim() === '') {
+        return new Response(JSON.stringify({ error: "Request body is empty" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      body = JSON.parse(text);
+    } catch (parseError) {
+      console.error("Failed to parse request body:", parseError);
+      return new Response(JSON.stringify({ error: "Invalid request body - expected JSON" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { rawText, muscleGroups } = body;
+    
+    if (!rawText || typeof rawText !== 'string' || rawText.trim() === '') {
+      return new Response(JSON.stringify({ error: "rawText is required and must be a non-empty string" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
