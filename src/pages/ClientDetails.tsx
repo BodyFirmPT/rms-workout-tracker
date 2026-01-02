@@ -193,7 +193,7 @@ export default function ClientDetails() {
               </Button>
               <Button variant="outline" onClick={() => navigate(`/client/${clientId}/restricted-exercises`)} className="flex items-center gap-2">
                 <Ban className="h-4 w-4" />
-                Restricted Exercises
+                Restrictions
               </Button>
               <Button variant="outline" onClick={() => navigate(`/client/${clientId}/locations`)} className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
