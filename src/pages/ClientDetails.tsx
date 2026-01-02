@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Calendar, Clock, Play, Plus, Target, ArrowLeft, Settings, Trash2, Timer, Edit, Copy, User, Search, AlertCircle, XCircle, Ban, MapPin, Upload } from "lucide-react";
+import { Calendar, Clock, Play, Plus, Target, ArrowLeft, Settings, Trash2, Timer, Edit, Copy, User, Search, AlertCircle, XCircle, Ban, MapPin, Upload, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgressRing } from "@/components/ui/progress-ring";
@@ -32,6 +32,8 @@ export default function ClientDetails() {
   const [workoutProgresses, setWorkoutProgresses] = useState<{ [id: string]: number }>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [locations, setLocations] = useState<{ [id: string]: Location }>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const workoutsPerPage = 10;
   
   const { 
     workouts, 
@@ -77,24 +79,33 @@ export default function ClientDetails() {
     }
   };
 
+  // Reset to page 1 when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
   useEffect(() => {
     const loadProgresses = async () => {
       const progresses: { [id: string]: number } = {};
-      const clientWorkouts = workouts
+      const sortedWorkouts = workouts
         .filter(w => w.client_id === clientId)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .slice(0, 10); // Match the displayed workouts
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       
-      for (const workout of clientWorkouts) {
+      // Load progress for current page workouts
+      const startIndex = (currentPage - 1) * workoutsPerPage;
+      const endIndex = startIndex + workoutsPerPage;
+      const pageWorkouts = sortedWorkouts.slice(startIndex, endIndex);
+      
+      for (const workout of pageWorkouts) {
         progresses[workout.id] = await getWorkoutProgress(workout.id);
       }
-      setWorkoutProgresses(progresses);
+      setWorkoutProgresses(prev => ({ ...prev, ...progresses }));
     };
     
     if (workouts.length > 0 && clientId) {
       loadProgresses();
     }
-  }, [workouts, clientId, getWorkoutProgress]);
+  }, [workouts, clientId, getWorkoutProgress, currentPage]);
 
   const client = clientId ? getClientById(clientId) : null;
   
@@ -122,12 +133,18 @@ export default function ClientDetails() {
   const activeWorkouts = allClientWorkouts.filter(w => !w.canceled_at);
 
   // Filter workouts based on search query
-  const clientWorkouts = searchQuery.trim()
+  const filteredWorkouts = searchQuery.trim()
     ? allClientWorkouts.filter(w => 
         w.note?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         format(new Date(w.date + 'T00:00:00'), 'MMM d, yyyy').toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : allClientWorkouts.slice(0, 10); // Show only 10 when not searching
+    : allClientWorkouts;
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredWorkouts.length / workoutsPerPage);
+  const startIndex = (currentPage - 1) * workoutsPerPage;
+  const endIndex = startIndex + workoutsPerPage;
+  const clientWorkouts = filteredWorkouts.slice(startIndex, endIndex);
 
   const startedWorkout = getStartedWorkout();
   const clientStartedWorkout = startedWorkout?.client_id === clientId ? startedWorkout : null;
@@ -321,9 +338,9 @@ export default function ClientDetails() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-9"
                   />
-                  {searchQuery && (
+                  {(searchQuery || filteredWorkouts.length > workoutsPerPage) && (
                     <p className="text-xs text-muted-foreground mt-2">
-                      Showing {clientWorkouts.length} of {allClientWorkouts.length} workouts
+                      Showing {startIndex + 1}-{Math.min(endIndex, filteredWorkouts.length)} of {filteredWorkouts.length} workouts
                     </p>
                   )}
                 </div>
@@ -443,6 +460,35 @@ export default function ClientDetails() {
                     </div>
                   );
                 })
+              )}
+              
+              {/* Pagination Controls */}
+              {totalPages > 1 && !loading && (
+                <div className="flex items-center justify-between pt-4 border-t">
+                  <p className="text-sm text-muted-foreground">
+                    Page {currentPage} of {totalPages}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
