@@ -15,59 +15,61 @@ import { EditClientDialog } from "@/components/workout/edit-client-dialog";
 import { format } from "date-fns";
 import { Workout } from "@/types/workout";
 import { supabase } from "@/integrations/supabase/client";
-
 interface Location {
   id: string;
   name: string;
 }
-
 export default function ClientDetails() {
-  const { clientId } = useParams<{ clientId: string }>();
+  const {
+    clientId
+  } = useParams<{
+    clientId: string;
+  }>();
   const navigate = useNavigate();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [deletingWorkout, setDeletingWorkout] = useState<Workout | null>(null);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
   const [duplicatingWorkout, setDuplicatingWorkout] = useState<Workout | null>(null);
   const [editingClient, setEditingClient] = useState(false);
-  const [workoutProgresses, setWorkoutProgresses] = useState<{ [id: string]: number }>({});
+  const [workoutProgresses, setWorkoutProgresses] = useState<{
+    [id: string]: number;
+  }>({});
   const [searchQuery, setSearchQuery] = useState("");
-  const [locations, setLocations] = useState<{ [id: string]: Location }>({});
+  const [locations, setLocations] = useState<{
+    [id: string]: Location;
+  }>({});
   const [currentPage, setCurrentPage] = useState(1);
   const workoutsPerPage = 10;
-  
-  const { 
-    workouts, 
+  const {
+    workouts,
     clients,
-    startWorkout, 
-    getWorkoutProgress, 
+    startWorkout,
+    getWorkoutProgress,
     getClientById,
     loadData,
     loading,
     getStartedWorkout
   } = useWorkoutStore();
-
   useEffect(() => {
     loadData();
     loadLocations();
   }, [loadData]);
-
   const loadLocations = async () => {
     if (!clientId) return;
-    
     try {
-      const { data, error } = await supabase
-        .from('client_locations')
-        .select(`
+      const {
+        data,
+        error
+      } = await supabase.from('client_locations').select(`
           location:location_id (
             id,
             name
           )
-        `)
-        .eq('client_id', clientId);
-
+        `).eq('client_id', clientId);
       if (error) throw error;
-      
-      const locationMap: { [id: string]: Location } = {};
+      const locationMap: {
+        [id: string]: Location;
+      } = {};
       data?.forEach(item => {
         if (item.location) {
           locationMap[item.location.id] = item.location;
@@ -83,35 +85,32 @@ export default function ClientDetails() {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery]);
-
   useEffect(() => {
     const loadProgresses = async () => {
-      const progresses: { [id: string]: number } = {};
-      const sortedWorkouts = workouts
-        .filter(w => w.client_id === clientId)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      
+      const progresses: {
+        [id: string]: number;
+      } = {};
+      const sortedWorkouts = workouts.filter(w => w.client_id === clientId).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
       // Load progress for current page workouts
       const startIndex = (currentPage - 1) * workoutsPerPage;
       const endIndex = startIndex + workoutsPerPage;
       const pageWorkouts = sortedWorkouts.slice(startIndex, endIndex);
-      
       for (const workout of pageWorkouts) {
         progresses[workout.id] = await getWorkoutProgress(workout.id);
       }
-      setWorkoutProgresses(prev => ({ ...prev, ...progresses }));
+      setWorkoutProgresses(prev => ({
+        ...prev,
+        ...progresses
+      }));
     };
-    
     if (workouts.length > 0 && clientId) {
       loadProgresses();
     }
   }, [workouts, clientId, getWorkoutProgress, currentPage]);
-
   const client = clientId ? getClientById(clientId) : null;
-  
   if (!client && !loading) {
-    return (
-      <div className="min-h-screen bg-background">
+    return <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8 max-w-6xl">
           <div className="text-center py-8">
             <p className="text-muted-foreground">Client not found</p>
@@ -120,44 +119,31 @@ export default function ClientDetails() {
             </Button>
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  const allClientWorkouts = workouts
-    .filter(w => w.client_id === clientId)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const allClientWorkouts = workouts.filter(w => w.client_id === clientId).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   // Separate cancelled and active workouts
   const cancelledWorkouts = allClientWorkouts.filter(w => w.canceled_at);
   const activeWorkouts = allClientWorkouts.filter(w => !w.canceled_at);
 
   // Filter workouts based on search query
-  const filteredWorkouts = searchQuery.trim()
-    ? allClientWorkouts.filter(w => 
-        w.note?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        format(new Date(w.date + 'T00:00:00'), 'MMM d, yyyy').toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : allClientWorkouts;
+  const filteredWorkouts = searchQuery.trim() ? allClientWorkouts.filter(w => w.note?.toLowerCase().includes(searchQuery.toLowerCase()) || format(new Date(w.date + 'T00:00:00'), 'MMM d, yyyy').toLowerCase().includes(searchQuery.toLowerCase())) : allClientWorkouts;
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredWorkouts.length / workoutsPerPage);
   const startIndex = (currentPage - 1) * workoutsPerPage;
   const endIndex = startIndex + workoutsPerPage;
   const clientWorkouts = filteredWorkouts.slice(startIndex, endIndex);
-
   const startedWorkout = getStartedWorkout();
   const clientStartedWorkout = startedWorkout?.client_id === clientId ? startedWorkout : null;
-
   const handleViewWorkout = (workoutId: string) => {
     navigate(`/workout/${workoutId}`);
   };
-
   const handleStartWorkout = (workoutId: string) => {
     startWorkout(workoutId);
     navigate(`/workout/${workoutId}`);
   };
-
   const workoutOffset = client?.workout_count_offset || 0;
   const totalWorkouts = activeWorkouts.length + workoutOffset;
   const completedWorkouts = activeWorkouts.filter(w => w.status === 'completed').length + workoutOffset;
@@ -169,19 +155,12 @@ export default function ClientDetails() {
   }).length;
   const cancelledCount = cancelledWorkouts.length;
   const lateCancelledCount = cancelledWorkouts.filter(w => w.late_cancelled).length;
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => navigate("/")}
-              className="flex items-center gap-2"
-            >
+            <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
               Back to Clients
             </Button>
@@ -197,12 +176,7 @@ export default function ClientDetails() {
                   <h1 className="text-4xl font-bold text-foreground">
                     {client?.name}
                   </h1>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setEditingClient(true)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => setEditingClient(true)} className="opacity-0 group-hover:opacity-100 transition-opacity">
                     <Edit className="h-4 w-4" />
                   </Button>
                 </div>
@@ -213,35 +187,19 @@ export default function ClientDetails() {
             </div>
             
             <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                onClick={() => navigate(`/client/${clientId}/injuries`)}
-                className="flex items-center gap-2"
-              >
+              <Button variant="outline" onClick={() => navigate(`/client/${clientId}/injuries`)} className="flex items-center gap-2">
                 <AlertCircle className="h-4 w-4" />
-                Manage Injuries
+                Injuries
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigate(`/client/${clientId}/restricted-exercises`)}
-                className="flex items-center gap-2"
-              >
+              <Button variant="outline" onClick={() => navigate(`/client/${clientId}/restricted-exercises`)} className="flex items-center gap-2">
                 <Ban className="h-4 w-4" />
                 Restricted Exercises
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigate(`/client/${clientId}/locations`)}
-                className="flex items-center gap-2"
-              >
+              <Button variant="outline" onClick={() => navigate(`/client/${clientId}/locations`)} className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
                 Locations
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigate(`/client/${clientId}/import`)}
-                className="flex items-center gap-2"
-              >
+              <Button variant="outline" onClick={() => navigate(`/client/${clientId}/import`)} className="flex items-center gap-2">
                 <Upload className="h-4 w-4" />
                 Import Workout
               </Button>
@@ -265,9 +223,7 @@ export default function ClientDetails() {
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="text-sm">
-                        {workoutOffset > 0 
-                          ? `${workoutOffset} offset + ${activeWorkouts.length} in system (excluding cancelled)`
-                          : `${activeWorkouts.length} workouts in system (excluding cancelled)`}
+                        {workoutOffset > 0 ? `${workoutOffset} offset + ${activeWorkouts.length} in system (excluding cancelled)` : `${activeWorkouts.length} workouts in system (excluding cancelled)`}
                       </p>
                     </TooltipContent>
                   </Tooltip>
@@ -302,11 +258,9 @@ export default function ClientDetails() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{cancelledCount}</div>
-                {lateCancelledCount > 0 && (
-                  <p className="text-xs text-muted-foreground mt-1">
+                {lateCancelledCount > 0 && <p className="text-xs text-muted-foreground mt-1">
                     {lateCancelledCount} late cancel{lateCancelledCount !== 1 ? 's' : ''}
-                  </p>
-                )}
+                  </p>}
               </CardContent>
             </Card>
           </div>
@@ -329,67 +283,36 @@ export default function ClientDetails() {
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Search Bar */}
-              {allClientWorkouts.length > 0 && (
-                <div className="relative">
+              {allClientWorkouts.length > 0 && <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search workouts by date or notes..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
-                  />
-                  {(searchQuery || filteredWorkouts.length > workoutsPerPage) && (
-                    <p className="text-xs text-muted-foreground mt-2">
+                  <Input placeholder="Search workouts by date or notes..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-9" />
+                  {(searchQuery || filteredWorkouts.length > workoutsPerPage) && <p className="text-xs text-muted-foreground mt-2">
                       Showing {startIndex + 1}-{Math.min(endIndex, filteredWorkouts.length)} of {filteredWorkouts.length} workouts
-                    </p>
-                  )}
-                </div>
-              )}
-              {loading ? (
-                <div className="text-center py-8">
+                    </p>}
+                </div>}
+              {loading ? <div className="text-center py-8">
                   <p className="text-muted-foreground">Loading workouts...</p>
-                </div>
-              ) : allClientWorkouts.length === 0 ? (
-                <div className="text-center py-8">
+                </div> : allClientWorkouts.length === 0 ? <div className="text-center py-8">
                   <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">No workouts yet for {client?.name}</p>
-                  <Button 
-                    variant="outline" 
-                    className="mt-4"
-                    onClick={() => setShowCreateDialog(true)}
-                  >
+                  <Button variant="outline" className="mt-4" onClick={() => setShowCreateDialog(true)}>
                     <Plus className="h-4 w-4 mr-2" />
                     Create First Workout
                   </Button>
-                </div>
-              ) : clientWorkouts.length === 0 && searchQuery ? (
-                <div className="text-center py-8 text-muted-foreground">
+                </div> : clientWorkouts.length === 0 && searchQuery ? <div className="text-center py-8 text-muted-foreground">
                   <p>No workouts found matching "{searchQuery}"</p>
-                </div>
-              ) : (
-                clientWorkouts.map((workout) => {
-                  const progress = workoutProgresses[workout.id] || 0;
-                  // Calculate workout number based on active workouts only
-                  const workoutIndex = activeWorkouts.findIndex(w => w.id === workout.id);
-                  const workoutNumber = workoutIndex >= 0 ? totalWorkouts - workoutIndex : 0;
-                  
-                  return (
-                    <div key={workout.id} className="group flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <div
-                        className="flex items-center gap-4 flex-1 cursor-pointer"
-                        onClick={() => handleViewWorkout(workout.id)}
-                      >
-                        <ProgressRing 
-                          progress={progress} 
-                          size={48}
-                          strokeWidth={4}
-                        />
+                </div> : clientWorkouts.map(workout => {
+              const progress = workoutProgresses[workout.id] || 0;
+              // Calculate workout number based on active workouts only
+              const workoutIndex = activeWorkouts.findIndex(w => w.id === workout.id);
+              const workoutNumber = workoutIndex >= 0 ? totalWorkouts - workoutIndex : 0;
+              return <div key={workout.id} className="group flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center gap-4 flex-1 cursor-pointer" onClick={() => handleViewWorkout(workout.id)}>
+                        <ProgressRing progress={progress} size={48} strokeWidth={4} />
                         <div>
                           <h4 className="font-bold">
                             {format(new Date(workout.date + 'T00:00:00'), 'MMM d, yyyy')}
-                            {workout.location_id && locations[workout.location_id] && (
-                              <> · {locations[workout.location_id].name}</>
-                            )}
+                            {workout.location_id && locations[workout.location_id] && <> · {locations[workout.location_id].name}</>}
                           </h4>
                           <p className="text-xs text-muted-foreground italic mt-1">
                             {!workout.canceled_at && `Workout #${workoutNumber}`}
@@ -400,138 +323,70 @@ export default function ClientDetails() {
                       </div>
                       
                       <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDuplicatingWorkout(workout);
-                          }}
-                          className="hidden group-hover:inline-flex text-muted-foreground hover:text-foreground"
-                        >
+                        <Button variant="ghost" size="sm" onClick={e => {
+                    e.stopPropagation();
+                    setDuplicatingWorkout(workout);
+                  }} className="hidden group-hover:inline-flex text-muted-foreground hover:text-foreground">
                           <Copy className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingWorkout(workout);
-                          }}
-                          className="hidden group-hover:inline-flex text-muted-foreground hover:text-foreground"
-                        >
+                        <Button variant="ghost" size="sm" onClick={e => {
+                    e.stopPropagation();
+                    setEditingWorkout(workout);
+                  }} className="hidden group-hover:inline-flex text-muted-foreground hover:text-foreground">
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeletingWorkout(workout);
-                          }}
-                          className="hidden group-hover:inline-flex text-destructive hover:text-destructive"
-                        >
+                        <Button variant="ghost" size="sm" onClick={e => {
+                    e.stopPropagation();
+                    setDeletingWorkout(workout);
+                  }} className="hidden group-hover:inline-flex text-destructive hover:text-destructive">
                           <Trash2 className="h-4 w-4" />
                         </Button>
-                         {workout.canceled_at ? (
-                           <div className="px-3 py-1.5 bg-destructive/10 text-destructive text-sm font-medium rounded-md flex items-center gap-2">
+                         {workout.canceled_at ? <div className="px-3 py-1.5 bg-destructive/10 text-destructive text-sm font-medium rounded-md flex items-center gap-2">
                              <XCircle className="h-3 w-3" />
                              {workout.late_cancelled ? 'Late canceled' : 'Canceled'}
-                           </div>
-                         ) : workout.status === 'completed' ? (
-                           <div className="px-3 py-1.5 bg-success/10 text-success text-sm font-medium rounded-md flex items-center gap-2">
+                           </div> : workout.status === 'completed' ? <div className="px-3 py-1.5 bg-success/10 text-success text-sm font-medium rounded-md flex items-center gap-2">
                              <Target className="h-3 w-3" />
                              Completed
-                           </div>
-                         ) : (
-                           <Button
-                             variant="outline"
-                             size="sm"
-                             onClick={(e) => {
-                               e.stopPropagation();
-                               handleStartWorkout(workout.id);
-                             }}
-                           >
+                           </div> : <Button variant="outline" size="sm" onClick={e => {
+                    e.stopPropagation();
+                    handleStartWorkout(workout.id);
+                  }}>
                              <Timer className="h-4 w-4 mr-2" />
                              Start
-                           </Button>
-                         )}
+                           </Button>}
                       </div>
-                    </div>
-                  );
-                })
-              )}
+                    </div>;
+            })}
               
               {/* Pagination Controls */}
-              {totalPages > 1 && !loading && (
-                <div className="flex items-center justify-between pt-4 border-t">
+              {totalPages > 1 && !loading && <div className="flex items-center justify-between pt-4 border-t">
                   <p className="text-sm text-muted-foreground">
                     Page {currentPage} of {totalPages}
                   </p>
                   <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                      disabled={currentPage === 1}
-                    >
+                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1}>
                       <ChevronLeft className="h-4 w-4 mr-1" />
                       Previous
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                      disabled={currentPage === totalPages}
-                    >
+                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages}>
                       Next
                       <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
                   </div>
-                </div>
-              )}
+                </div>}
             </CardContent>
           </Card>
 
-          <CreateWorkoutDialog 
-            open={showCreateDialog} 
-            onOpenChange={setShowCreateDialog}
-            defaultClientId={clientId}
-          />
+          <CreateWorkoutDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} defaultClientId={clientId} />
 
-          {deletingWorkout && (
-            <DeleteWorkoutDialog
-              open={!!deletingWorkout}
-              onOpenChange={(open) => !open && setDeletingWorkout(null)}
-              workout={deletingWorkout}
-            />
-          )}
+          {deletingWorkout && <DeleteWorkoutDialog open={!!deletingWorkout} onOpenChange={open => !open && setDeletingWorkout(null)} workout={deletingWorkout} />}
 
-          {editingWorkout && (
-            <EditWorkoutDialog
-              open={!!editingWorkout}
-              onOpenChange={(open) => !open && setEditingWorkout(null)}
-              workout={editingWorkout}
-            />
-          )}
+          {editingWorkout && <EditWorkoutDialog open={!!editingWorkout} onOpenChange={open => !open && setEditingWorkout(null)} workout={editingWorkout} />}
 
-          {duplicatingWorkout && (
-            <DuplicateWorkoutDialog
-              open={!!duplicatingWorkout}
-              onOpenChange={(open) => !open && setDuplicatingWorkout(null)}
-              workout={duplicatingWorkout}
-            />
-          )}
+          {duplicatingWorkout && <DuplicateWorkoutDialog open={!!duplicatingWorkout} onOpenChange={open => !open && setDuplicatingWorkout(null)} workout={duplicatingWorkout} />}
 
-          {client && editingClient && (
-            <EditClientDialog
-              open={editingClient}
-              onOpenChange={setEditingClient}
-              client={client}
-            />
-          )}
+          {client && editingClient && <EditClientDialog open={editingClient} onOpenChange={setEditingClient} client={client} />}
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
