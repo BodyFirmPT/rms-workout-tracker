@@ -201,7 +201,7 @@ export default function ClientDetails() {
               </Button>
               <Button variant="outline" onClick={() => navigate(`/client/${clientId}/import`)} className="flex items-center gap-2">
                 <Upload className="h-4 w-4" />
-                Import Workout
+                Import
               </Button>
             </div>
           </div>
