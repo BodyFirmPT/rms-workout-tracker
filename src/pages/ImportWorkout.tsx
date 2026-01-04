@@ -66,6 +66,7 @@ export default function ImportWorkout() {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [importedWorkouts, setImportedWorkouts] = useState<ImportedWorkout[]>([]);
   const [autoImport, setAutoImport] = useState(false);
+  const [parseProgress, setParseProgress] = useState<{ current: number; total: number } | null>(null);
 
   useEffect(() => {
     loadData();
@@ -196,6 +197,39 @@ export default function ImportWorkout() {
     }
   };
 
+  // Split raw text into individual workout chunks by date lines
+  const splitByDateLines = (text: string): string[] => {
+    const lines = text.split('\n');
+    const chunks: string[] = [];
+    let currentChunk: string[] = [];
+    
+    const datePatterns = [
+      /^Date[,:\s]/i,                    // "Date,1/15/2022" or "Date: 1/15/2022"
+      /^\d{1,2}\/\d{1,2}\/\d{2,4}\s*[,\s]?/,  // "1/15/2022" at start of line
+      /^\d{4}-\d{2}-\d{2}/,              // "2022-01-15" ISO format
+    ];
+    
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      const isDateLine = datePatterns.some(pattern => pattern.test(trimmedLine));
+      
+      if (isDateLine && currentChunk.length > 0) {
+        // Save previous chunk, start new one
+        chunks.push(currentChunk.join('\n'));
+        currentChunk = [line];
+      } else {
+        currentChunk.push(line);
+      }
+    }
+    
+    // Don't forget the last chunk
+    if (currentChunk.length > 0) {
+      chunks.push(currentChunk.join('\n'));
+    }
+    
+    return chunks.filter(chunk => chunk.trim().length > 0);
+  };
+
   const handleParse = async () => {
     if (!rawText.trim()) {
       toast({
@@ -210,42 +244,70 @@ export default function ImportWorkout() {
     setParseError(null);
     setParsedWorkouts([]);
     setCurrentWorkoutIndex(0);
+    setParseProgress(null);
 
     try {
       const muscleGroupNames = muscleGroups.map(mg => mg.name);
       
-      const { data, error } = await supabase.functions.invoke('parse-workout-import', {
-        body: { rawText, muscleGroups: muscleGroupNames },
-      });
-
-      // Handle edge function errors - extract the actual error message from the response
-      if (error) {
-        // FunctionsHttpError contains the actual response body with our custom error message
-        if (error instanceof FunctionsHttpError) {
-          try {
-            const errorData = await error.context.json();
-            if (errorData?.error) {
-              throw new Error(errorData.error);
+      // Split input into individual workout chunks by date
+      const chunks = splitByDateLines(rawText);
+      const effectiveChunks = chunks.length > 0 ? chunks : [rawText];
+      
+      console.log(`Split input into ${effectiveChunks.length} chunks`);
+      
+      const allWorkouts: ParsedWorkout[] = [];
+      let failedChunks = 0;
+      const failedChunkErrors: string[] = [];
+      
+      // Parse each chunk individually
+      for (let i = 0; i < effectiveChunks.length; i++) {
+        setParseProgress({ current: i + 1, total: effectiveChunks.length });
+        
+        try {
+          const { data, error } = await supabase.functions.invoke('parse-workout-import', {
+            body: { rawText: effectiveChunks[i], muscleGroups: muscleGroupNames },
+          });
+          
+          // Handle edge function errors
+          if (error) {
+            if (error instanceof FunctionsHttpError) {
+              try {
+                const errorData = await error.context.json();
+                if (errorData?.error) {
+                  throw new Error(errorData.error);
+                }
+              } catch (parseErr) {
+                console.error("Failed to parse error response:", parseErr);
+              }
             }
-          } catch (parseError) {
-            // If we can't parse the error response, fall through to generic error
-            console.error("Failed to parse error response:", parseError);
+            throw error;
           }
+          
+          if (data?.error) {
+            throw new Error(data.error);
+          }
+          
+          if (data?.workouts && data.workouts.length > 0) {
+            allWorkouts.push(...data.workouts);
+          }
+        } catch (chunkError) {
+          console.error(`Failed to parse chunk ${i + 1}:`, chunkError);
+          failedChunks++;
+          failedChunkErrors.push(`Chunk ${i + 1}: ${chunkError instanceof Error ? chunkError.message : 'Unknown error'}`);
         }
-        // Otherwise throw the generic error
-        throw error;
       }
-
-      if (data?.error) {
-        throw new Error(data.error);
-      }
-
-      if (!data.workouts || data.workouts.length === 0) {
+      
+      setParseProgress(null);
+      
+      if (allWorkouts.length === 0) {
+        if (failedChunks > 0) {
+          throw new Error(`Failed to parse all ${failedChunks} workout(s). ${failedChunkErrors[0]}`);
+        }
         throw new Error("No workouts could be parsed from the provided text.");
       }
 
       // Check for existing workouts on the same dates for this client
-      const workoutDates = data.workouts
+      const workoutDates = allWorkouts
         .map((w: any) => w.date)
         .filter((d: string | null): d is string => d !== null);
       
@@ -261,7 +323,7 @@ export default function ImportWorkout() {
       }
 
       // Match muscle groups to existing ones and mark errors for each workout
-      const workoutsWithMuscleGroupIds: ParsedWorkout[] = data.workouts.map((workout: any) => {
+      const workoutsWithMuscleGroupIds: ParsedWorkout[] = allWorkouts.map((workout: any) => {
         const exercisesWithIds = workout.exercises.map((ex: ParsedExercise) => {
           const matchedGroup = ex.muscle_group 
             ? muscleGroups.find(mg => mg.name.toLowerCase() === ex.muscle_group!.toLowerCase())
@@ -337,7 +399,7 @@ export default function ImportWorkout() {
         
         toast({
           title: "Parsing complete",
-          description: `Found ${workoutsWithMuscleGroupIds.length} workout${workoutsWithMuscleGroupIds.length > 1 ? 's' : ''} with ${totalExercises} total exercises. ${autoImportedCount} auto-imported. ${workoutsNeedingReview.length} need review${totalErrors > 0 ? ` (${totalErrors} exercise errors)` : ''}.`,
+          description: `Found ${workoutsWithMuscleGroupIds.length} workout${workoutsWithMuscleGroupIds.length > 1 ? 's' : ''} with ${totalExercises} total exercises. ${autoImportedCount} auto-imported. ${workoutsNeedingReview.length} need review${totalErrors > 0 ? ` (${totalErrors} exercise errors)` : ''}${failedChunks > 0 ? `. ${failedChunks} failed to parse.` : ''}.`,
         });
       } else {
         setParsedWorkouts(workoutsWithMuscleGroupIds);
@@ -349,23 +411,21 @@ export default function ImportWorkout() {
         
         toast({
           title: "Parsing complete",
-          description: `Found ${workoutsWithMuscleGroupIds.length} workout${workoutsWithMuscleGroupIds.length > 1 ? 's' : ''} with ${totalExercises} total exercises${totalErrors > 0 ? `. ${totalErrors} need muscle group selection.` : ''}.`,
+          description: `Found ${workoutsWithMuscleGroupIds.length} workout${workoutsWithMuscleGroupIds.length > 1 ? 's' : ''} with ${totalExercises} total exercises${totalErrors > 0 ? `. ${totalErrors} need muscle group selection.` : ''}${failedChunks > 0 ? `. ${failedChunks} failed to parse.` : ''}.`,
         });
       }
     } catch (error) {
       console.error("Parse error:", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to parse workout data";
-      const isTruncationError = errorMessage.toLowerCase().includes("too long") || 
-                                errorMessage.toLowerCase().includes("cut off") ||
-                                errorMessage.toLowerCase().includes("fewer workouts");
       setParseError(errorMessage);
       toast({
-        title: isTruncationError ? "Too much data" : "Parse failed",
+        title: "Parse failed",
         description: errorMessage,
         variant: "destructive",
       });
     } finally {
       setIsParsing(false);
+      setParseProgress(null);
     }
   };
 
@@ -631,6 +691,7 @@ export default function ImportWorkout() {
     setParsedWorkouts([]);
     setCurrentWorkoutIndex(0);
     setParseError(null);
+    setParseProgress(null);
   };
 
   const getEditInitialValues = () => {
@@ -743,7 +804,10 @@ export default function ImportWorkout() {
                   {isParsing ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Parsing...
+                      {parseProgress 
+                        ? `Parsing workout ${parseProgress.current} of ${parseProgress.total}...`
+                        : 'Parsing...'
+                      }
                     </>
                   ) : (
                     <>

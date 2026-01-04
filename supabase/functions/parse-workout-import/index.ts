@@ -75,15 +75,12 @@ serve(async (req) => {
 
     const systemPrompt = `You are a workout data parser. Parse the provided workout text into structured exercise data.
 
-IMPORTANT: The input may contain MULTIPLE workouts separated by different dates. Parse ALL workouts and return them as an array.
-
-For each workout found, look for a date. Common formats include:
+The input typically contains a SINGLE workout. Look for a date. Common formats include:
 - "Date,1/15/2019" or "Date: 1/15/2019"
 - "1/15/2019" or "01/15/2019" (MM/DD/YYYY)
 - "2019-01-15" (YYYY-MM-DD)
-- Any other date format
 
-Return each date in YYYY-MM-DD format, or null if no date is found for that workout.
+Return the date in YYYY-MM-DD format, or null if no date is found.
 
 CRITICAL - MUSCLE GROUPS:
 You MUST use one of these exact muscle group names (case-sensitive): ${muscleGroupList}
@@ -97,7 +94,7 @@ If the input mentions a muscle group that doesn't exactly match one of the above
 - "Lats", "Lat" → "Latissimus" (or closest match)
 - etc.
 
-If there is NO good match in the provided list, set muscle_group to null. Do not invent muscle groups that aren't in the list.
+If there is NO good match in the provided list, set muscle_group to null.
 
 For each exercise found in the text, extract:
 - muscle_group: One of the exact muscle group names from the list above, or null if no match
@@ -108,51 +105,32 @@ For each exercise found in the text, extract:
 - weight_unit: "lbs" or "kg" (default "lbs")
 - left_weight: Different left weight if specified, null otherwise
 - set_count: Number of sets (default 1 if not specified)
-- type: "weight", "band", or "stretch" (ONLY use "stretch" if the word "stretch" explicitly appears in the exercise name/description; otherwise default to "weight")
+- type: "weight", "band", or "stretch" (ONLY use "stretch" if the word "stretch" explicitly appears)
 - band_color: For band exercises, the color (null otherwise)
 - band_type: For band exercises, the type like "1-handle", "2-handle", "flat", "figure-8", "double-leg-cuff", "single-leg-cuff", "ankle-weight" (null otherwise)
 - note: Any additional instructions or notes about the exercise
-- original_line: THE EXACT ORIGINAL LINE from the input data that this exercise came from. Copy it verbatim, including all text, commas, and formatting. This is critical for verification.
+- original_line: THE EXACT ORIGINAL LINE from the input data
 
 Rules:
-1. CRITICAL: Skip rows that only have a muscle group but no exercise name (e.g., "Shrugs,," or "Cat/Cow,," or "Stretch,,"). If the second column is empty, DO NOT create an exercise.
-2. Skip empty rows entirely
+1. Skip rows that only have a muscle group but no exercise name
+2. Skip empty rows
 3. The exercise_name MUST be a specific exercise, not just a muscle group name
-4. Look for patterns like "15 reps", "3 sets", "10 lbs", etc.
-5. Band exercises often mention colors like "Green", "Blue", "Red" - classify as "band"
-6. ONLY classify as "stretch" if the word "stretch" is explicitly in the exercise name or description
-7. Default to "weight" for most exercises (dumbbells, machines, bodyweight exercises, etc.)
-8. Parse natural language descriptions carefully
-9. ALWAYS include the original_line field with the exact text from the input
-10. Only use muscle groups from the provided list - if no match, use null
-11. When you encounter a new date, start a new workout. Group all exercises under the most recent date until a new date is found.
+4. Look for patterns like "15 reps", "3 sets", "10 lbs"
+5. Band exercises mention colors like "Green", "Blue", "Red"
+6. ONLY classify as "stretch" if the word "stretch" is explicit
+7. Default to "weight" for most exercises
+8. When you see stretches separated by "/" (e.g., "Pigeon Stretch/Hip Flexor Stretch"), split them into SEPARATE exercise entries
 
-CRITICAL - SPLITTING COMPOUND STRETCHES:
-12. When you see a stretch exercise with multiple stretches separated by "/" (e.g., "Pigeon Stretch/Hip Flexor Stretch/Hamstring Strap/Piriformis Stretch"), you MUST split these into SEPARATE exercise entries.
-    - Each stretch becomes its own exercise row
-    - For each individual stretch, determine the appropriate muscle_group from the list based on what that specific stretch targets
-    - All split stretches share the same original_line from the source row
-    - Each stretch defaults to 30 seconds if no duration/reps specified
-    - Example: "Pigeon Stretch/Hip Flexor Stretch" becomes TWO exercises: "Pigeon Stretch" (targeting Glutes or Hips) and "Hip Flexor Stretch" (targeting Hips/Hip Lift or similar)
-
-Also look for any workout description or note. This could be:
-- Text after the date line but before the first exercise
-- A line starting with "Note:", "Notes:", "Description:", or similar
-- Any header text describing the workout session
-
-Return a JSON object with this structure:
+Return a JSON object:
 {
   "workouts": [
     {
       "date": "YYYY-MM-DD" or null,
-      "note": "any description/note found for this workout" or null,
-      "exercises": [array of exercise objects with original_line field]
-    },
-    ...more workouts if multiple dates found
+      "note": "any description/note found" or null,
+      "exercises": [array of exercise objects]
+    }
   ]
 }
-
-If there's only one date or no dates, still return the workouts array with a single workout object.
 
 Only return the JSON object, no other text.`;
 
@@ -164,10 +142,10 @@ Only return the JSON object, no other text.`;
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
-        max_tokens: 16384,
+        max_tokens: 4096,
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Parse this workout data and return a JSON object with workouts array. Each workout has a date and exercises. Group exercises by their date:\n\n${rawText}` }
+          { role: "user", content: `Parse this workout data:\n\n${rawText}` }
         ],
       }),
     });
@@ -227,8 +205,7 @@ Only return the JSON object, no other text.`;
       return ''; // Remove other control characters
     });
 
-    // Handle truncated JSON - if the response got cut off, try to repair it
-    // Check if JSON appears truncated (unbalanced braces/brackets or unterminated string)
+    // Parse the JSON response
     let parsed: { workouts?: ParsedWorkout[]; date?: string | null; exercises?: any[] };
     try {
       parsed = JSON.parse(jsonContent);
@@ -236,75 +213,12 @@ Only return the JSON object, no other text.`;
       console.error("Failed to parse AI response as JSON:", parseError);
       console.error("Problematic JSON content:", jsonContent.substring(0, 1000));
       
-      // If we know response was truncated, give a specific error message
       if (wasTruncated) {
         console.warn("Response was truncated due to token limit");
-        throw new Error("The response was too long and got cut off. Please try importing fewer workouts at a time (5 or fewer recommended).");
+        throw new Error("The workout data was too complex to parse. Please simplify or reduce the data.");
       }
       
-      // Try to repair truncated JSON by finding the last complete workout
-      const truncatedRepair = tryRepairTruncatedJson(jsonContent);
-      if (truncatedRepair) {
-        console.log("Successfully repaired truncated JSON");
-        parsed = truncatedRepair;
-      } else {
-        throw new Error("Failed to parse workout data. The response may have been too long. Please try importing fewer workouts at a time.");
-      }
-    }
-
-    // Helper function to repair truncated JSON
-    function tryRepairTruncatedJson(json: string): { workouts: ParsedWorkout[] } | null {
-      try {
-        // Find the last complete exercise object by looking for the pattern "}," or "}" before truncation
-        // We'll try to find complete workout objects
-        
-        // Look for the workouts array start
-        const workoutsMatch = json.match(/"workouts"\s*:\s*\[/);
-        if (!workoutsMatch) return null;
-        
-        const workoutsStart = json.indexOf(workoutsMatch[0]) + workoutsMatch[0].length;
-        
-        // Try to find complete workout objects by looking for the pattern that ends a workout
-        // A workout ends with "exercises": [...]}
-        const workoutEndPattern = /\]\s*\}\s*(?=,|\]|$)/g;
-        let lastCompleteEnd = -1;
-        let match;
-        
-        // Find all complete exercise array closings
-        while ((match = workoutEndPattern.exec(json)) !== null) {
-          // Verify this is actually closing a workout by checking bracket balance up to this point
-          const upToHere = json.substring(0, match.index + match[0].length);
-          const openBrackets = (upToHere.match(/\[/g) || []).length;
-          const closeBrackets = (upToHere.match(/\]/g) || []).length;
-          const openBraces = (upToHere.match(/\{/g) || []).length;
-          const closeBraces = (upToHere.match(/\}/g) || []).length;
-          
-          // If brackets are balanced or close to balanced, this might be a good cutoff point
-          if (closeBrackets <= openBrackets && closeBraces <= openBraces) {
-            lastCompleteEnd = match.index + match[0].length;
-          }
-        }
-        
-        if (lastCompleteEnd === -1) return null;
-        
-        // Reconstruct valid JSON
-        let repairedJson = json.substring(0, lastCompleteEnd);
-        
-        // Close any remaining open structures
-        const openBrackets = (repairedJson.match(/\[/g) || []).length;
-        const closeBrackets = (repairedJson.match(/\]/g) || []).length;
-        const openBraces = (repairedJson.match(/\{/g) || []).length;
-        const closeBraces = (repairedJson.match(/\}/g) || []).length;
-        
-        // Add missing closing brackets/braces
-        repairedJson += ']'.repeat(openBrackets - closeBrackets);
-        repairedJson += '}'.repeat(openBraces - closeBraces);
-        
-        return JSON.parse(repairedJson);
-      } catch (e) {
-        console.error("JSON repair failed:", e);
-        return null;
-      }
+      throw new Error("Failed to parse workout data. Please check the format and try again.");
     }
 
     // Handle both old format (single workout) and new format (multiple workouts)
@@ -398,8 +312,8 @@ Only return the JSON object, no other text.`;
       };
     }).filter((workout: ParsedWorkout) => workout.exercises.length > 0);
 
-    // Limit to 10 workouts max
-    const limitedWorkouts = normalizedWorkouts.slice(0, 10);
+    // Limit to 3 workouts max per call (since we're now parsing one at a time, this is just a safety limit)
+    const limitedWorkouts = normalizedWorkouts.slice(0, 3);
 
     console.log(`Parsed ${limitedWorkouts.length} workouts`);
     limitedWorkouts.forEach((w: ParsedWorkout, i: number) => {
