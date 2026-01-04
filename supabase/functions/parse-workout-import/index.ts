@@ -94,7 +94,10 @@ If the input mentions a muscle group that doesn't exactly match one of the above
 - "Lats", "Lat" → "Latissimus" (or closest match)
 - etc.
 
-If there is NO good match in the provided list, set muscle_group to null.
+SPECIAL RULE FOR STRETCHES:
+If an exercise is a stretch (type: "stretch") and there is NO good muscle group match, use "FINAL Stretches" as the muscle_group.
+
+For non-stretch exercises, if there is NO good match in the provided list, set muscle_group to null.
 
 For each exercise found in the text, extract:
 - muscle_group: One of the exact muscle group names from the list above, or null if no match
@@ -284,8 +287,16 @@ Only return the JSON object, no other text.`;
           reviewReason = 'No reps specified for exercise';
         }
         
+        // For stretches without a valid muscle group, default to "FINAL Stretches"
+        let muscleGroup = String(ex.muscle_group || "").trim();
+        if (!muscleGroup || muscleGroup.toLowerCase() === "null" || muscleGroup === "Other") {
+          if (exerciseType === 'stretch') {
+            muscleGroup = "FINAL Stretches";
+          }
+        }
+        
         normalizedExercises.push({
-          muscle_group: String(ex.muscle_group || "Other").trim(),
+          muscle_group: muscleGroup || "Other",
           exercise_name: exerciseName,
           reps_count: repsCount,
           reps_unit: repsUnit,
