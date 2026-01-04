@@ -212,29 +212,88 @@ Only return the JSON object, no other text.`;
     }
     jsonContent = jsonContent.trim();
 
-    // Sanitize control characters inside JSON string values that break JSON parsing
-    // The AI sometimes returns literal tabs inside string values (in original_line field)
-    // Strategy: Find string values and escape control chars only within them
-    // We use a regex to find content between quotes and escape tabs/other control chars there
-    jsonContent = jsonContent.replace(/"([^"\\]|\\.)*"/g, (match) => {
-      // Within each string value, escape unescaped control characters
-      return match.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, (char) => {
-        // Map control characters to their escape sequences
-        const code = char.charCodeAt(0);
-        if (code === 0x09) return '\\t';  // tab
-        if (code === 0x08) return '\\b';  // backspace
-        if (code === 0x0C) return '\\f';  // form feed
-        return ''; // Remove other control characters
-      });
+    // Sanitize control characters that break JSON parsing
+    // Replace all control characters (except \n and \r which we handle separately) with escaped versions or remove them
+    jsonContent = jsonContent.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, (char) => {
+      const code = char.charCodeAt(0);
+      if (code === 0x09) return '\\t';  // tab -> escaped tab
+      if (code === 0x08) return '\\b';  // backspace
+      if (code === 0x0C) return '\\f';  // form feed
+      return ''; // Remove other control characters
     });
 
+    // Handle truncated JSON - if the response got cut off, try to repair it
+    // Check if JSON appears truncated (unbalanced braces/brackets or unterminated string)
     let parsed: { workouts?: ParsedWorkout[]; date?: string | null; exercises?: any[] };
     try {
       parsed = JSON.parse(jsonContent);
     } catch (parseError) {
       console.error("Failed to parse AI response as JSON:", parseError);
       console.error("Problematic JSON content:", jsonContent.substring(0, 1000));
-      throw new Error("Failed to parse workout data. The AI response was not valid JSON.");
+      
+      // Try to repair truncated JSON by finding the last complete workout
+      const truncatedRepair = tryRepairTruncatedJson(jsonContent);
+      if (truncatedRepair) {
+        console.log("Successfully repaired truncated JSON");
+        parsed = truncatedRepair;
+      } else {
+        throw new Error("Failed to parse workout data. The AI response was not valid JSON.");
+      }
+    }
+
+    // Helper function to repair truncated JSON
+    function tryRepairTruncatedJson(json: string): { workouts: ParsedWorkout[] } | null {
+      try {
+        // Find the last complete exercise object by looking for the pattern "}," or "}" before truncation
+        // We'll try to find complete workout objects
+        
+        // Look for the workouts array start
+        const workoutsMatch = json.match(/"workouts"\s*:\s*\[/);
+        if (!workoutsMatch) return null;
+        
+        const workoutsStart = json.indexOf(workoutsMatch[0]) + workoutsMatch[0].length;
+        
+        // Try to find complete workout objects by looking for the pattern that ends a workout
+        // A workout ends with "exercises": [...]}
+        const workoutEndPattern = /\]\s*\}\s*(?=,|\]|$)/g;
+        let lastCompleteEnd = -1;
+        let match;
+        
+        // Find all complete exercise array closings
+        while ((match = workoutEndPattern.exec(json)) !== null) {
+          // Verify this is actually closing a workout by checking bracket balance up to this point
+          const upToHere = json.substring(0, match.index + match[0].length);
+          const openBrackets = (upToHere.match(/\[/g) || []).length;
+          const closeBrackets = (upToHere.match(/\]/g) || []).length;
+          const openBraces = (upToHere.match(/\{/g) || []).length;
+          const closeBraces = (upToHere.match(/\}/g) || []).length;
+          
+          // If brackets are balanced or close to balanced, this might be a good cutoff point
+          if (closeBrackets <= openBrackets && closeBraces <= openBraces) {
+            lastCompleteEnd = match.index + match[0].length;
+          }
+        }
+        
+        if (lastCompleteEnd === -1) return null;
+        
+        // Reconstruct valid JSON
+        let repairedJson = json.substring(0, lastCompleteEnd);
+        
+        // Close any remaining open structures
+        const openBrackets = (repairedJson.match(/\[/g) || []).length;
+        const closeBrackets = (repairedJson.match(/\]/g) || []).length;
+        const openBraces = (repairedJson.match(/\{/g) || []).length;
+        const closeBraces = (repairedJson.match(/\}/g) || []).length;
+        
+        // Add missing closing brackets/braces
+        repairedJson += ']'.repeat(openBrackets - closeBrackets);
+        repairedJson += '}'.repeat(openBraces - closeBraces);
+        
+        return JSON.parse(repairedJson);
+      } catch (e) {
+        console.error("JSON repair failed:", e);
+        return null;
+      }
     }
 
     // Handle both old format (single workout) and new format (multiple workouts)
