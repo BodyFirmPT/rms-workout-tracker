@@ -258,14 +258,15 @@ export default function ImportWorkout() {
       const allWorkouts: ParsedWorkout[] = [];
       let failedChunks = 0;
       const failedChunkErrors: string[] = [];
+      let completedCount = 0;
       
-      // Parse each chunk individually
-      for (let i = 0; i < effectiveChunks.length; i++) {
-        setParseProgress({ current: i + 1, total: effectiveChunks.length });
-        
+      setParseProgress({ current: 0, total: effectiveChunks.length });
+      
+      // Parse all chunks in parallel
+      const parsePromises = effectiveChunks.map(async (chunk, i) => {
         try {
           const { data, error } = await supabase.functions.invoke('parse-workout-import', {
-            body: { rawText: effectiveChunks[i], muscleGroups: muscleGroupNames },
+            body: { rawText: chunk, muscleGroups: muscleGroupNames },
           });
           
           // Handle edge function errors
@@ -287,13 +288,26 @@ export default function ImportWorkout() {
             throw new Error(data.error);
           }
           
-          if (data?.workouts && data.workouts.length > 0) {
-            allWorkouts.push(...data.workouts);
-          }
+          return { index: i, workouts: data?.workouts || [], error: null };
         } catch (chunkError) {
           console.error(`Failed to parse chunk ${i + 1}:`, chunkError);
+          return { index: i, workouts: [], error: chunkError instanceof Error ? chunkError.message : 'Unknown error' };
+        } finally {
+          completedCount++;
+          setParseProgress({ current: completedCount, total: effectiveChunks.length });
+        }
+      });
+      
+      const results = await Promise.all(parsePromises);
+      
+      // Process results in original order
+      results.sort((a, b) => a.index - b.index);
+      for (const result of results) {
+        if (result.error) {
           failedChunks++;
-          failedChunkErrors.push(`Chunk ${i + 1}: ${chunkError instanceof Error ? chunkError.message : 'Unknown error'}`);
+          failedChunkErrors.push(`Chunk ${result.index + 1}: ${result.error}`);
+        } else if (result.workouts.length > 0) {
+          allWorkouts.push(...result.workouts);
         }
       }
       
