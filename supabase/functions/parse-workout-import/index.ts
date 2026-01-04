@@ -164,6 +164,7 @@ Only return the JSON object, no other text.`;
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
+        max_tokens: 16384,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Parse this workout data and return a JSON object with workouts array. Each workout has a date and exercises. Group exercises by their date:\n\n${rawText}` }
@@ -192,7 +193,11 @@ Only return the JSON object, no other text.`;
     }
 
     const data = await response.json();
+    const finishReason = data.choices?.[0]?.finish_reason;
     const content = data.choices?.[0]?.message?.content;
+    
+    console.log("AI response finish_reason:", finishReason);
+    const wasTruncated = finishReason === "length";
     
     if (!content) {
       throw new Error("No response from AI");
@@ -231,13 +236,19 @@ Only return the JSON object, no other text.`;
       console.error("Failed to parse AI response as JSON:", parseError);
       console.error("Problematic JSON content:", jsonContent.substring(0, 1000));
       
+      // If we know response was truncated, give a specific error message
+      if (wasTruncated) {
+        console.warn("Response was truncated due to token limit");
+        throw new Error("The response was too long and got cut off. Please try importing fewer workouts at a time (5 or fewer recommended).");
+      }
+      
       // Try to repair truncated JSON by finding the last complete workout
       const truncatedRepair = tryRepairTruncatedJson(jsonContent);
       if (truncatedRepair) {
         console.log("Successfully repaired truncated JSON");
         parsed = truncatedRepair;
       } else {
-        throw new Error("Failed to parse workout data. The AI response was not valid JSON.");
+        throw new Error("Failed to parse workout data. The response may have been too long. Please try importing fewer workouts at a time.");
       }
     }
 

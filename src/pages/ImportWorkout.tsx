@@ -337,10 +337,14 @@ export default function ImportWorkout() {
       }
     } catch (error) {
       console.error("Parse error:", error);
-      setParseError(error instanceof Error ? error.message : "Failed to parse workout data");
+      const errorMessage = error instanceof Error ? error.message : "Failed to parse workout data";
+      const isTruncationError = errorMessage.toLowerCase().includes("too long") || 
+                                errorMessage.toLowerCase().includes("cut off") ||
+                                errorMessage.toLowerCase().includes("fewer workouts");
+      setParseError(errorMessage);
       toast({
-        title: "Parse failed",
-        description: error instanceof Error ? error.message : "Failed to parse workout data",
+        title: isTruncationError ? "Too much data" : "Parse failed",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
