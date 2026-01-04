@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { supabase } from "@/integrations/supabase/client";
+import { FunctionsHttpError } from "@supabase/supabase-js";
 import { ExerciseForm } from "@/components/workout/exercise-form";
 import { CreateWorkoutExerciseInput } from "@/types/workout";
 import { Badge } from "@/components/ui/badge";
@@ -217,11 +218,19 @@ export default function ImportWorkout() {
         body: { rawText, muscleGroups: muscleGroupNames },
       });
 
-      // Handle edge function errors - the error message is in data.error when status is non-2xx
+      // Handle edge function errors - extract the actual error message from the response
       if (error) {
-        // Check if there's a specific error message in the data
-        if (data?.error) {
-          throw new Error(data.error);
+        // FunctionsHttpError contains the actual response body with our custom error message
+        if (error instanceof FunctionsHttpError) {
+          try {
+            const errorData = await error.context.json();
+            if (errorData?.error) {
+              throw new Error(errorData.error);
+            }
+          } catch (parseError) {
+            // If we can't parse the error response, fall through to generic error
+            console.error("Failed to parse error response:", parseError);
+          }
         }
         // Otherwise throw the generic error
         throw error;
