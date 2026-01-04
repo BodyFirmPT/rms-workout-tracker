@@ -217,9 +217,17 @@ export default function ImportWorkout() {
         body: { rawText, muscleGroups: muscleGroupNames },
       });
 
-      if (error) throw error;
+      // Handle edge function errors - the error message is in data.error when status is non-2xx
+      if (error) {
+        // Check if there's a specific error message in the data
+        if (data?.error) {
+          throw new Error(data.error);
+        }
+        // Otherwise throw the generic error
+        throw error;
+      }
 
-      if (data.error) {
+      if (data?.error) {
         throw new Error(data.error);
       }
 
