@@ -279,12 +279,24 @@ export class WorkoutService {
       throw exercisesError;
     }
 
+    // Build note with reference to original workout date
+    const originalDate = new Date(originalWorkout.date);
+    const formattedOriginalDate = originalDate.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+    const copiedFromNote = `Copied from ${formattedOriginalDate}`;
+    const newNote = originalWorkout.note 
+      ? `${copiedFromNote}\n\n${originalWorkout.note}`
+      : copiedFromNote;
+
     // Create the new workout as draft
     const { data: newWorkout, error: createWorkoutError } = await supabase
       .from('workout')
       .insert({
         client_id: clientId,
-        note: originalWorkout.note,
+        note: newNote,
         date: date.toISOString().split('T')[0],
         status: 'draft'
       })
