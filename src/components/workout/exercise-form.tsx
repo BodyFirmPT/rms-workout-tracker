@@ -106,15 +106,25 @@ export function ExerciseForm({
     }
   }, [initialValues]);
 
-  // Update defaults when exercise type changes
+  // Update defaults when exercise type changes - only for new exercises, preserve values when editing
   useEffect(() => {
+    // Skip if this is an edit and exerciseType matches the initial value (initial load)
+    if (isEditing && initialValues?.exerciseType === exerciseType) {
+      return;
+    }
+    
+    // Only reset to defaults when switching types
     if (exerciseType === 'stretch') {
       setRepsUnit('seconds');
-      setRepsCount(30);
-    } else {
+      // Only reset reps count if switching TO stretch and current unit is not already seconds
+      if (repsUnit !== 'seconds') {
+        setRepsCount(30);
+      }
+    } else if (repsUnit === 'seconds') {
+      // Only reset unit to reps if current unit is seconds (switching FROM stretch)
       setRepsUnit('reps');
-      setRepsCount(12);
     }
+    // Don't reset repsCount when switching between weight and band - preserve the value
   }, [exerciseType]);
 
   const handleSubmit = async (e: React.FormEvent) => {
