@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { EmulationProvider } from "@/contexts/EmulationContext";
 import { EmulationBanner } from "@/components/EmulationBanner";
+import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import ClientDetails from "./pages/ClientDetails";
 import ClientInjuries from "./pages/ClientInjuries";
@@ -31,8 +32,9 @@ const App = () => (
         <BrowserRouter>
           <EmulationBanner />
           <Routes>
+            <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/client/:clientId" element={<ProtectedRoute><ClientDetails /></ProtectedRoute>} />
             <Route path="/client/:clientId/injuries" element={<ProtectedRoute><ClientInjuries /></ProtectedRoute>} />
             <Route path="/client/:clientId/restricted-exercises" element={<ProtectedRoute><ClientRestrictedExercises /></ProtectedRoute>} />
