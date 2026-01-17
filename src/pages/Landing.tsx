@@ -64,7 +64,7 @@ const Landing = () => {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-fugaz leading-tight">
-              Your workout sheets.
+              Your workout spreadsheets.
               <span className="text-primary block">Now digital.</span>
             </h2>
             <p className="text-xl text-muted-foreground">
@@ -72,11 +72,11 @@ const Landing = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" onClick={() => navigate("/login")} className="text-lg px-8">
-                Start Free Trial
+                Start Free
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <p className="text-sm text-muted-foreground self-center">
-                Then just <span className="font-semibold text-foreground">$10/month</span> for unlimited everything
+                Free forever with 1 client. <span className="font-semibold text-foreground">$10/mo</span> for unlimited.
               </p>
             </div>
           </div>
@@ -245,11 +245,11 @@ const Landing = () => {
                 </li>
               </ul>
               <Button size="lg" onClick={() => navigate("/login")} className="w-full">
-                Start Free Trial
+                Upgrade Anytime
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <p className="text-sm text-muted-foreground">
-                No credit card required
+                Start free, upgrade when you need more clients
               </p>
             </CardContent>
           </Card>
