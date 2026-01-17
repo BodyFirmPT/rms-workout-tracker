@@ -71,7 +71,7 @@ const Landing = () => {
               Stop fighting with complicated fitness apps. BodyFirm PT is the simple workout tracker built for personal trainers who just want to track workouts—nothing more, nothing less.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" onClick={() => navigate("/login")} className="text-lg px-8">
+              <Button size="lg" onClick={() => navigate("/signup")} className="text-lg px-8">
                 Start Free
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -206,7 +206,7 @@ const Landing = () => {
                   <span>All features included</span>
                 </li>
               </ul>
-              <Button size="lg" onClick={() => navigate("/login")} className="w-full">
+              <Button size="lg" onClick={() => navigate("/signup")} className="w-full">
                 Get Started Free
               </Button>
             </CardContent>
@@ -244,7 +244,7 @@ const Landing = () => {
                   <span>Cancel anytime</span>
                 </li>
               </ul>
-              <Button size="lg" onClick={() => navigate("/login")} className="w-full">
+              <Button size="lg" onClick={() => navigate("/signup")} className="w-full">
                 Upgrade Anytime
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -268,7 +268,7 @@ const Landing = () => {
           <Button 
             size="lg" 
             variant="secondary"
-            onClick={() => navigate("/login")} 
+            onClick={() => navigate("/signup")} 
             className="text-lg px-8"
           >
             Get Started Free
