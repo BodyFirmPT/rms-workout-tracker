@@ -7,8 +7,10 @@ import {
   Zap, 
   Smartphone,
   CheckCircle2,
-  ArrowRight
+  ArrowRight,
+  User
 } from "lucide-react";
+import appScreenshot from "@/assets/bodyfirm-pt-ui.png";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -79,13 +81,11 @@ const Landing = () => {
             </div>
           </div>
           <div className="relative">
-            {/* Image Placeholder */}
-            <div className="aspect-[4/3] bg-muted rounded-2xl border-2 border-dashed border-border flex items-center justify-center">
-              <p className="text-muted-foreground text-center p-8">
-                Hero Image Placeholder<br />
-                <span className="text-sm">(App screenshot or trainer with tablet)</span>
-              </p>
-            </div>
+            <img 
+              src={appScreenshot} 
+              alt="BodyFirm PT workout tracking interface" 
+              className="rounded-2xl shadow-2xl border border-border/50"
+            />
           </div>
         </div>
       </section>
@@ -137,13 +137,11 @@ const Landing = () => {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              {/* Image Placeholder */}
-              <div className="aspect-[3/4] bg-background rounded-2xl border-2 border-dashed border-border flex items-center justify-center shadow-lg">
-                <p className="text-muted-foreground text-center p-8">
-                  App Screenshot Placeholder<br />
-                  <span className="text-sm">(Workout tracking interface)</span>
-                </p>
-              </div>
+              <img 
+                src={appScreenshot} 
+                alt="BodyFirm PT workout tracking interface showing exercises organized by muscle groups" 
+                className="rounded-2xl shadow-2xl border border-border/50"
+              />
             </div>
             <div className="space-y-6">
               <h3 className="text-3xl md:text-4xl font-fugaz">
@@ -168,38 +166,90 @@ const Landing = () => {
 
       {/* Pricing Section */}
       <section className="container mx-auto px-4 py-16 md:py-24">
-        <div className="max-w-2xl mx-auto">
-          <Card className="border-primary/20 bg-gradient-to-b from-primary/5 to-transparent">
+        <div className="text-center mb-12">
+          <h3 className="text-3xl md:text-4xl font-fugaz mb-4">Simple pricing too</h3>
+          <p className="text-lg text-muted-foreground">
+            Start free, upgrade when you're ready.
+          </p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          {/* Free Plan */}
+          <Card className="border-border/50 bg-card/50">
             <CardContent className="pt-8 pb-8 text-center space-y-6">
-              <h3 className="text-3xl md:text-4xl font-fugaz">Simple pricing too</h3>
-              <div className="space-y-2">
-                <p className="text-6xl font-bold">$10</p>
-                <p className="text-xl text-muted-foreground">per month</p>
+              <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center mx-auto">
+                <User className="h-6 w-6 text-muted-foreground" />
               </div>
-              <ul className="space-y-2 text-lg">
-                <li className="flex items-center justify-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-primary" />
-                  Unlimited clients
+              <div>
+                <h4 className="text-2xl font-semibold mb-1">Free Forever</h4>
+                <p className="text-muted-foreground">For trainers just getting started</p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-5xl font-bold">$0</p>
+                <p className="text-muted-foreground">forever</p>
+              </div>
+              <ul className="space-y-2 text-left">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span>1 client</span>
                 </li>
-                <li className="flex items-center justify-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-primary" />
-                  Unlimited workouts
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span>Unlimited workouts</span>
                 </li>
-                <li className="flex items-center justify-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-primary" />
-                  All features included
-                </li>
-                <li className="flex items-center justify-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-primary" />
-                  Cancel anytime
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span>All features included</span>
                 </li>
               </ul>
-              <Button size="lg" onClick={() => navigate("/login")} className="text-lg px-8">
-                Start Your Free Trial
+              <Button size="lg" variant="outline" onClick={() => navigate("/login")} className="w-full">
+                Get Started Free
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Pro Plan */}
+          <Card className="border-primary/50 bg-gradient-to-b from-primary/5 to-transparent relative">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+              <span className="bg-primary text-primary-foreground text-sm font-medium px-3 py-1 rounded-full">
+                Most Popular
+              </span>
+            </div>
+            <CardContent className="pt-8 pb-8 text-center space-y-6">
+              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">
+                <Users className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h4 className="text-2xl font-semibold mb-1">Pro</h4>
+                <p className="text-muted-foreground">For growing training businesses</p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-5xl font-bold">$10</p>
+                <p className="text-muted-foreground">per month</p>
+              </div>
+              <ul className="space-y-2 text-left">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span><strong>Unlimited clients</strong></span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span>Unlimited workouts</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span>All features included</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span>Cancel anytime</span>
+                </li>
+              </ul>
+              <Button size="lg" onClick={() => navigate("/login")} className="w-full">
+                Start Free Trial
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <p className="text-sm text-muted-foreground">
-                No credit card required to start
+                No credit card required
               </p>
             </CardContent>
           </Card>
