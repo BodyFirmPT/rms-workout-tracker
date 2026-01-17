@@ -174,10 +174,15 @@ const Landing = () => {
         </div>
         <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {/* Free Plan */}
-          <Card className="border-border/50 bg-card/50">
+          <Card className="border-primary/50 bg-gradient-to-b from-primary/5 to-transparent relative">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+              <span className="bg-primary text-primary-foreground text-sm font-medium px-3 py-1 rounded-full">
+                Start Here
+              </span>
+            </div>
             <CardContent className="pt-8 pb-8 text-center space-y-6">
-              <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center mx-auto">
-                <User className="h-6 w-6 text-muted-foreground" />
+              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">
+                <User className="h-6 w-6 text-primary" />
               </div>
               <div>
                 <h4 className="text-2xl font-semibold mb-1">Free Forever</h4>
@@ -201,19 +206,14 @@ const Landing = () => {
                   <span>All features included</span>
                 </li>
               </ul>
-              <Button size="lg" variant="outline" onClick={() => navigate("/login")} className="w-full">
+              <Button size="lg" onClick={() => navigate("/login")} className="w-full">
                 Get Started Free
               </Button>
             </CardContent>
           </Card>
 
           {/* Pro Plan */}
-          <Card className="border-primary/50 bg-gradient-to-b from-primary/5 to-transparent relative">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <span className="bg-primary text-primary-foreground text-sm font-medium px-3 py-1 rounded-full">
-                Most Popular
-              </span>
-            </div>
+          <Card className="border-border/50 bg-card/50">
             <CardContent className="pt-8 pb-8 text-center space-y-6">
               <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">
                 <Users className="h-6 w-6 text-primary" />
