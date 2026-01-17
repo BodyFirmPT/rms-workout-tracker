@@ -1,29 +1,54 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ClipboardList, Users, Zap, Smartphone, CheckCircle2, ArrowRight, User } from "lucide-react";
+import { 
+  ClipboardList, 
+  Users, 
+  Zap, 
+  Smartphone,
+  CheckCircle2,
+  ArrowRight,
+  User
+} from "lucide-react";
 import appScreenshot from "@/assets/bodyfirm-pt-ui.png";
+
 const Landing = () => {
   const navigate = useNavigate();
-  const features = [{
-    icon: ClipboardList,
-    title: "Digital Workout Sheets",
-    description: "The same simple format you've been using on paper or spreadsheets—now on your phone or tablet. No learning curve."
-  }, {
-    icon: Users,
-    title: "Unlimited Clients",
-    description: "Track as many clients as you want. No per-client fees, no limits. One flat price."
-  }, {
-    icon: Zap,
-    title: "Quick Entry",
-    description: "Add exercises in seconds. Copy from previous workouts. Duplicate and adjust. Save time, not add complexity."
-  }, {
-    icon: Smartphone,
-    title: "Works Everywhere",
-    description: "Use it on your phone during sessions, on your tablet, or on your computer. Your workouts sync automatically."
-  }];
-  const benefits = ["No complicated features you'll never use", "Looks like the sheets you already know", "Track sets, reps, weights, and notes", "Copy workouts between clients", "Print workout summaries when needed", "Access workout history anytime"];
-  return <div className="min-h-screen bg-background">
+
+  const features = [
+    {
+      icon: ClipboardList,
+      title: "Digital Workout Sheets",
+      description: "The same simple format you've been using on paper or spreadsheets—now on your phone or tablet. No learning curve."
+    },
+    {
+      icon: Users,
+      title: "Unlimited Clients",
+      description: "Track as many clients as you want. No per-client fees, no limits. One flat price."
+    },
+    {
+      icon: Zap,
+      title: "Quick Entry",
+      description: "Add exercises in seconds. Copy from previous workouts. Duplicate and adjust. Save time, not add complexity."
+    },
+    {
+      icon: Smartphone,
+      title: "Works Everywhere",
+      description: "Use it on your phone during sessions, on your tablet, or on your computer. Your workouts sync automatically."
+    }
+  ];
+
+  const benefits = [
+    "No complicated features you'll never use",
+    "Looks like the sheets you already know",
+    "Track sets, reps, weights, and notes",
+    "Copy workouts between clients",
+    "Print workout summaries when needed",
+    "Access workout history anytime"
+  ];
+
+  return (
+    <div className="min-h-screen bg-background">
       {/* Navigation */}
       <nav className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -38,20 +63,29 @@ const Landing = () => {
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-fugaz leading-tight">Your workout spreadsheets.
-Now digital.<span className="text-primary block">Now digital.</span>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-fugaz leading-tight">
+              Your workout sheets.
+              <span className="text-primary block">Now digital.</span>
             </h2>
             <p className="text-xl text-muted-foreground">
               Stop fighting with complicated fitness apps. BodyFirm PT is the simple workout tracker built for personal trainers who just want to track workouts—nothing more, nothing less.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" onClick={() => navigate("/login")} className="text-lg px-8">Start Free<ArrowRight className="ml-2 h-5 w-5" />
+              <Button size="lg" onClick={() => navigate("/login")} className="text-lg px-8">
+                Start Free Trial
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              
+              <p className="text-sm text-muted-foreground self-center">
+                Then just <span className="font-semibold text-foreground">$10/month</span> for unlimited everything
+              </p>
             </div>
           </div>
           <div className="relative">
-            <img src={appScreenshot} alt="BodyFirm PT workout tracking interface" className="rounded-2xl shadow-2xl border border-border/50" />
+            <img 
+              src={appScreenshot} 
+              alt="BodyFirm PT workout tracking interface" 
+              className="rounded-2xl shadow-2xl border border-border/50"
+            />
           </div>
         </div>
       </section>
@@ -84,7 +118,8 @@ Now digital.<span className="text-primary block">Now digital.</span>
           </p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => <Card key={index} className="border-border/50 bg-card/50">
+          {features.map((feature, index) => (
+            <Card key={index} className="border-border/50 bg-card/50">
               <CardContent className="pt-6">
                 <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                   <feature.icon className="h-6 w-6 text-primary" />
@@ -92,7 +127,8 @@ Now digital.<span className="text-primary block">Now digital.</span>
                 <h4 className="text-xl font-semibold mb-2">{feature.title}</h4>
                 <p className="text-muted-foreground">{feature.description}</p>
               </CardContent>
-            </Card>)}
+            </Card>
+          ))}
         </div>
       </section>
 
@@ -101,21 +137,27 @@ Now digital.<span className="text-primary block">Now digital.</span>
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <img src={appScreenshot} alt="BodyFirm PT workout tracking interface showing exercises organized by muscle groups" className="rounded-2xl shadow-2xl border border-border/50" />
+              <img 
+                src={appScreenshot} 
+                alt="BodyFirm PT workout tracking interface showing exercises organized by muscle groups" 
+                className="rounded-2xl shadow-2xl border border-border/50"
+              />
             </div>
             <div className="space-y-6">
-              <h3 className="text-3xl md:text-4xl font-fugaz">Look familiar?
-It should.<br />It should.
+              <h3 className="text-3xl md:text-4xl font-fugaz">
+                Looks familiar?<br />It should.
               </h3>
               <p className="text-lg text-muted-foreground">
                 We designed BodyFirm PT to look like the workout sheets you've been using for years. 
                 Muscle groups, exercises, sets, reps, weights, notes. That's it.
               </p>
               <ul className="space-y-3">
-                {benefits.map((benefit, index) => <li key={index} className="flex items-center gap-3">
+                {benefits.map((benefit, index) => (
+                  <li key={index} className="flex items-center gap-3">
                     <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
                     <span>{benefit}</span>
-                  </li>)}
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
@@ -223,7 +265,12 @@ It should.<br />It should.
           <p className="text-xl opacity-90 max-w-2xl mx-auto">
             Join personal trainers who've simplified their workout tracking without sacrificing the format they know and love.
           </p>
-          <Button size="lg" variant="secondary" onClick={() => navigate("/login")} className="text-lg px-8">
+          <Button 
+            size="lg" 
+            variant="secondary"
+            onClick={() => navigate("/login")} 
+            className="text-lg px-8"
+          >
             Get Started Free
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
@@ -237,6 +284,8 @@ It should.<br />It should.
           <p className="text-sm">Simple workout tracking for personal trainers</p>
         </div>
       </footer>
-    </div>;
+    </div>
+  );
 };
+
 export default Landing;
