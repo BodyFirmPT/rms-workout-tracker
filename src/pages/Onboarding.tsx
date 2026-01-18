@@ -66,7 +66,16 @@ const Onboarding = () => {
   const handleCreateClient = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!clientName.trim() || !trainerId) return;
+    if (!clientName.trim()) return;
+    
+    if (!trainerId) {
+      toast({
+        title: "Error",
+        description: "Unable to find your trainer profile. Please try logging in again.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setLoading(true);
 
