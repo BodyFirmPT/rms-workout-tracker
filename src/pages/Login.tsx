@@ -214,20 +214,19 @@ const Login = () => {
               type="button"
               variant="ghost"
               className="w-full"
-              onClick={() => navigate("/signup")}
-            >
-              Don't have an account? Sign up
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full"
               onClick={() => setShowPasswordAuth(false)}
             >
               Back to Google login
             </Button>
           </form>
         )}
+
+        <p className="text-center text-sm text-muted-foreground">
+          Don't have an account?{" "}
+          <Button variant="link" className="p-0 h-auto" onClick={() => navigate("/signup")}>
+            Sign up
+          </Button>
+        </p>
       </div>
     </div>
   );
