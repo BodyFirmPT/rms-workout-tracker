@@ -2,52 +2,18 @@ import { useNavigate } from "react-router-dom";
 import { Settings, User, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ClientSelector } from "@/components/dashboard/client-selector";
-import { FeatureShowcase } from "@/components/dashboard/FeatureShowcase";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEmulation } from "@/contexts/EmulationContext";
-import { useWorkoutStore } from "@/stores/workoutStore";
 
 const Index = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const { emulatedUser } = useEmulation();
-  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
-  const [selectedClientName, setSelectedClientName] = useState<string | null>(null);
-  const { clients } = useWorkoutStore();
 
   useEffect(() => {
     checkAdminStatus();
   }, [emulatedUser]);
-
-  // Get user's own client to show in feature showcase
-  useEffect(() => {
-    loadUserClient();
-  }, [emulatedUser]);
-
-  const loadUserClient = async () => {
-    if (emulatedUser?.client_id) {
-      setSelectedClientId(emulatedUser.client_id);
-      const client = clients.find(c => c.id === emulatedUser.client_id);
-      setSelectedClientName(client?.name || "Your workouts");
-      return;
-    }
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data } = await supabase
-        .from('users')
-        .select('client_id')
-        .eq('id', user.id)
-        .maybeSingle();
-      
-      if (data?.client_id) {
-        setSelectedClientId(data.client_id);
-        const client = clients.find(c => c.id === data.client_id);
-        setSelectedClientName(client?.name || "Your workouts");
-      }
-    }
-  };
 
   const checkAdminStatus = async () => {
     const userId = emulatedUser?.id || (await supabase.auth.getUser()).data.user?.id;
@@ -93,13 +59,8 @@ const Index = () => {
           </div>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-6">
           <ClientSelector />
-          
-          <FeatureShowcase 
-            selectedClientId={selectedClientId || undefined}
-            clientName={selectedClientName || undefined}
-          />
         </div>
       </div>
     </div>

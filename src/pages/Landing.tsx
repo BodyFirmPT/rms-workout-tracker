@@ -11,6 +11,7 @@ import {
   User
 } from "lucide-react";
 import appScreenshot from "@/assets/bodyfirm-pt-ui.png";
+import { LandingFeatureShowcase } from "@/components/landing/LandingFeatureShowcase";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -131,6 +132,9 @@ const Landing = () => {
           ))}
         </div>
       </section>
+
+      {/* Feature Showcase Section */}
+      <LandingFeatureShowcase />
 
       {/* Screenshot Section */}
       <section className="bg-muted/50 py-16 md:py-24">
