@@ -9,13 +9,16 @@ import { useWorkoutStore } from "@/stores/workoutStore";
 import { CreateTrainerDialog } from "./create-trainer-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useEmulation } from "@/contexts/EmulationContext";
+import { UpgradeModal } from "@/components/upgrade/UpgradeModal";
 
 interface CreateClientDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  showUpgradeInstead?: boolean;
+  onUpgradeNeeded?: () => void;
 }
 
-export function CreateClientDialog({ open, onOpenChange }: CreateClientDialogProps) {
+export function CreateClientDialog({ open, onOpenChange, showUpgradeInstead, onUpgradeNeeded }: CreateClientDialogProps) {
   const [name, setName] = useState("");
   const [trainerId, setTrainerId] = useState("");
   const [showCreateTrainer, setShowCreateTrainer] = useState(false);

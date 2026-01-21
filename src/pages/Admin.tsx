@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Trash2, Eye } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Trash2, Eye, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { useEmulation } from "@/contexts/EmulationContext";
 
@@ -16,6 +17,8 @@ interface User {
   full_name: string | null;
   trainer_id: string | null;
   client_id: string | null;
+  is_paid: boolean;
+  stripe_customer_id: string | null;
 }
 
 interface Trainer {
@@ -86,7 +89,7 @@ export default function Admin() {
   const loadData = async () => {
     try {
       const [usersResponse, trainersResponse, clientsResponse, rolesResponse] = await Promise.all([
-        supabase.from("users").select("id, email, full_name, trainer_id, client_id"),
+        supabase.from("users").select("id, email, full_name, trainer_id, client_id, is_paid, stripe_customer_id"),
         supabase.from("trainer").select("id, name"),
         supabase.from("client").select("id, name"),
         supabase.from("user_roles").select("user_id, role").eq("role", "admin")
@@ -246,6 +249,7 @@ export default function Admin() {
               <TableRow>
                 <TableHead>Email</TableHead>
                 <TableHead>Full Name</TableHead>
+                <TableHead>Subscription</TableHead>
                 <TableHead>Trainer</TableHead>
                 <TableHead>Client</TableHead>
                 <TableHead>Admin</TableHead>
@@ -257,6 +261,16 @@ export default function Admin() {
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">{user.email || "N/A"}</TableCell>
                   <TableCell>{user.full_name || "N/A"}</TableCell>
+                  <TableCell>
+                    {user.is_paid ? (
+                      <Badge className="bg-primary">
+                        <CreditCard className="h-3 w-3 mr-1" />
+                        Pro
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary">Free</Badge>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <Select
                       value={user.trainer_id || "none"}
