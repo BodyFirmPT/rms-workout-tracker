@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Check, Dumbbell, Users, Calendar, FileSpreadsheet } from "lucide-react";
+import { identifyUser } from "@/lib/posthog";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -28,6 +29,10 @@ const Signup = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
+        // Identify user in PostHog on signup (defer to avoid deadlock)
+        setTimeout(() => {
+          identifyUser({ isSignup: true });
+        }, 0);
         navigate("/onboarding");
       }
     });
