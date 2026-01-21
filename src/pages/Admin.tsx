@@ -68,7 +68,7 @@ export default function Admin() {
 
       if (!roleData) {
         toast.error("Access denied. Admin privileges required.");
-        navigate("/");
+        navigate("/dashboard");
         return;
       }
 
@@ -77,7 +77,7 @@ export default function Admin() {
     } catch (error) {
       console.error("Error checking admin access:", error);
       toast.error("Failed to verify admin access");
-      navigate("/");
+      navigate("/dashboard");
     } finally {
       setLoading(false);
     }
@@ -182,7 +182,7 @@ export default function Admin() {
       trainer_id: user.trainer_id,
       client_id: user.client_id,
     });
-    navigate("/");
+    navigate("/dashboard");
   };
 
   const handleDeleteUser = async () => {
@@ -235,7 +235,7 @@ export default function Admin() {
       <div className="container mx-auto py-8 px-4">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-4xl font-bold">Admin Panel</h1>
-          <Button variant="outline" onClick={() => navigate("/")}>
+          <Button variant="outline" onClick={() => navigate("/dashboard")}>
             Back to Home
           </Button>
         </div>

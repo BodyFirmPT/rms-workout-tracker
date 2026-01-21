@@ -37,7 +37,7 @@ const ActiveWorkout = () => {
         setCurrentWorkout(workout);
       } else {
         // Workout not found, redirect to dashboard
-        navigate("/");
+        navigate("/dashboard");
       }
     } else {
       // No ID provided - look for a started workout
