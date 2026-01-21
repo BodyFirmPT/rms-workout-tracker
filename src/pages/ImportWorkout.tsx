@@ -740,7 +740,7 @@ export default function ImportWorkout() {
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <p className="text-muted-foreground">Client not found</p>
-          <Button onClick={() => navigate("/")} className="mt-4">
+          <Button onClick={() => navigate("/dashboard")} className="mt-4">
             Back to Home
           </Button>
         </div>

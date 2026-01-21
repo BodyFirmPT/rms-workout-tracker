@@ -114,7 +114,7 @@ export default function ClientDetails() {
         <div className="container mx-auto px-4 py-8 max-w-6xl">
           <div className="text-center py-8">
             <p className="text-muted-foreground">Client not found</p>
-            <Button onClick={() => navigate("/")} className="mt-4">
+            <Button onClick={() => navigate("/dashboard")} className="mt-4">
               Back to Home
             </Button>
           </div>
@@ -160,7 +160,7 @@ export default function ClientDetails() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")} className="flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
               Back to Clients
             </Button>
