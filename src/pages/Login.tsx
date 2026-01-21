@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { identifyUser } from "@/lib/posthog";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -26,6 +27,10 @@ const Login = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
+        // Identify user in PostHog on login (defer to avoid deadlock)
+        setTimeout(() => {
+          identifyUser({ isSignup: false });
+        }, 0);
         navigate("/dashboard");
       }
     });

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { resetPostHogUser } from "@/lib/posthog";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -129,6 +130,7 @@ const Profile = () => {
   };
 
   const handleSignOut = async () => {
+    resetPostHogUser();
     await supabase.auth.signOut();
     navigate("/login");
   };
