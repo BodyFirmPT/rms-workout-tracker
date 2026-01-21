@@ -104,7 +104,7 @@ export function LandingFeatureShowcase() {
   return (
     <section className="container mx-auto px-4 py-16 md:py-24">
       <div className="text-center mb-12">
-        <h3 className="text-3xl md:text-4xl font-fugaz mb-4">Powerful client management</h3>
+        <h3 className="text-3xl md:text-4xl font-fugaz mb-4">Easy client management</h3>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           Track injuries, manage exercise restrictions, and import historical workouts—all in one place.
         </p>
