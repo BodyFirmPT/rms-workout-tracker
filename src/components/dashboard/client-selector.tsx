@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import React from "react";
 import { Users, Settings, Target, Calendar, Plus, Edit, Trash2, UserCircle } from "lucide-react";
@@ -8,18 +8,28 @@ import { useWorkoutStore } from "@/stores/workoutStore";
 import { CreateClientDialog } from "@/components/workout/create-client-dialog";
 import { EditClientDialog } from "@/components/workout/edit-client-dialog";
 import { DeleteClientDialog } from "@/components/workout/delete-client-dialog";
+import { UpgradeModal } from "@/components/upgrade/UpgradeModal";
 import { Client } from "@/types/workout";
 import { supabase } from "@/integrations/supabase/client";
 import { useEmulation } from "@/contexts/EmulationContext";
+import { useSubscription } from "@/hooks/useSubscription";
+import { toast } from "sonner";
+
+// Free plan allows 1 client (plus the user's own auto-generated client)
+const FREE_CLIENT_LIMIT = 1;
 
 export function ClientSelector() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { emulatedUser } = useEmulation();
+  const { isPaid, refresh: refreshSubscription } = useSubscription();
   const [showCreateClient, setShowCreateClient] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [deletingClient, setDeletingClient] = useState<Client | null>(null);
   const [userClientId, setUserClientId] = useState<string | null>(null);
   const [userClient, setUserClient] = useState<Client | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   
   const { 
     clients, 
@@ -31,7 +41,52 @@ export function ClientSelector() {
   useEffect(() => {
     loadData();
     loadUserClient();
+    checkAdminStatus();
   }, [loadData, emulatedUser]);
+
+  // Handle upgrade success/cancel from URL params
+  useEffect(() => {
+    const upgradeStatus = searchParams.get("upgrade");
+    if (upgradeStatus === "success") {
+      toast.success("Welcome to Pro! Your subscription is now active.");
+      refreshSubscription();
+      // Clear the URL param
+      window.history.replaceState({}, "", "/dashboard");
+    } else if (upgradeStatus === "cancelled") {
+      toast.info("Upgrade cancelled. You can upgrade anytime.");
+      window.history.replaceState({}, "", "/dashboard");
+    }
+  }, [searchParams, refreshSubscription]);
+
+  const checkAdminStatus = async () => {
+    const userId = emulatedUser?.id || (await supabase.auth.getUser()).data.user?.id;
+    if (!userId) return;
+
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    setIsAdmin(!!roleData);
+  };
+
+  // Count clients excluding the user's own auto-generated client
+  const additionalClientCount = React.useMemo(() => {
+    return clients.filter(c => c.id !== userClientId).length;
+  }, [clients, userClientId]);
+
+  // Check if user can add more clients
+  const canAddClient = isPaid || isAdmin || additionalClientCount < FREE_CLIENT_LIMIT;
+
+  const handleAddClientClick = () => {
+    if (canAddClient) {
+      setShowCreateClient(true);
+    } else {
+      setShowUpgradeModal(true);
+    }
+  };
 
   const loadUserClient = async () => {
     // Check if we're emulating a user
@@ -160,7 +215,7 @@ export function ClientSelector() {
                 Choose a client to view their workouts and training progress
               </CardDescription>
             </div>
-            <Button onClick={() => setShowCreateClient(true)}>
+            <Button onClick={handleAddClientClick}>
               <Plus className="h-4 w-4 mr-2" />
               Add New Client
             </Button>
@@ -263,6 +318,11 @@ export function ClientSelector() {
           client={deletingClient}
         />
       )}
+
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+      />
     </div>
   );
 }
