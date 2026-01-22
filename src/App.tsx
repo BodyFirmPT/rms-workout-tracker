@@ -17,6 +17,7 @@ import ClientLocations from "./pages/ClientLocations";
 import ImportWorkout from "./pages/ImportWorkout";
 import ActiveWorkout from "./pages/ActiveWorkout";
 import PrintWorkout from "./pages/PrintWorkout";
+import SharedWorkout from "./pages/SharedWorkout";
 import MuscleGroups from "./pages/MuscleGroups";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -59,6 +60,7 @@ const App = () => {
               <Route path="/client/:clientId/import" element={<ProtectedRoute><ImportWorkout /></ProtectedRoute>} />
               <Route path="/workout/:id?" element={<ProtectedRoute><ActiveWorkout /></ProtectedRoute>} />
               <Route path="/workout/:id/print" element={<ProtectedRoute><PrintWorkout /></ProtectedRoute>} />
+              <Route path="/share/:token" element={<SharedWorkout />} />
               <Route path="/muscle-groups" element={<ProtectedRoute><MuscleGroups /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />

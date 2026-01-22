@@ -342,6 +342,7 @@ export type Database = {
           late_cancelled: boolean | null
           location_id: string | null
           note: string
+          share_token: string | null
           status: string
         }
         Insert: {
@@ -353,6 +354,7 @@ export type Database = {
           late_cancelled?: boolean | null
           location_id?: string | null
           note: string
+          share_token?: string | null
           status?: string
         }
         Update: {
@@ -364,6 +366,7 @@ export type Database = {
           late_cancelled?: boolean | null
           location_id?: string | null
           note?: string
+          share_token?: string | null
           status?: string
         }
         Relationships: [

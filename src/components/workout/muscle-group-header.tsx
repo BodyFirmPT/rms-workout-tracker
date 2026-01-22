@@ -17,7 +17,7 @@ interface MuscleGroupHeaderProps {
   isFirst: boolean;
   isLast: boolean;
   hasContent: boolean;
-  onAddExercise: () => void;
+  onAddExercise?: () => void;
   disabled?: boolean;
   muscleGroupId?: string;
   clientId?: string;
@@ -91,16 +91,18 @@ export function MuscleGroupHeader({
               {restrictions.length} {restrictions.length === 1 ? 'restriction' : 'restrictions'}
             </Badge>
           )}
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={onAddExercise} 
-            className="h-6 px-2 text-xs" 
-            disabled={disabled}
-          >
-            <Plus className="h-2.5 w-2.5 mr-1" />
-            Add
-          </Button>
+          {onAddExercise && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onAddExercise} 
+              className="h-6 px-2 text-xs" 
+              disabled={disabled}
+            >
+              <Plus className="h-2.5 w-2.5 mr-1" />
+              Add
+            </Button>
+          )}
         </div>
       </div>
 
