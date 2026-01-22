@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Eye, CreditCard } from "lucide-react";
+import { Trash2, Eye, CreditCard, Gift, Ban } from "lucide-react";
 import { toast } from "sonner";
 import { useEmulation } from "@/contexts/EmulationContext";
 
@@ -19,6 +19,7 @@ interface User {
   client_id: string | null;
   is_paid: boolean;
   stripe_customer_id: string | null;
+  subscription_override: boolean | null;
 }
 
 interface Trainer {
@@ -89,7 +90,7 @@ export default function Admin() {
   const loadData = async () => {
     try {
       const [usersResponse, trainersResponse, clientsResponse, rolesResponse] = await Promise.all([
-        supabase.from("users").select("id, email, full_name, trainer_id, client_id, is_paid, stripe_customer_id"),
+        supabase.from("users").select("id, email, full_name, trainer_id, client_id, is_paid, stripe_customer_id, subscription_override"),
         supabase.from("trainer").select("id, name"),
         supabase.from("client").select("id, name"),
         supabase.from("user_roles").select("user_id, role").eq("role", "admin")
@@ -173,6 +174,34 @@ export default function Admin() {
       await loadData();
     } catch (error) {
       console.error("Error toggling admin status:", error);
+      toast.error("Failed to update admin status");
+    }
+  };
+
+  const handleSubscriptionOverride = async (userId: string, value: string) => {
+    try {
+      let overrideValue: boolean | null = null;
+      if (value === "pro") overrideValue = true;
+      else if (value === "free") overrideValue = false;
+      // "stripe" means null (use normal Stripe logic)
+
+      const { error } = await supabase
+        .from("users")
+        .update({ subscription_override: overrideValue })
+        .eq("id", userId);
+
+      if (error) throw error;
+
+      toast.success(
+        value === "stripe" 
+          ? "Using Stripe subscription status" 
+          : value === "pro" 
+            ? "Forced Pro status" 
+            : "Forced Free status"
+      );
+      await loadData();
+    } catch (error) {
+      console.error("Error updating subscription override:", error);
       toast.error("Failed to update admin status");
     }
   };
@@ -262,14 +291,47 @@ export default function Admin() {
                   <TableCell className="font-medium">{user.email || "N/A"}</TableCell>
                   <TableCell>{user.full_name || "N/A"}</TableCell>
                   <TableCell>
-                    {user.is_paid ? (
-                      <Badge className="bg-primary">
-                        <CreditCard className="h-3 w-3 mr-1" />
-                        Pro
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary">Free</Badge>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={
+                          user.subscription_override === true 
+                            ? "pro" 
+                            : user.subscription_override === false 
+                              ? "free" 
+                              : "stripe"
+                        }
+                        onValueChange={(value) => handleSubscriptionOverride(user.id, value)}
+                      >
+                        <SelectTrigger className="w-[120px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="stripe">
+                            <div className="flex items-center gap-1">
+                              <CreditCard className="h-3 w-3" />
+                              Stripe
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="pro">
+                            <div className="flex items-center gap-1">
+                              <Gift className="h-3 w-3" />
+                              Force Pro
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="free">
+                            <div className="flex items-center gap-1">
+                              <Ban className="h-3 w-3" />
+                              Force Free
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {user.is_paid ? (
+                        <Badge className="bg-primary">Pro</Badge>
+                      ) : (
+                        <Badge variant="secondary">Free</Badge>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Select

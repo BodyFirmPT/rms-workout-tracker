@@ -45,15 +45,40 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
-    // Prefer the stored Stripe customer id (most reliable).
+    // Prefer the stored Stripe customer id and check for override.
     const { data: dbUser, error: dbUserError } = await supabaseClient
       .from("users")
-      .select("stripe_customer_id")
+      .select("stripe_customer_id, subscription_override")
       .eq("id", user.id)
       .maybeSingle();
 
     if (dbUserError) {
       logStep("WARNING: Failed to read user record", { message: dbUserError.message });
+    }
+
+    // Check for subscription override first
+    if (dbUser?.subscription_override === true) {
+      logStep("Subscription override active: forced Pro", { userId: user.id });
+      await supabaseClient
+        .from("users")
+        .update({ is_paid: true })
+        .eq("id", user.id);
+      return new Response(JSON.stringify({ subscribed: true, override: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    if (dbUser?.subscription_override === false) {
+      logStep("Subscription override active: forced Free", { userId: user.id });
+      await supabaseClient
+        .from("users")
+        .update({ is_paid: false })
+        .eq("id", user.id);
+      return new Response(JSON.stringify({ subscribed: false, override: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
 
     let customerId: string | null = dbUser?.stripe_customer_id ?? null;
