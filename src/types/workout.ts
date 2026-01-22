@@ -29,6 +29,7 @@ export interface Workout {
   location_id?: string | null;
   canceled_at?: string;
   late_cancelled?: boolean;
+  share_token?: string | null;
   created_at?: string;
   exercises?: WorkoutExercise[];
 }
