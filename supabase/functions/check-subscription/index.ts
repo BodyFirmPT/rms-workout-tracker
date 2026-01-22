@@ -44,25 +44,76 @@ serve(async (req) => {
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    
-    if (customers.data.length === 0) {
+
+    // Prefer the stored Stripe customer id (most reliable).
+    const { data: dbUser, error: dbUserError } = await supabaseClient
+      .from("users")
+      .select("stripe_customer_id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (dbUserError) {
+      logStep("WARNING: Failed to read user record", { message: dbUserError.message });
+    }
+
+    let customerId: string | null = dbUser?.stripe_customer_id ?? null;
+    if (customerId) {
+      logStep("Using stored Stripe customer id", { customerId });
+    }
+
+    // Fall back to searching by email.
+    if (!customerId) {
+      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      if (customers.data.length > 0) {
+        customerId = customers.data[0].id;
+        logStep("Found Stripe customer by email", { customerId });
+      }
+    }
+
+    // Last-resort recovery:
+    // If a customer was created without an email, `customers.list({ email })` will not find it.
+    // We can still recover by looking for recent Checkout Sessions that captured the email.
+    if (!customerId) {
+      logStep("No customer found by email; scanning recent Checkout Sessions to recover customer id");
+      const sessions = await stripe.checkout.sessions.list({ limit: 25 });
+      const matching = sessions.data.find((s: any) => {
+        const sessionEmail = s?.customer_details?.email ?? s?.customer_email ?? null;
+        return sessionEmail && sessionEmail.toLowerCase() === user.email!.toLowerCase();
+      });
+
+      const recoveredCustomerId = (matching?.customer as string | null) ?? null;
+      if (recoveredCustomerId) {
+        customerId = recoveredCustomerId;
+        logStep("Recovered customer id from Checkout Session", {
+          customerId,
+          sessionId: matching?.id,
+        });
+
+        // Ensure the customer has an email going forward.
+        try {
+          await stripe.customers.update(customerId, { email: user.email });
+          logStep("Updated Stripe customer email", { customerId });
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          logStep("WARNING: Failed to update Stripe customer email", { customerId, message: msg });
+        }
+      }
+    }
+
+    if (!customerId) {
       logStep("No customer found, user is not subscribed");
-      
+
       // Update user's is_paid status to false
       await supabaseClient
         .from("users")
         .update({ is_paid: false, stripe_customer_id: null })
         .eq("id", user.id);
-      
+
       return new Response(JSON.stringify({ subscribed: false }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
     }
-
-    const customerId = customers.data[0].id;
-    logStep("Found Stripe customer", { customerId });
 
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
@@ -86,9 +137,9 @@ serve(async (req) => {
     // Update user's is_paid status in database
     await supabaseClient
       .from("users")
-      .update({ 
-        is_paid: hasActiveSub, 
-        stripe_customer_id: customerId 
+      .update({
+        is_paid: hasActiveSub,
+        stripe_customer_id: customerId,
       })
       .eq("id", user.id);
     
