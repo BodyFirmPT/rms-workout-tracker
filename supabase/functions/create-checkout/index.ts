@@ -41,20 +41,30 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     
-    // Check for existing customer
+    // Ensure we always have a Stripe customer with an email.
+    // (If a customer is created without an email, `customers.list({ email })` won't find it later,
+    // which breaks `check-subscription`.)
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId;
+    let customerId: string;
+
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Found existing Stripe customer", { customerId });
     } else {
-      logStep("No existing customer found, will create new one");
+      logStep("No existing customer found, creating one");
+      const customer = await stripe.customers.create({
+        email: user.email,
+        metadata: {
+          supabase_user_id: user.id,
+        },
+      });
+      customerId = customer.id;
+      logStep("Created Stripe customer", { customerId });
     }
 
     // Create subscription checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
       line_items: [
         {
           price: "price_1SrtRqPAXApiqQcbkoBkmPwh", // $10/month Paid plan
@@ -62,6 +72,10 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
+      client_reference_id: user.id,
+      metadata: {
+        supabase_user_id: user.id,
+      },
       success_url: `${req.headers.get("origin")}/dashboard?upgrade=success`,
       cancel_url: `${req.headers.get("origin")}/dashboard?upgrade=cancelled`,
     });
