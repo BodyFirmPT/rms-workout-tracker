@@ -5,19 +5,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CreditCard, Crown, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { resetPostHogUser } from "@/lib/posthog";
+import { useSubscription } from "@/hooks/useSubscription";
+import { Badge } from "@/components/ui/badge";
 
 const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isPaid, isLoading: subscriptionLoading, subscriptionEnd } = useSubscription();
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingName, setLoadingName] = useState(false);
+  const [loadingSubscription, setLoadingSubscription] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -135,6 +139,44 @@ const Profile = () => {
     navigate("/login");
   };
 
+  const handleUpgrade = async () => {
+    setLoadingSubscription(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout");
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to start checkout",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingSubscription(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    setLoadingSubscription(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to open subscription portal",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingSubscription(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-2xl">
@@ -215,6 +257,55 @@ const Profile = () => {
                   {loading ? "Updating..." : "Update Password"}
                 </Button>
               </form>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Subscription
+                {subscriptionLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : isPaid ? (
+                  <Badge className="bg-primary"><Crown className="h-3 w-3 mr-1" />Pro</Badge>
+                ) : (
+                  <Badge variant="secondary">Free</Badge>
+                )}
+              </CardTitle>
+              <CardDescription>
+                {isPaid 
+                  ? subscriptionEnd 
+                    ? `Your Pro subscription renews on ${new Date(subscriptionEnd).toLocaleDateString()}`
+                    : "You have an active Pro subscription"
+                  : "Upgrade to Pro for unlimited clients and premium features"
+                }
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isPaid ? (
+                <Button 
+                  variant="outline" 
+                  onClick={handleManageSubscription}
+                  disabled={loadingSubscription}
+                >
+                  {loadingSubscription ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Loading...</>
+                  ) : (
+                    <><CreditCard className="h-4 w-4 mr-2" />Manage Subscription</>
+                  )}
+                </Button>
+              ) : (
+                <Button 
+                  onClick={handleUpgrade}
+                  disabled={loadingSubscription}
+                >
+                  {loadingSubscription ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Loading...</>
+                  ) : (
+                    <><Crown className="h-4 w-4 mr-2" />Upgrade to Pro - $10/month</>
+                  )}
+                </Button>
+              )}
             </CardContent>
           </Card>
 
