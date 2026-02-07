@@ -71,6 +71,7 @@ export function EditExerciseDialog({
     note: exercise.note || "",
     bandColor: exercise.band_color || "",
     bandType: exercise.band_type || "",
+    imageUrl: exercise.image_url,
   } : undefined;
 
   return (

@@ -10,6 +10,7 @@ import { useWorkoutStore } from "@/stores/workoutStore";
 import { CreateWorkoutExerciseInput } from "@/types/workout";
 import { supabase } from "@/integrations/supabase/client";
 import { ViewRestrictionsDialog } from "@/components/workout/view-restrictions-dialog";
+import { ExerciseImageUpload } from "@/components/workout/exercise-image-upload";
 
 interface Restriction {
   id: string;
@@ -33,6 +34,7 @@ interface ExerciseFormProps {
     note?: string;
     bandColor?: string;
     bandType?: string;
+    imageUrl?: string | null;
   };
   submitLabel?: string;
   preselectedMuscleGroupId?: string | null;
@@ -66,6 +68,7 @@ export function ExerciseForm({
   const [note, setNote] = useState(initialValues?.note || "");
   const [bandColor, setBandColor] = useState(initialValues?.bandColor || "");
   const [bandType, setBandType] = useState(initialValues?.bandType || "");
+  const [imageUrl, setImageUrl] = useState<string | null>(initialValues?.imageUrl ?? null);
   const [showNewMuscleGroup, setShowNewMuscleGroup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [restrictions, setRestrictions] = useState<Restriction[]>([]);
@@ -101,6 +104,7 @@ export function ExerciseForm({
       setNote(initialValues.note || "");
       setBandColor(initialValues.bandColor || "");
       setBandType(initialValues.bandType || "");
+      setImageUrl(initialValues.imageUrl ?? null);
       setShowNewMuscleGroup(false);
       setNewMuscleGroup("");
     }
@@ -147,6 +151,7 @@ export function ExerciseForm({
         left_weight: showLeftRight ? leftWeight : null,
         set_count: sets,
         note: note.trim(),
+        image_url: imageUrl,
         ...(exerciseType === 'band' && {
           band_color: bandColor,
           band_type: bandType,
@@ -443,6 +448,15 @@ export function ExerciseForm({
           onChange={(e) => setNote(e.target.value)}
           placeholder="Any additional notes or instructions"
           rows={2}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Image (optional)</Label>
+        <ExerciseImageUpload
+          imageUrl={imageUrl}
+          onImageChange={setImageUrl}
+          disabled={isSubmitting}
         />
       </div>
 

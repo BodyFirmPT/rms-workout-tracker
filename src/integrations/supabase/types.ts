@@ -395,6 +395,7 @@ export type Database = {
           created_at: string
           exercise_name: string
           id: string
+          image_url: string | null
           is_completed: boolean
           left_weight: number | null
           muscle_group_id: string
@@ -418,6 +419,7 @@ export type Database = {
           created_at?: string
           exercise_name: string
           id?: string
+          image_url?: string | null
           is_completed?: boolean
           left_weight?: number | null
           muscle_group_id: string
@@ -441,6 +443,7 @@ export type Database = {
           created_at?: string
           exercise_name?: string
           id?: string
+          image_url?: string | null
           is_completed?: boolean
           left_weight?: number | null
           muscle_group_id?: string
