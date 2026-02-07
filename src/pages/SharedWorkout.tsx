@@ -162,6 +162,7 @@ const SharedWorkout = () => {
         type={(exercise.type === 'exercise' ? 'weight' : exercise.type) as 'weight' | 'band' | 'stretch'}
         bandColor={exercise.band_color}
         bandType={exercise.band_type}
+        imageUrl={exercise.image_url}
         variant="added"
         onCompleteSet={!isCompleted ? (decrement) => handleCompleteSet(exercise.id, decrement) : undefined}
         disabled={isCompleted}

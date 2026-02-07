@@ -1,9 +1,11 @@
-import { Check, Plus, Edit, Trash2, Zap, Dumbbell, MoreVertical, Wind, Clock, Cable } from "lucide-react";
+import { useState } from "react";
+import { Check, Plus, Edit, Trash2, Zap, Dumbbell, MoreVertical, Wind, Clock, Cable, ImageIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "./button";
 import { Badge } from "./badge";
 import { cn } from "@/lib/utils";
 import { ExerciseTimer } from "@/components/workout/exercise-timer";
+import { ExerciseImageModal } from "@/components/workout/exercise-image-modal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +29,7 @@ interface UnifiedExerciseCardProps {
   type?: 'exercise' | 'weight' | 'band' | 'stretch';
   bandColor?: string | null;
   bandType?: string | null;
+  imageUrl?: string | null;
   workoutDate?: string;
   clientName?: string;
   onAdd?: () => void;
@@ -53,6 +56,7 @@ export function UnifiedExerciseCard({
   type = 'weight',
   bandColor,
   bandType,
+  imageUrl,
   workoutDate,
   clientName,
   onAdd,
@@ -62,6 +66,7 @@ export function UnifiedExerciseCard({
   disabled = false,
   workoutStarted = false
 }: UnifiedExerciseCardProps) {
+  const [showImageModal, setShowImageModal] = useState(false);
   const isSuggested = variant === 'suggested';
   const isStretch = type === 'stretch';
   const isBand = type === 'band';
@@ -90,7 +95,7 @@ export function UnifiedExerciseCard({
       
       {/* Exercise content - name, details, and note all at same indentation */}
       <div className="flex-1 min-w-0">
-        <div className="flex flex-wrap items-baseline gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className={cn(
             "font-medium break-words",
             isSuggested 
@@ -101,6 +106,16 @@ export function UnifiedExerciseCard({
           )}>
             {exerciseName}
           </span>
+          {imageUrl && (
+            <button
+              type="button"
+              onClick={() => setShowImageModal(true)}
+              className="text-primary hover:text-primary/80 transition-colors"
+              title="View image"
+            >
+              <ImageIcon className="h-3.5 w-3.5 fill-current" />
+            </button>
+          )}
           <span className={cn(
             "text-xs font-mono",
             isSuggested ? "text-muted-foreground/70" : "text-muted-foreground"
@@ -297,6 +312,16 @@ export function UnifiedExerciseCard({
           </>
         )}
       </div>
+
+      {/* Image Modal */}
+      {imageUrl && (
+        <ExerciseImageModal
+          open={showImageModal}
+          onOpenChange={setShowImageModal}
+          imageUrl={imageUrl}
+          exerciseName={exerciseName}
+        />
+      )}
     </div>
   );
 }

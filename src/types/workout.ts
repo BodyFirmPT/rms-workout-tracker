@@ -57,6 +57,7 @@ export interface WorkoutExercise {
   type: 'exercise' | 'weight' | 'band' | 'stretch';
   band_color?: string | null;
   band_type?: string | null;
+  image_url?: string | null;
   raw_import_data?: string | null;
   created_at?: string;
   // Keep old fields for migration compatibility
@@ -78,4 +79,5 @@ export interface CreateWorkoutExerciseInput {
   type?: 'exercise' | 'weight' | 'band' | 'stretch';
   band_color?: string;
   band_type?: string;
+  image_url?: string | null;
 }
