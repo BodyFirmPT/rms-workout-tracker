@@ -204,6 +204,7 @@ export type Database = {
           id: string
           muscle_group_id: string | null
           name: string
+          reason: string | null
         }
         Insert: {
           client_id: string
@@ -211,6 +212,7 @@ export type Database = {
           id?: string
           muscle_group_id?: string | null
           name: string
+          reason?: string | null
         }
         Update: {
           client_id?: string
@@ -218,6 +220,7 @@ export type Database = {
           id?: string
           muscle_group_id?: string | null
           name?: string
+          reason?: string | null
         }
         Relationships: [
           {

@@ -1,0 +1,1 @@
+ALTER TABLE public.restricted_exercise ADD COLUMN reason text;

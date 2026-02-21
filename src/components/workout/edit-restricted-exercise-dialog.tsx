@@ -20,30 +20,41 @@ interface MuscleGroup {
   name: string;
 }
 
-interface AddRestrictedExerciseDialogProps {
+interface RestrictedExercise {
+  id: string;
+  name: string;
+  reason?: string | null;
+  muscle_group: { name: string } | null;
+  muscle_group_id?: string | null;
+}
+
+interface EditRestrictedExerciseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  clientId: string;
+  exercise: RestrictedExercise;
   onSuccess: () => void;
 }
 
-export function AddRestrictedExerciseDialog({
+export function EditRestrictedExerciseDialog({
   open,
   onOpenChange,
-  clientId,
+  exercise,
   onSuccess,
-}: AddRestrictedExerciseDialogProps) {
-  const [exerciseName, setExerciseName] = useState("");
-  const [muscleGroupId, setMuscleGroupId] = useState<string>("");
-  const [reason, setReason] = useState("");
+}: EditRestrictedExerciseDialogProps) {
+  const [exerciseName, setExerciseName] = useState(exercise.name);
+  const [muscleGroupId, setMuscleGroupId] = useState<string>(exercise.muscle_group_id || "");
+  const [reason, setReason] = useState(exercise.reason || "");
   const [muscleGroups, setMuscleGroups] = useState<MuscleGroup[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (open) {
+      setExerciseName(exercise.name);
+      setMuscleGroupId(exercise.muscle_group_id || "");
+      setReason(exercise.reason || "");
       loadMuscleGroups();
     }
-  }, [open]);
+  }, [open, exercise]);
 
   const loadMuscleGroups = async () => {
     try {
@@ -62,7 +73,7 @@ export function AddRestrictedExerciseDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!exerciseName.trim()) {
       toast.error("Please enter an exercise name");
       return;
@@ -77,24 +88,21 @@ export function AddRestrictedExerciseDialog({
     try {
       const { error } = await supabase
         .from('restricted_exercise')
-        .insert({
-          client_id: clientId,
+        .update({
           name: exerciseName.trim(),
           muscle_group_id: muscleGroupId,
           reason: reason.trim() || null,
-        });
+        })
+        .eq('id', exercise.id);
 
       if (error) throw error;
 
-      toast.success("Restricted exercise added");
-      setExerciseName("");
-      setMuscleGroupId("");
-      setReason("");
+      toast.success("Restricted exercise updated");
       onOpenChange(false);
       onSuccess();
     } catch (error) {
-      console.error('Error adding restricted exercise:', error);
-      toast.error("Failed to add restricted exercise");
+      console.error('Error updating restricted exercise:', error);
+      toast.error("Failed to update restricted exercise");
     } finally {
       setIsSubmitting(false);
     }
@@ -105,28 +113,28 @@ export function AddRestrictedExerciseDialog({
       <DialogContent>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Add Restricted Exercise</DialogTitle>
+            <DialogTitle>Edit Restricted Exercise</DialogTitle>
             <DialogDescription>
-              Add an exercise that this client should avoid
+              Update the exercise restriction details
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="exercise-name">Exercise Name</Label>
+              <Label htmlFor="edit-exercise-name">Exercise Name</Label>
               <Input
-                id="exercise-name"
+                id="edit-exercise-name"
                 value={exerciseName}
                 onChange={(e) => setExerciseName(e.target.value)}
                 placeholder="e.g., Bench Press, Squats..."
                 autoFocus
               />
             </div>
-            
+
             <div className="grid gap-2">
-              <Label htmlFor="muscle-group">Muscle Group</Label>
+              <Label htmlFor="edit-muscle-group">Muscle Group</Label>
               <Select value={muscleGroupId} onValueChange={setMuscleGroupId}>
-                <SelectTrigger id="muscle-group">
+                <SelectTrigger id="edit-muscle-group">
                   <SelectValue placeholder="Select a muscle group" />
                 </SelectTrigger>
                 <SelectContent>
@@ -140,9 +148,9 @@ export function AddRestrictedExerciseDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="reason">Reason (optional)</Label>
+              <Label htmlFor="edit-reason">Reason (optional)</Label>
               <Textarea
-                id="reason"
+                id="edit-reason"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="e.g., Shoulder injury, causes pain..."
@@ -161,7 +169,7 @@ export function AddRestrictedExerciseDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Adding..." : "Add Exercise"}
+              {isSubmitting ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </form>
