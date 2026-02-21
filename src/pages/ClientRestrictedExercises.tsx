@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { ArrowLeft, Plus, Trash2, User, Ban } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Ban, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,13 +8,16 @@ import { useWorkoutStore } from "@/stores/workoutStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AddRestrictedExerciseDialog } from "@/components/workout/add-restricted-exercise-dialog";
+import { EditRestrictedExerciseDialog } from "@/components/workout/edit-restricted-exercise-dialog";
 import { DeleteRestrictedExerciseDialog } from "@/components/workout/delete-restricted-exercise-dialog";
 import { format } from "date-fns";
 
 interface RestrictedExercise {
   id: string;
   name: string;
+  reason: string | null;
   created_at: string;
+  muscle_group_id: string | null;
   muscle_group: {
     name: string;
   } | null;
@@ -24,6 +27,7 @@ export default function ClientRestrictedExercises() {
   const { clientId } = useParams<{ clientId: string }>();
   const navigate = useNavigate();
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingExercise, setEditingExercise] = useState<RestrictedExercise | null>(null);
   const [deletingExercise, setDeletingExercise] = useState<RestrictedExercise | null>(null);
   const [restrictedExercises, setRestrictedExercises] = useState<RestrictedExercise[]>([]);
   const [loading, setLoading] = useState(true);
@@ -111,7 +115,6 @@ export default function ClientRestrictedExercises() {
         </div>
 
         <div className="space-y-6">
-          {/* Restricted Exercises List */}
           <Card>
             <CardHeader>
               <div className="flex flex-wrap items-center justify-between gap-4">
@@ -151,6 +154,7 @@ export default function ClientRestrictedExercises() {
                     <TableRow>
                       <TableHead>Exercise Name</TableHead>
                       <TableHead>Muscle Group</TableHead>
+                      <TableHead>Reason</TableHead>
                       <TableHead>Added On</TableHead>
                       <TableHead className="w-[100px]"></TableHead>
                     </TableRow>
@@ -162,18 +166,30 @@ export default function ClientRestrictedExercises() {
                         <TableCell className="text-muted-foreground">
                           {exercise.muscle_group?.name || 'N/A'}
                         </TableCell>
+                        <TableCell className="text-muted-foreground max-w-[200px] truncate">
+                          {exercise.reason || '—'}
+                        </TableCell>
                         <TableCell className="text-muted-foreground">
                           {format(new Date(exercise.created_at), 'MMM d, yyyy')}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setDeletingExercise(exercise)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setEditingExercise(exercise)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setDeletingExercise(exercise)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -191,6 +207,15 @@ export default function ClientRestrictedExercises() {
         clientId={clientId!}
         onSuccess={loadRestrictedExercises}
       />
+
+      {editingExercise && (
+        <EditRestrictedExerciseDialog
+          open={!!editingExercise}
+          onOpenChange={(open) => !open && setEditingExercise(null)}
+          exercise={editingExercise}
+          onSuccess={loadRestrictedExercises}
+        />
+      )}
 
       {deletingExercise && (
         <DeleteRestrictedExerciseDialog
