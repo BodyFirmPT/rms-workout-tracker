@@ -10,6 +10,7 @@ import { Ban } from "lucide-react";
 interface Restriction {
   id: string;
   name: string;
+  reason?: string | null;
 }
 
 interface ViewRestrictionsDialogProps {
@@ -48,10 +49,15 @@ export function ViewRestrictionsDialog({
               {restrictions.map((restriction) => (
                 <li 
                   key={restriction.id} 
-                  className="flex items-center gap-2 p-2 border rounded-lg bg-destructive/5"
+                  className="flex items-start gap-2 p-2 border rounded-lg bg-destructive/5"
                 >
-                  <Ban className="h-4 w-4 text-destructive flex-shrink-0" />
-                  <span className="text-sm font-medium">{restriction.name}</span>
+                  <Ban className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+                  <div className="min-w-0">
+                    <span className="text-sm font-medium">{restriction.name}</span>
+                    {restriction.reason && (
+                      <p className="text-xs text-muted-foreground mt-0.5">{restriction.reason}</p>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>

@@ -177,7 +177,7 @@ export function ExerciseForm({
     try {
       const { data, error } = await supabase
         .from('restricted_exercise')
-        .select('id, name')
+        .select('id, name, reason')
         .eq('client_id', clientId)
         .eq('muscle_group_id', muscleGroupId);
 
