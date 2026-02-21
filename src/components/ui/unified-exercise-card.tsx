@@ -124,7 +124,10 @@ export function UnifiedExerciseCard({
             <button
               type="button"
               onClick={() => setShowImageModal(true)}
-              className="text-primary hover:text-primary/80 transition-colors"
+              className={cn(
+                isSuggested ? "text-muted-foreground hover:text-muted-foreground/80" : "text-primary hover:text-primary/80",
+                "transition-colors"
+              )}
               title="View image"
             >
               <Image className="h-3.5 w-3.5" />
