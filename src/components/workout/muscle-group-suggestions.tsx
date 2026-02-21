@@ -109,6 +109,7 @@ export function MuscleGroupSuggestions({
           band_color: exercise.band_color,
           band_type: exercise.band_type,
         }),
+        image_url: exercise.image_url || null,
       });
       // Call the callback to close the dialog if provided
       onExerciseAdded?.();
