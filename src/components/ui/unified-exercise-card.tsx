@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Plus, Edit, Trash2, Zap, Dumbbell, MoreVertical, Wind, Clock, Cable, ImageIcon } from "lucide-react";
+import { Check, Plus, Edit, Trash2, Zap, Dumbbell, MoreVertical, Wind, Clock, Cable, Image } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "./button";
 import { Badge } from "./badge";
@@ -113,7 +113,7 @@ export function UnifiedExerciseCard({
               className="text-primary hover:text-primary/80 transition-colors"
               title="View image"
             >
-              <ImageIcon className="h-3.5 w-3.5 fill-current" />
+              <Image className="h-3.5 w-3.5" />
             </button>
           )}
           <span className={cn(
