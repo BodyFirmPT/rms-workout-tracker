@@ -13,6 +13,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const BAND_COLOR_MAP: Record<string, string> = {
+  Black: '#374151',
+  Blue: '#3b82f6',
+  Purple: '#8b5cf6',
+  Red: '#ef4444',
+  Green: '#22c55e',
+  Yellow: '#eab308',
+  Pink: '#ec4899',
+};
+
+function getBandDisplayColor(color: string): string {
+  return BAND_COLOR_MAP[color] ?? 'currentColor';
+}
+
 interface UnifiedExerciseCardProps {
   exerciseName: string;
   repsCount: number;
@@ -122,7 +136,7 @@ export function UnifiedExerciseCard({
           )}>
             {setCount} × {repsCount} {repsUnit}
             {isBand && bandColor && bandType 
-              ? ` • ${bandColor} ${bandType} band` 
+              ? <> • <span style={{ color: getBandDisplayColor(bandColor) }} className="font-semibold">{bandColor}</span> {bandType} band</>
               : weightCount > 0 && leftWeight !== null && leftWeight !== undefined 
                 ? ` @ R:${weightCount} ${weightUnit} L:${leftWeight} ${weightUnit}` 
                 : weightCount > 0 
