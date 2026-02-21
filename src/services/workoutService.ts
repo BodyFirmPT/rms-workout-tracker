@@ -320,6 +320,9 @@ export class WorkoutService {
         weight_count: exercise.weight_count,
         weight_unit: exercise.weight_unit,
         left_weight: exercise.left_weight,
+        band_color: exercise.band_color,
+        band_type: exercise.band_type,
+        image_url: exercise.image_url,
         // Keep old fields for compatibility
         reps: exercise.reps_count.toString(),
         unit: exercise.reps_unit,
