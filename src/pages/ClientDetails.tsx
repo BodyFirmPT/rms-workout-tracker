@@ -318,8 +318,8 @@ export default function ClientDetails() {
               const workoutIndex = activeWorkouts.findIndex(w => w.id === workout.id);
               const workoutNumber = workoutIndex >= 0 ? totalWorkouts - workoutIndex : 0;
               const children = childWorkoutsMap[workout.id] || [];
-              return <div key={workout.id}>
-                    <div className="group flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+              return <div key={workout.id} className="relative">
+                    <div className={`group relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors ${children.length > 0 ? 'bg-card' : ''}`}>
                       <div className="flex items-center gap-4 flex-1 cursor-pointer" onClick={() => handleViewWorkout(workout.id)}>
                         <ProgressRing progress={progress} size={48} strokeWidth={4} />
                         <div>
