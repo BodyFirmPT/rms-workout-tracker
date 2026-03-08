@@ -6,7 +6,8 @@ import {
   Workout, 
   WorkoutExercise, 
   CreateWorkoutExerciseInput,
-  WorkoutUpdateInput
+  WorkoutUpdateInput,
+  ExerciseMedia
 } from '@/types/workout';
 import { WorkoutService } from '@/services/workoutService';
 import { toast } from '@/hooks/use-toast';
@@ -18,6 +19,7 @@ interface WorkoutStore {
   muscleGroups: MuscleGroup[];
   workouts: Workout[];
   workoutExercises: { [workoutId: string]: WorkoutExercise[] };
+  exerciseMedia: { [exerciseId: string]: ExerciseMedia[] };
   
   // Loading states
   loading: boolean;
@@ -44,6 +46,7 @@ interface WorkoutStore {
   getUniqueExercisesForClient: (clientId: string, muscleGroupId: string) => Promise<WorkoutExercise[]>;
   getRecentExercisesForMuscleGroup: (clientId: string, muscleGroupId: string, limit?: number, offset?: number, allClients?: boolean) => Promise<Array<WorkoutExercise & { workout_date?: string; client_name?: string; exercise_client_id?: string }>>;
   loadWorkoutExercises: (workoutId: string) => Promise<void>;
+  getExerciseMedia: (exerciseId: string) => ExerciseMedia[];
   deleteExercise: (workoutId: string, exerciseId: string) => Promise<void>;
   deleteWorkout: (id: string) => Promise<void>;
   updateWorkout: (id: string, updates: Partial<{ note: string; date: string }>) => Promise<void>;
@@ -59,6 +62,7 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
   muscleGroups: [],
   workouts: [],
   workoutExercises: {},
+  exerciseMedia: {},
   loading: false,
 
   loadData: async () => {
@@ -191,15 +195,28 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
   loadWorkoutExercises: async (workoutId: string) => {
     try {
       const exercises = await WorkoutService.getWorkoutExercises(workoutId);
+      
+      // Load media for all exercises
+      const exerciseIds = exercises.map(e => e.id);
+      const mediaMap = await WorkoutService.getMediaForExercises(exerciseIds);
+      
       set((state) => ({
         workoutExercises: {
           ...state.workoutExercises,
           [workoutId]: exercises
+        },
+        exerciseMedia: {
+          ...state.exerciseMedia,
+          ...mediaMap,
         }
       }));
     } catch (error) {
       console.error('Failed to load workout exercises:', error);
     }
+  },
+
+  getExerciseMedia: (exerciseId: string) => {
+    return get().exerciseMedia[exerciseId] || [];
   },
 
   addExerciseToWorkout: async (workoutId: string, exercise: CreateWorkoutExerciseInput) => {
