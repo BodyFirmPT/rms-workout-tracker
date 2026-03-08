@@ -13,7 +13,7 @@ import { EditWorkoutDialog } from "@/components/workout/edit-workout-dialog";
 import { DuplicateWorkoutDialog } from "@/components/workout/duplicate-workout-dialog";
 import { EditClientDialog } from "@/components/workout/edit-client-dialog";
 import { format } from "date-fns";
-import { Workout } from "@/types/workout";
+import { Workout, WorkoutCountMode } from "@/types/workout";
 import { supabase } from "@/integrations/supabase/client";
 interface Location {
   id: string;
