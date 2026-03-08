@@ -123,12 +123,28 @@ export default function ClientDetails() {
   }
   const allClientWorkouts = workouts.filter(w => w.client_id === clientId).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+  // Build parent→children map and identify child workout IDs
+  const { childWorkoutsMap, childWorkoutIds } = useMemo(() => {
+    const map: { [parentId: string]: Workout[] } = {};
+    const ids = new Set<string>();
+    allClientWorkouts.forEach(w => {
+      if (w.parent_workout_id) {
+        ids.add(w.id);
+        if (!map[w.parent_workout_id]) map[w.parent_workout_id] = [];
+        map[w.parent_workout_id].push(w);
+      }
+    });
+    // Sort children by date
+    Object.values(map).forEach(children => children.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+    return { childWorkoutsMap: map, childWorkoutIds: ids };
+  }, [allClientWorkouts]);
+
   // Separate cancelled and active workouts
   const cancelledWorkouts = allClientWorkouts.filter(w => w.canceled_at);
   const activeWorkouts = allClientWorkouts.filter(w => !w.canceled_at);
 
-  // Filter workouts based on search query
-  const filteredWorkouts = searchQuery.trim() ? allClientWorkouts.filter(w => w.note?.toLowerCase().includes(searchQuery.toLowerCase()) || format(new Date(w.date + 'T00:00:00'), 'MMM d, yyyy').toLowerCase().includes(searchQuery.toLowerCase())) : allClientWorkouts;
+  // Filter workouts based on search query, then exclude child workouts from top-level list
+  const filteredWorkouts = (searchQuery.trim() ? allClientWorkouts.filter(w => w.note?.toLowerCase().includes(searchQuery.toLowerCase()) || format(new Date(w.date + 'T00:00:00'), 'MMM d, yyyy').toLowerCase().includes(searchQuery.toLowerCase())) : allClientWorkouts).filter(w => !childWorkoutIds.has(w.id));
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredWorkouts.length / workoutsPerPage);
