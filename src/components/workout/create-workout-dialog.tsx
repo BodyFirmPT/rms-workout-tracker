@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { CreateClientDialog } from "./create-client-dialog";
 import { WorkoutFormFields } from "./workout-form-fields";
@@ -28,6 +29,7 @@ export function CreateWorkoutDialog({ open, onOpenChange, defaultClientId, onWor
   const [clientId, setClientId] = useState(defaultClientId || "");
   const [locationId, setLocationId] = useState<string>("none");
   const [locations, setLocations] = useState<Location[]>([]);
+  const [selfLed, setSelfLed] = useState(false);
   const [showCreateClient, setShowCreateClient] = useState(false);
   
   const { clients, createWorkout } = useWorkoutStore();
@@ -81,7 +83,8 @@ export function CreateWorkoutDialog({ open, onOpenChange, defaultClientId, onWor
       clientId, 
       note.trim(), 
       format(date, 'yyyy-MM-dd'),
-      locationId === "none" ? null : locationId
+      locationId === "none" ? null : locationId,
+      selfLed
     );
     
     // Reset form
@@ -89,6 +92,7 @@ export function CreateWorkoutDialog({ open, onOpenChange, defaultClientId, onWor
     setDate(new Date());
     setClientId(defaultClientId || "");
     setLocationId("none");
+    setSelfLed(false);
     onOpenChange(false);
     
     // Call the callback if provided
@@ -151,6 +155,17 @@ export function CreateWorkoutDialog({ open, onOpenChange, defaultClientId, onWor
               onLocationChange={setLocationId}
               locations={locations}
             />
+            
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="self-led"
+                checked={selfLed}
+                onCheckedChange={(checked) => setSelfLed(checked === true)}
+              />
+              <Label htmlFor="self-led" className="text-sm font-normal cursor-pointer">
+                Self-led workout
+              </Label>
+            </div>
             
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
