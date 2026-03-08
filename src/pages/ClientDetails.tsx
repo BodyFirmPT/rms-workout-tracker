@@ -369,9 +369,8 @@ export default function ClientDetails() {
                            </Button>}
                       </div>
                     </div>
-                    {/* Linked child workouts */}
                     {children.length > 0 && (
-                      <div className="ml-6 sm:ml-10 mt-1 space-y-1">
+                      <div className="mx-4 -mt-3 relative z-0 border border-t-0 rounded-b-lg bg-muted/30 pt-4 pb-2 px-3 space-y-2">
                         {children.map(child => {
                           const childProgress = workoutProgresses[child.id] || 0;
                           const childWorkoutIndex = activeWorkouts.findIndex(w => w.id === child.id);
@@ -379,7 +378,7 @@ export default function ClientDetails() {
                           return (
                             <div
                               key={child.id}
-                              className="group flex items-center gap-3 p-3 border border-dashed rounded-md hover:bg-muted/50 transition-colors cursor-pointer"
+                              className="group/child flex items-center gap-3 p-3 bg-card rounded-md border hover:bg-muted/50 transition-colors cursor-pointer"
                               onClick={() => handleViewWorkout(child.id)}
                             >
                               <Link2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
