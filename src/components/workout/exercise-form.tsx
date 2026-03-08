@@ -7,10 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useWorkoutStore } from "@/stores/workoutStore";
-import { CreateWorkoutExerciseInput } from "@/types/workout";
+import { CreateWorkoutExerciseInput, CreateExerciseMediaInput } from "@/types/workout";
 import { supabase } from "@/integrations/supabase/client";
 import { ViewRestrictionsDialog } from "@/components/workout/view-restrictions-dialog";
-import { ExerciseImageUpload } from "@/components/workout/exercise-image-upload";
+import { ExerciseMediaUpload } from "@/components/workout/exercise-media-upload";
 
 interface Restriction {
   id: string;
@@ -35,6 +35,7 @@ interface ExerciseFormProps {
     bandColor?: string;
     bandType?: string;
     imageUrl?: string | null;
+    media?: CreateExerciseMediaInput[];
   };
   submitLabel?: string;
   preselectedMuscleGroupId?: string | null;
@@ -68,7 +69,7 @@ export function ExerciseForm({
   const [note, setNote] = useState(initialValues?.note || "");
   const [bandColor, setBandColor] = useState(initialValues?.bandColor || "");
   const [bandType, setBandType] = useState(initialValues?.bandType || "");
-  const [imageUrl, setImageUrl] = useState<string | null>(initialValues?.imageUrl ?? null);
+  const [media, setMedia] = useState<CreateExerciseMediaInput[]>(initialValues?.media || []);
   const [showNewMuscleGroup, setShowNewMuscleGroup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [restrictions, setRestrictions] = useState<Restriction[]>([]);
@@ -104,7 +105,7 @@ export function ExerciseForm({
       setNote(initialValues.note || "");
       setBandColor(initialValues.bandColor || "");
       setBandType(initialValues.bandType || "");
-      setImageUrl(initialValues.imageUrl ?? null);
+      setMedia(initialValues.media || []);
       setShowNewMuscleGroup(false);
       setNewMuscleGroup("");
     }
@@ -151,7 +152,8 @@ export function ExerciseForm({
         left_weight: showLeftRight ? leftWeight : null,
         set_count: sets,
         note: note.trim(),
-        image_url: imageUrl,
+        image_url: null, // Deprecated, using media table now
+        media: media.length > 0 ? media : undefined,
         ...(exerciseType === 'band' && {
           band_color: bandColor,
           band_type: bandType,
@@ -452,10 +454,10 @@ export function ExerciseForm({
       </div>
 
       <div className="space-y-2">
-        <Label>Image (optional)</Label>
-        <ExerciseImageUpload
-          imageUrl={imageUrl}
-          onImageChange={setImageUrl}
+        <Label>Media (optional — up to 5)</Label>
+        <ExerciseMediaUpload
+          media={media}
+          onMediaChange={setMedia}
           disabled={isSubmitting}
         />
       </div>

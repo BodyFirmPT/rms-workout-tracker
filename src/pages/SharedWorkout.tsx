@@ -22,6 +22,7 @@ const SharedWorkout = () => {
     exercises,
     muscleGroups,
     location,
+    exerciseMedia,
     loading,
     error,
     startWorkout,
@@ -163,6 +164,7 @@ const SharedWorkout = () => {
         bandColor={exercise.band_color}
         bandType={exercise.band_type}
         imageUrl={exercise.image_url}
+        media={exerciseMedia[exercise.id]}
         variant="added"
         onCompleteSet={!isCompleted ? (decrement) => handleCompleteSet(exercise.id, decrement) : undefined}
         disabled={isCompleted}

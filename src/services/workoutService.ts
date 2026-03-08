@@ -6,7 +6,9 @@ import {
   Workout, 
   WorkoutExercise, 
   CreateWorkoutExerciseInput,
-  WorkoutUpdateInput
+  WorkoutUpdateInput,
+  ExerciseMedia,
+  CreateExerciseMediaInput
 } from '@/types/workout';
 
 // Helper to get emulated user's trainer_id from localStorage
@@ -313,6 +315,10 @@ export class WorkoutService {
 
     // Duplicate all exercises
     if (originalExercises && originalExercises.length > 0) {
+      // Get media for all original exercises
+      const originalExerciseIds = originalExercises.map(e => e.id);
+      const originalMediaMap = await this.getMediaForExercises(originalExerciseIds);
+
       const exercisesToInsert = originalExercises.map(exercise => ({
         workout_id: newWorkout.id,
         muscle_group_id: exercise.muscle_group_id,
@@ -336,17 +342,94 @@ export class WorkoutService {
         is_completed: false
       }));
 
-      const { error: insertExercisesError } = await supabase
+      const { data: newExercises, error: insertExercisesError } = await supabase
         .from('workout_exercise')
-        .insert(exercisesToInsert);
+        .insert(exercisesToInsert)
+        .select();
 
       if (insertExercisesError) {
         console.error('Error duplicating exercises:', insertExercisesError);
         throw insertExercisesError;
       }
+
+      // Copy media for each exercise
+      if (newExercises) {
+        const mediaToInsert: any[] = [];
+        originalExercises.forEach((origEx, index) => {
+          const mediaItems = originalMediaMap[origEx.id] || [];
+          mediaItems.forEach(m => {
+            mediaToInsert.push({
+              exercise_id: newExercises[index].id,
+              media_type: m.media_type,
+              url: m.url,
+              sort_order: m.sort_order,
+            });
+          });
+        });
+
+        if (mediaToInsert.length > 0) {
+          await supabase.from('exercise_media').insert(mediaToInsert);
+        }
+      }
     }
 
     return newWorkout as Workout;
+  }
+
+  // Exercise Media
+  static async getExerciseMedia(exerciseId: string): Promise<ExerciseMedia[]> {
+    const { data, error } = await supabase
+      .from('exercise_media')
+      .select('*')
+      .eq('exercise_id', exerciseId)
+      .order('sort_order');
+    
+    if (error) throw error;
+    return (data || []) as ExerciseMedia[];
+  }
+
+  static async getMediaForExercises(exerciseIds: string[]): Promise<Record<string, ExerciseMedia[]>> {
+    if (exerciseIds.length === 0) return {};
+    
+    const { data, error } = await supabase
+      .from('exercise_media')
+      .select('*')
+      .in('exercise_id', exerciseIds)
+      .order('sort_order');
+    
+    if (error) throw error;
+    
+    const mediaMap: Record<string, ExerciseMedia[]> = {};
+    (data || []).forEach((m: any) => {
+      if (!mediaMap[m.exercise_id]) mediaMap[m.exercise_id] = [];
+      mediaMap[m.exercise_id].push(m as ExerciseMedia);
+    });
+    return mediaMap;
+  }
+
+  static async saveExerciseMedia(exerciseId: string, media: CreateExerciseMediaInput[]): Promise<ExerciseMedia[]> {
+    // Delete existing media
+    await supabase
+      .from('exercise_media')
+      .delete()
+      .eq('exercise_id', exerciseId);
+
+    if (media.length === 0) return [];
+
+    const rows = media.map((m, i) => ({
+      exercise_id: exerciseId,
+      media_type: m.media_type,
+      url: m.url,
+      sort_order: i,
+    }));
+
+    const { data, error } = await supabase
+      .from('exercise_media')
+      .insert(rows)
+      .select();
+
+    if (error) throw error;
+    return (data || []) as ExerciseMedia[];
   }
 
   // Workout Exercises
@@ -362,27 +445,29 @@ export class WorkoutService {
   }
 
   static async addExerciseToWorkout(workoutId: string, exercise: CreateWorkoutExerciseInput): Promise<WorkoutExercise> {
+    const { media, ...exerciseData } = exercise;
+    
     const { data, error } = await supabase
       .from('workout_exercise')
       .insert({
         workout_id: workoutId,
-        muscle_group_id: exercise.muscle_group_id,
-        exercise_name: exercise.exercise_name,
-        type: exercise.type || 'exercise',
-        reps_count: exercise.reps_count,
-        reps_unit: exercise.reps_unit,
-        weight_count: exercise.weight_count,
-        weight_unit: exercise.weight_unit,
-        left_weight: exercise.left_weight,
-        band_color: exercise.band_color,
-        band_type: exercise.band_type,
-        image_url: exercise.image_url,
+        muscle_group_id: exerciseData.muscle_group_id,
+        exercise_name: exerciseData.exercise_name,
+        type: exerciseData.type || 'exercise',
+        reps_count: exerciseData.reps_count,
+        reps_unit: exerciseData.reps_unit,
+        weight_count: exerciseData.weight_count,
+        weight_unit: exerciseData.weight_unit,
+        left_weight: exerciseData.left_weight,
+        band_color: exerciseData.band_color,
+        band_type: exerciseData.band_type,
+        image_url: exerciseData.image_url,
         // Keep old fields for compatibility
-        reps: exercise.reps_count.toString(),
-        unit: exercise.reps_unit,
-        count: exercise.weight_count,
-        note: exercise.note || '',
-        set_count: exercise.set_count,
+        reps: exerciseData.reps_count.toString(),
+        unit: exerciseData.reps_unit,
+        count: exerciseData.weight_count,
+        note: exerciseData.note || '',
+        set_count: exerciseData.set_count,
         completed_sets: 0,
         is_completed: false
       })
@@ -390,6 +475,12 @@ export class WorkoutService {
       .single();
     
     if (error) throw error;
+
+    // Save media if provided
+    if (media && media.length > 0) {
+      await this.saveExerciseMedia(data.id, media);
+    }
+
     return data as WorkoutExercise;
   }
 
@@ -559,8 +650,10 @@ export class WorkoutService {
   }
 
   static async updateExercise(exerciseId: string, updates: Partial<CreateWorkoutExerciseInput>): Promise<WorkoutExercise> {
+    const { media, ...rest } = updates as any;
+    
     // Ensure backwards compatibility by updating old fields alongside new ones
-    const updateData: any = { ...updates };
+    const updateData: any = { ...rest };
     
     if (updates.reps_count !== undefined && updates.reps_unit !== undefined) {
       updateData.reps = updates.reps_count.toString();
@@ -579,6 +672,12 @@ export class WorkoutService {
       .single();
     
     if (error) throw error;
+
+    // Save media if provided
+    if (media !== undefined) {
+      await this.saveExerciseMedia(exerciseId, media || []);
+    }
+
     return data as WorkoutExercise;
   }
 

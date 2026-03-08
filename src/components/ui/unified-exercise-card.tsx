@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Check, Plus, Edit, Trash2, Zap, Dumbbell, MoreVertical, Wind, Clock, Cable, Image } from "lucide-react";
+import { Check, Plus, Edit, Trash2, Zap, Dumbbell, MoreVertical, Wind, Clock, Cable, Paperclip } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "./button";
 import { Badge } from "./badge";
 import { cn } from "@/lib/utils";
 import { ExerciseTimer } from "@/components/workout/exercise-timer";
-import { ExerciseImageModal } from "@/components/workout/exercise-image-modal";
+import { ExerciseMediaModal } from "@/components/workout/exercise-media-modal";
+import { ExerciseMedia } from "@/types/workout";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,6 +45,7 @@ interface UnifiedExerciseCardProps {
   bandColor?: string | null;
   bandType?: string | null;
   imageUrl?: string | null;
+  media?: ExerciseMedia[];
   workoutDate?: string;
   clientName?: string;
   onAdd?: () => void;
@@ -71,6 +73,7 @@ export function UnifiedExerciseCard({
   bandColor,
   bandType,
   imageUrl,
+  media,
   workoutDate,
   clientName,
   onAdd,
@@ -80,7 +83,8 @@ export function UnifiedExerciseCard({
   disabled = false,
   workoutStarted = false
 }: UnifiedExerciseCardProps) {
-  const [showImageModal, setShowImageModal] = useState(false);
+  const [showMediaModal, setShowMediaModal] = useState(false);
+  const hasMedia = (media && media.length > 0) || !!imageUrl;
   const isSuggested = variant === 'suggested';
   const isStretch = type === 'stretch';
   const isBand = type === 'band';
@@ -120,17 +124,18 @@ export function UnifiedExerciseCard({
           )}>
             {exerciseName}
           </span>
-          {imageUrl && (
+          {hasMedia && (
             <button
               type="button"
-              onClick={() => setShowImageModal(true)}
+              onClick={() => setShowMediaModal(true)}
               className={cn(
                 isSuggested ? "text-muted-foreground hover:text-muted-foreground/80" : "text-primary hover:text-primary/80",
-                "transition-colors"
+                "transition-colors inline-flex items-center gap-0.5"
               )}
-              title="View image"
+              title="View media"
             >
-              <Image className="h-3.5 w-3.5" />
+              <Paperclip className="h-3.5 w-3.5" />
+              {media && media.length > 1 && <span className="text-[10px]">{media.length}</span>}
             </button>
           )}
           <span className={cn(
@@ -330,12 +335,12 @@ export function UnifiedExerciseCard({
         )}
       </div>
 
-      {/* Image Modal */}
-      {imageUrl && (
-        <ExerciseImageModal
-          open={showImageModal}
-          onOpenChange={setShowImageModal}
-          imageUrl={imageUrl}
+      {/* Media Modal */}
+      {hasMedia && (
+        <ExerciseMediaModal
+          open={showMediaModal}
+          onOpenChange={setShowMediaModal}
+          media={media && media.length > 0 ? media : (imageUrl ? [{ id: 'legacy', exercise_id: '', media_type: 'image' as const, url: imageUrl, sort_order: 0 }] : [])}
           exerciseName={exerciseName}
         />
       )}

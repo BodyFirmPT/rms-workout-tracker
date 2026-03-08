@@ -114,6 +114,41 @@ export type Database = {
           },
         ]
       }
+      exercise_media: {
+        Row: {
+          created_at: string
+          exercise_id: string
+          id: string
+          media_type: string
+          sort_order: number
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_id: string
+          id?: string
+          media_type?: string
+          sort_order?: number
+          url: string
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string
+          id?: string
+          media_type?: string
+          sort_order?: number
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_media_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "workout_exercise"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       injury: {
         Row: {
           client_id: string
