@@ -37,7 +37,7 @@ export function DuplicateWorkoutDialog({ open, onOpenChange, workout }: Duplicat
 
     setIsLoading(true);
     try {
-      const newWorkout = await duplicateWorkout(workout.id, selectedClientId, selectedDate);
+      const newWorkout = await duplicateWorkout(workout.id, selectedClientId, selectedDate, selfLed);
       toast.success("Workout duplicated successfully");
       onOpenChange(false);
       setSelectedClientId("");

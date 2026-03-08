@@ -257,7 +257,7 @@ export class WorkoutService {
     if (error) throw error;
   }
 
-  static async duplicateWorkout(workoutId: string, clientId: string, date: Date) {
+  static async duplicateWorkout(workoutId: string, clientId: string, date: Date, selfLed?: boolean) {
     // First get the original workout with its exercises
     const { data: originalWorkout, error: workoutError } = await supabase
       .from('workout')
@@ -299,7 +299,7 @@ export class WorkoutService {
         client_id: clientId,
         note: newNote,
         date: date.toISOString().split('T')[0],
-        self_led: originalWorkout.self_led || false,
+        self_led: selfLed !== undefined ? selfLed : (originalWorkout.self_led || false),
         status: 'draft'
       })
       .select()
