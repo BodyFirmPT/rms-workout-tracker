@@ -7,6 +7,7 @@ interface ProgressRingProps {
   strokeWidth?: number;
   className?: string;
   showText?: boolean;
+  textClassName?: string;
 }
 
 export function ProgressRing({ 
@@ -14,7 +15,8 @@ export function ProgressRing({
   size = 80, 
   strokeWidth = 8, 
   className,
-  showText = true 
+  showText = true,
+  textClassName
 }: ProgressRingProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
