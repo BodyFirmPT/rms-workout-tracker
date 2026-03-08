@@ -344,10 +344,10 @@ export default function ClientDetails() {
                           </h4>
                           <p className="text-xs text-muted-foreground italic mt-1">
                             {!workout.canceled_at && workoutNumber > 0 && `Workout #${workoutNumber}`}
-                            {!workout.canceled_at && workoutNumber > 0 && workout.note && ` · `}
-                            {workout.note}
-                            {workout.self_led && ((!workout.canceled_at && workoutNumber > 0) || workout.note ? ' · ' : '')}
+                            {!workout.canceled_at && workoutNumber > 0 && (workout.self_led || workout.note) && ` · `}
                             {workout.self_led && 'Self-led'}
+                            {workout.self_led && workout.note && ' · '}
+                            {workout.note}
                           </p>
                         </div>
                       </div>
@@ -398,7 +398,7 @@ export default function ClientDetails() {
                               className="group/child flex items-center gap-2 py-1.5 px-2 rounded hover:bg-muted/50 transition-colors cursor-pointer"
                               onClick={() => handleViewWorkout(child.id)}
                             >
-                              <Link2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                              <CornerDownRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                               <ProgressRing progress={childProgress} size={32} strokeWidth={3} />
                               <div className="flex-1 min-w-0">
                                 <h4 className="font-semibold text-sm">
@@ -407,8 +407,10 @@ export default function ClientDetails() {
                                 </h4>
                                 <p className="text-xs text-muted-foreground italic">
                                   {!child.canceled_at && childWorkoutNumber > 0 && `Workout #${childWorkoutNumber}`}
-                                  {child.self_led && ((!child.canceled_at && childWorkoutNumber > 0) ? ' · ' : '')}
+                                  {!child.canceled_at && childWorkoutNumber > 0 && (child.self_led || child.note) && ' · '}
                                   {child.self_led && 'Self-led'}
+                                  {child.self_led && child.note && ' · '}
+                                  {child.note}
                                 </p>
                               </div>
                               <div className="flex items-center gap-1 shrink-0">
