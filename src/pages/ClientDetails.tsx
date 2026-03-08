@@ -446,7 +446,7 @@ export default function ClientDetails() {
                                   </div>
                                 ) : (
                                    <div className="px-2 py-1 bg-muted text-muted-foreground text-xs font-medium rounded-md">
-                                     {childWorkout.parent_workout_id ? 'Ready' : 'Draft'}
+                                     {child.parent_workout_id ? 'Ready' : 'Draft'}
                                    </div>
                                 )}
                               </div>
