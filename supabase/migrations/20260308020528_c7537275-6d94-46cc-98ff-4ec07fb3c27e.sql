@@ -1,0 +1,1 @@
+ALTER TABLE public.trainer ADD COLUMN workout_count_mode text NOT NULL DEFAULT 'all';
