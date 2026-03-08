@@ -17,9 +17,11 @@ import { useEmulation } from "@/contexts/EmulationContext";
 const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { emulatedUser, isEmulating } = useEmulation();
   const { isPaid, isLoading: subscriptionLoading, subscriptionEnd } = useSubscription();
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,12 +33,35 @@ const Profile = () => {
 
   useEffect(() => {
     const getUser = async () => {
+      if (isEmulating && emulatedUser) {
+        // Use emulated user data
+        setEmail(emulatedUser.email || "");
+        setFullName(emulatedUser.full_name || "");
+        setUserId(emulatedUser.id);
+        
+        if (emulatedUser.trainer_id) {
+          setTrainerId(emulatedUser.trainer_id);
+          const { data: trainerData } = await supabase
+            .from('trainer')
+            .select('workout_count_mode')
+            .eq('id', emulatedUser.trainer_id)
+            .maybeSingle();
+          if (trainerData?.workout_count_mode) {
+            const mode = trainerData.workout_count_mode as WorkoutCountMode;
+            setWorkoutCountMode(mode);
+            setInitialCountMode(mode);
+          }
+        }
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (user?.email) {
         setEmail(user.email);
       }
       
       if (user?.id) {
+        setUserId(user.id);
         const { data } = await supabase
           .from('users')
           .select('full_name, trainer_id')
@@ -48,7 +73,6 @@ const Profile = () => {
         }
         if (data?.trainer_id) {
           setTrainerId(data.trainer_id);
-          // Load trainer settings
           const { data: trainerData } = await supabase
             .from('trainer')
             .select('workout_count_mode')
@@ -63,7 +87,7 @@ const Profile = () => {
       }
     };
     getUser();
-  }, []);
+  }, [isEmulating, emulatedUser]);
 
   const [initialCountMode, setInitialCountMode] = useState<WorkoutCountMode>("all");
 
