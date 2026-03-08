@@ -207,6 +207,7 @@ export function WorkoutOverview() {
                       progress={progress} 
                       size={48}
                       strokeWidth={4}
+                      cancelled={!!workout.canceled_at}
                     />
                     <div>
                       <h4 className="font-bold">{format(new Date(workout.date + 'T00:00:00'), 'MMM d, yyyy')}</h4>

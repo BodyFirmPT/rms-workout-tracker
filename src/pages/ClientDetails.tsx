@@ -336,7 +336,7 @@ export default function ClientDetails() {
               return <div key={workout.id} className="relative">
                     <div className={`group relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors ${children.length > 0 ? 'bg-card' : ''}`}>
                       <div className="flex items-center gap-4 flex-1 cursor-pointer" onClick={() => handleViewWorkout(workout.id)}>
-                        <ProgressRing progress={progress} size={48} strokeWidth={4} />
+                        <ProgressRing progress={progress} size={48} strokeWidth={4} cancelled={!!workout.canceled_at} />
                         <div>
                           <h4 className="font-bold">
                             {format(new Date(workout.date + 'T00:00:00'), 'MMM d, yyyy')}
