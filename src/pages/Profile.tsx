@@ -130,13 +130,12 @@ const Profile = () => {
     setLoadingName(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      if (!userId) throw new Error("Not authenticated");
 
       const { error } = await supabase
         .from('users')
         .update({ full_name: fullName.trim() })
-        .eq('id', user.id);
+        .eq('id', userId);
 
       if (error) throw error;
 
