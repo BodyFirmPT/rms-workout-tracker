@@ -388,7 +388,7 @@ export default function ClientDetails() {
                       <div className="mx-4 -mt-3 relative z-0 border border-t-0 rounded-b-lg bg-card pt-4 pb-1.5 px-3 space-y-1">
                         {children.map(child => {
                           const childProgress = workoutProgresses[child.id] || 0;
-                          const childWorkoutIndex = activeWorkouts.findIndex(w => w.id === child.id);
+                          const childWorkoutIndex = countedWorkouts.findIndex(w => w.id === child.id);
                           const childWorkoutNumber = childWorkoutIndex >= 0 ? totalWorkouts - childWorkoutIndex : 0;
                           return (
                             <div
