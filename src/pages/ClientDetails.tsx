@@ -377,6 +377,9 @@ export default function ClientDetails() {
                            </div> : workout.status === 'completed' ? <div className="px-3 py-1.5 bg-success/10 text-success text-sm font-medium rounded-md flex items-center gap-2">
                              <Target className="h-3 w-3" />
                              Completed
+                           </div> : progress > 0 ? <div className="px-3 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-md flex items-center gap-2">
+                             <Play className="h-3 w-3" />
+                             In Progress
                            </div> : <Button variant="outline" size="sm" onClick={e => {
                     e.stopPropagation();
                     handleStartWorkout(workout.id);
@@ -435,6 +438,11 @@ export default function ClientDetails() {
                                   <div className="px-2 py-1 bg-success/10 text-success text-xs font-medium rounded-md flex items-center gap-1">
                                     <Target className="h-3 w-3" />
                                     Completed
+                                  </div>
+                                ) : childProgress > 0 ? (
+                                  <div className="px-2 py-1 bg-primary/10 text-primary text-xs font-medium rounded-md flex items-center gap-1">
+                                    <Play className="h-3 w-3" />
+                                    In Progress
                                   </div>
                                 ) : (
                                   <div className="px-2 py-1 bg-muted text-muted-foreground text-xs font-medium rounded-md">
