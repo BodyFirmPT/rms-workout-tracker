@@ -31,12 +31,12 @@ interface WorkoutStore {
   addMuscleGroup: (name: string, isDefault?: boolean, category?: string) => Promise<string>;
   updateMuscleGroup: (id: string, updates: Partial<{ name: string; default_group: boolean; category: string }>) => Promise<void>;
   deleteMuscleGroup: (id: string) => Promise<void>;
-  createWorkout: (clientId: string, note: string, date?: string, locationId?: string | null) => Promise<string>;
+  createWorkout: (clientId: string, note: string, date?: string, locationId?: string | null, selfLed?: boolean) => Promise<string>;
   startWorkout: (workoutId: string) => Promise<void>;
   addExerciseToWorkout: (workoutId: string, exercise: CreateWorkoutExerciseInput) => Promise<void>;
   completeExerciseSet: (workoutId: string, exerciseId: string, decrement?: boolean) => Promise<void>;
   completeWorkout: (workoutId: string) => Promise<void>;
-  duplicateWorkout: (workoutId: string, clientId: string, date: Date) => Promise<Workout>;
+  duplicateWorkout: (workoutId: string, clientId: string, date: Date, selfLed?: boolean) => Promise<Workout>;
   getWorkoutProgress: (workoutId: string) => Promise<number>;
   getMuscleGroupById: (id: string) => MuscleGroup | undefined;
   getClientById: (id: string) => Client | undefined;
@@ -163,9 +163,9 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
     }
   },
 
-  createWorkout: async (clientId: string, note: string, date?: string, locationId?: string | null) => {
+  createWorkout: async (clientId: string, note: string, date?: string, locationId?: string | null, selfLed?: boolean) => {
     try {
-      const workout = await WorkoutService.createWorkout(clientId, note, date, locationId);
+      const workout = await WorkoutService.createWorkout(clientId, note, date, locationId, selfLed);
       set((state) => ({ workouts: [...state.workouts, workout] }));
       return workout.id;
     } catch (error) {
@@ -299,9 +299,9 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
     }
   },
 
-  duplicateWorkout: async (workoutId: string, clientId: string, date: Date) => {
+  duplicateWorkout: async (workoutId: string, clientId: string, date: Date, selfLed?: boolean) => {
     try {
-      const newWorkout = await WorkoutService.duplicateWorkout(workoutId, clientId, date);
+      const newWorkout = await WorkoutService.duplicateWorkout(workoutId, clientId, date, selfLed);
       set((state) => ({
         workouts: [...state.workouts, newWorkout]
       }));

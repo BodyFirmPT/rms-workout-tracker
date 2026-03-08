@@ -345,6 +345,7 @@ export type Database = {
           late_cancelled: boolean | null
           location_id: string | null
           note: string
+          self_led: boolean
           share_token: string | null
           status: string
         }
@@ -357,6 +358,7 @@ export type Database = {
           late_cancelled?: boolean | null
           location_id?: string | null
           note: string
+          self_led?: boolean
           share_token?: string | null
           status?: string
         }
@@ -369,6 +371,7 @@ export type Database = {
           late_cancelled?: boolean | null
           location_id?: string | null
           note?: string
+          self_led?: boolean
           share_token?: string | null
           status?: string
         }

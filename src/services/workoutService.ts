@@ -202,7 +202,7 @@ export class WorkoutService {
     return workouts;
   }
 
-  static async createWorkout(clientId: string, note: string, date?: string, locationId?: string | null): Promise<Workout> {
+  static async createWorkout(clientId: string, note: string, date?: string, locationId?: string | null, selfLed?: boolean): Promise<Workout> {
     const { data, error } = await supabase
       .from('workout')
       .insert({ 
@@ -210,6 +210,7 @@ export class WorkoutService {
         note,
         date: date || new Date().toISOString().split('T')[0],
         location_id: locationId,
+        self_led: selfLed || false,
         status: 'draft'
       })
       .select()
@@ -256,7 +257,7 @@ export class WorkoutService {
     if (error) throw error;
   }
 
-  static async duplicateWorkout(workoutId: string, clientId: string, date: Date) {
+  static async duplicateWorkout(workoutId: string, clientId: string, date: Date, selfLed?: boolean) {
     // First get the original workout with its exercises
     const { data: originalWorkout, error: workoutError } = await supabase
       .from('workout')
@@ -298,6 +299,7 @@ export class WorkoutService {
         client_id: clientId,
         note: newNote,
         date: date.toISOString().split('T')[0],
+        self_led: selfLed !== undefined ? selfLed : (originalWorkout.self_led || false),
         status: 'draft'
       })
       .select()

@@ -29,6 +29,7 @@ export interface Workout {
   location_id?: string | null;
   canceled_at?: string;
   late_cancelled?: boolean;
+  self_led?: boolean;
   share_token?: string | null;
   created_at?: string;
   exercises?: WorkoutExercise[];
@@ -38,6 +39,7 @@ export interface WorkoutUpdateInput {
   note?: string;
   date?: string;
   location_id?: string | null;
+  self_led?: boolean;
 }
 
 export interface WorkoutExercise {

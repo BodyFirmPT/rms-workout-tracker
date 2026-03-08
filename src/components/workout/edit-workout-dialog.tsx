@@ -37,6 +37,7 @@ export function EditWorkoutDialog({ open, onOpenChange, workout }: EditWorkoutDi
   const [date, setDate] = useState<Date>(new Date(workout.date + 'T00:00:00'));
   const [locationId, setLocationId] = useState<string>(workout.location_id || "none");
   const [locations, setLocations] = useState<Location[]>([]);
+  const [selfLed, setSelfLed] = useState(workout.self_led || false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCancelDatePicker, setShowCancelDatePicker] = useState(false);
@@ -111,6 +112,7 @@ export function EditWorkoutDialog({ open, onOpenChange, workout }: EditWorkoutDi
         note: note.trim(),
         date: format(date, 'yyyy-MM-dd'),
         location_id: locationId === "none" ? null : locationId,
+        self_led: selfLed,
       };
       await updateWorkout(workout.id, updates);
       onOpenChange(false);
@@ -216,6 +218,17 @@ export function EditWorkoutDialog({ open, onOpenChange, workout }: EditWorkoutDi
             errors={errors}
             onErrorClear={(field) => setErrors({ ...errors, [field]: "" })}
           />
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="edit-self-led"
+              checked={selfLed}
+              onCheckedChange={(checked) => setSelfLed(checked === true)}
+            />
+            <Label htmlFor="edit-self-led" className="text-sm font-normal cursor-pointer">
+              Self-led workout
+            </Label>
+          </div>
           
           {workout.canceled_at && (
             <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3">
