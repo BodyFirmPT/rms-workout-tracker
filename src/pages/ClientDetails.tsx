@@ -329,8 +329,8 @@ export default function ClientDetails() {
                   <p>No workouts found matching "{searchQuery}"</p>
                 </div> : clientWorkouts.map(workout => {
               const progress = workoutProgresses[workout.id] || 0;
-              // Calculate workout number based on active workouts only
-              const workoutIndex = activeWorkouts.findIndex(w => w.id === workout.id);
+              // Calculate workout number based on counted workouts only
+              const workoutIndex = countedWorkouts.findIndex(w => w.id === workout.id);
               const workoutNumber = workoutIndex >= 0 ? totalWorkouts - workoutIndex : 0;
               const children = childWorkoutsMap[workout.id] || [];
               return <div key={workout.id} className="relative">
