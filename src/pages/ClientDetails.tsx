@@ -393,21 +393,35 @@ export default function ClientDetails() {
                                   {child.self_led && ' · Self-led'}
                                 </p>
                               </div>
-                              {child.canceled_at ? (
-                                <div className="px-2 py-1 bg-destructive/10 text-destructive text-xs font-medium rounded-md flex items-center gap-1 shrink-0">
-                                  <XCircle className="h-3 w-3" />
-                                  {child.late_cancelled ? 'Late canceled' : 'Canceled'}
-                                </div>
-                              ) : child.status === 'completed' ? (
-                                <div className="px-2 py-1 bg-success/10 text-success text-xs font-medium rounded-md flex items-center gap-1 shrink-0">
-                                  <Target className="h-3 w-3" />
-                                  Completed
-                                </div>
-                              ) : (
-                                <div className="px-2 py-1 bg-muted text-muted-foreground text-xs font-medium rounded-md shrink-0">
-                                  Draft
-                                </div>
-                              )}
+                              <div className="flex items-center gap-1 shrink-0">
+                                <Button variant="ghost" size="sm" onClick={e => {
+                                  e.stopPropagation();
+                                  setEditingWorkout(child);
+                                }} className="hidden group-hover/child:inline-flex text-muted-foreground hover:text-foreground h-6 w-6 p-0">
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={e => {
+                                  e.stopPropagation();
+                                  setDeletingWorkout(child);
+                                }} className="hidden group-hover/child:inline-flex text-destructive hover:text-destructive h-6 w-6 p-0">
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                                {child.canceled_at ? (
+                                  <div className="px-2 py-1 bg-destructive/10 text-destructive text-xs font-medium rounded-md flex items-center gap-1">
+                                    <XCircle className="h-3 w-3" />
+                                    {child.late_cancelled ? 'Late canceled' : 'Canceled'}
+                                  </div>
+                                ) : child.status === 'completed' ? (
+                                  <div className="px-2 py-1 bg-success/10 text-success text-xs font-medium rounded-md flex items-center gap-1">
+                                    <Target className="h-3 w-3" />
+                                    Completed
+                                  </div>
+                                ) : (
+                                  <div className="px-2 py-1 bg-muted text-muted-foreground text-xs font-medium rounded-md">
+                                    Draft
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           );
                         })}
