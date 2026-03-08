@@ -6,7 +6,9 @@ import {
   Workout, 
   WorkoutExercise, 
   CreateWorkoutExerciseInput,
-  WorkoutUpdateInput
+  WorkoutUpdateInput,
+  ExerciseMedia,
+  CreateExerciseMediaInput
 } from '@/types/workout';
 
 // Helper to get emulated user's trainer_id from localStorage
