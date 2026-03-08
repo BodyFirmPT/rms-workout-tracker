@@ -7,7 +7,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { CalendarIcon } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { CalendarIcon, Info } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useWorkoutStore } from "@/stores/workoutStore";
@@ -24,6 +25,7 @@ export function DuplicateWorkoutDialog({ open, onOpenChange, workout }: Duplicat
   const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selfLed, setSelfLed] = useState(workout.self_led || false);
+  const [linkToOriginal, setLinkToOriginal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   
@@ -37,11 +39,12 @@ export function DuplicateWorkoutDialog({ open, onOpenChange, workout }: Duplicat
 
     setIsLoading(true);
     try {
-      const newWorkout = await duplicateWorkout(workout.id, selectedClientId, selectedDate, selfLed);
+      const newWorkout = await duplicateWorkout(workout.id, selectedClientId, selectedDate, selfLed, linkToOriginal);
       toast.success("Workout duplicated successfully");
       onOpenChange(false);
       setSelectedClientId("");
       setSelectedDate(undefined);
+      setLinkToOriginal(false);
       
       // Navigate to the duplicated workout
       navigate(`/workout/${newWorkout.id}`);
@@ -114,6 +117,27 @@ export function DuplicateWorkoutDialog({ open, onOpenChange, workout }: Duplicat
             <Label htmlFor="duplicate-self-led" className="text-sm font-normal cursor-pointer">
               Self-led workout
             </Label>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="duplicate-link-original"
+              checked={linkToOriginal}
+              onCheckedChange={(checked) => setLinkToOriginal(checked === true)}
+            />
+            <Label htmlFor="duplicate-link-original" className="text-sm font-normal cursor-pointer">
+              Tie this workout to the original
+            </Label>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-[220px]">
+                  <p>This workout will show with the original workout, as an independent instance.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
         

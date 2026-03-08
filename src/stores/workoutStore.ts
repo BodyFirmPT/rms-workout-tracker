@@ -36,7 +36,7 @@ interface WorkoutStore {
   addExerciseToWorkout: (workoutId: string, exercise: CreateWorkoutExerciseInput) => Promise<void>;
   completeExerciseSet: (workoutId: string, exerciseId: string, decrement?: boolean) => Promise<void>;
   completeWorkout: (workoutId: string) => Promise<void>;
-  duplicateWorkout: (workoutId: string, clientId: string, date: Date, selfLed?: boolean) => Promise<Workout>;
+  duplicateWorkout: (workoutId: string, clientId: string, date: Date, selfLed?: boolean, linkToOriginal?: boolean) => Promise<Workout>;
   getWorkoutProgress: (workoutId: string) => Promise<number>;
   getMuscleGroupById: (id: string) => MuscleGroup | undefined;
   getClientById: (id: string) => Client | undefined;
@@ -299,9 +299,9 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
     }
   },
 
-  duplicateWorkout: async (workoutId: string, clientId: string, date: Date, selfLed?: boolean) => {
+  duplicateWorkout: async (workoutId: string, clientId: string, date: Date, selfLed?: boolean, linkToOriginal?: boolean) => {
     try {
-      const newWorkout = await WorkoutService.duplicateWorkout(workoutId, clientId, date, selfLed);
+      const newWorkout = await WorkoutService.duplicateWorkout(workoutId, clientId, date, selfLed, linkToOriginal);
       set((state) => ({
         workouts: [...state.workouts, newWorkout]
       }));
