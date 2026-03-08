@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { MuscleGroup, Workout, WorkoutExercise } from '@/types/workout';
+import { MuscleGroup, Workout, WorkoutExercise, ExerciseMedia } from '@/types/workout';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Location {
   id: string;
@@ -16,6 +17,7 @@ interface SharedWorkoutData {
   exercises: WorkoutExercise[];
   muscleGroups: MuscleGroup[];
   location: Location | null;
+  exerciseMedia: Record<string, ExerciseMedia[]>;
 }
 
 const SUPABASE_URL = "https://okrdjdagbbwdmdubyppx.supabase.co";
@@ -43,7 +45,24 @@ export function useSharedWorkout(shareToken: string | undefined) {
       }
 
       const result = await response.json();
-      setData(result);
+      
+      // Fetch media for exercises
+      const exerciseIds = (result.exercises || []).map((e: any) => e.id);
+      let mediaMap: Record<string, ExerciseMedia[]> = {};
+      if (exerciseIds.length > 0) {
+        const { data: mediaData } = await supabase
+          .from('exercise_media')
+          .select('*')
+          .in('exercise_id', exerciseIds)
+          .order('sort_order');
+        
+        (mediaData || []).forEach((m: any) => {
+          if (!mediaMap[m.exercise_id]) mediaMap[m.exercise_id] = [];
+          mediaMap[m.exercise_id].push(m as ExerciseMedia);
+        });
+      }
+      
+      setData({ ...result, exerciseMedia: mediaMap });
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch workout');
@@ -178,6 +197,7 @@ export function useSharedWorkout(shareToken: string | undefined) {
     exercises: data?.exercises || [],
     muscleGroups: data?.muscleGroups || [],
     location: data?.location || null,
+    exerciseMedia: data?.exerciseMedia || {},
     loading,
     error,
     startWorkout,
