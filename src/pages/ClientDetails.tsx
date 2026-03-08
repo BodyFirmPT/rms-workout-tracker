@@ -318,8 +318,8 @@ export default function ClientDetails() {
               const workoutIndex = activeWorkouts.findIndex(w => w.id === workout.id);
               const workoutNumber = workoutIndex >= 0 ? totalWorkouts - workoutIndex : 0;
               const children = childWorkoutsMap[workout.id] || [];
-              return <div key={workout.id}>
-                    <div className="group flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+              return <div key={workout.id} className="relative">
+                    <div className={`group relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors ${children.length > 0 ? 'bg-card' : ''}`}>
                       <div className="flex items-center gap-4 flex-1 cursor-pointer" onClick={() => handleViewWorkout(workout.id)}>
                         <ProgressRing progress={progress} size={48} strokeWidth={4} />
                         <div>
@@ -369,9 +369,8 @@ export default function ClientDetails() {
                            </Button>}
                       </div>
                     </div>
-                    {/* Linked child workouts */}
                     {children.length > 0 && (
-                      <div className="ml-6 sm:ml-10 mt-1 space-y-1">
+                      <div className="mx-4 -mt-3 relative z-0 border border-t-0 rounded-b-lg bg-muted/30 pt-4 pb-2 px-3 space-y-2">
                         {children.map(child => {
                           const childProgress = workoutProgresses[child.id] || 0;
                           const childWorkoutIndex = activeWorkouts.findIndex(w => w.id === child.id);
@@ -379,7 +378,7 @@ export default function ClientDetails() {
                           return (
                             <div
                               key={child.id}
-                              className="group flex items-center gap-3 p-3 border border-dashed rounded-md hover:bg-muted/50 transition-colors cursor-pointer"
+                              className="group/child flex items-center gap-3 p-3 bg-card rounded-md border hover:bg-muted/50 transition-colors cursor-pointer"
                               onClick={() => handleViewWorkout(child.id)}
                             >
                               <Link2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
