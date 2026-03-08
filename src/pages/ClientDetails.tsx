@@ -336,7 +336,7 @@ export default function ClientDetails() {
               return <div key={workout.id} className="relative">
                     <div className={`group relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors ${children.length > 0 ? 'bg-card' : ''}`}>
                       <div className="flex items-center gap-4 flex-1 cursor-pointer" onClick={() => handleViewWorkout(workout.id)}>
-                        <ProgressRing progress={progress} size={48} strokeWidth={4} />
+                        <ProgressRing progress={progress} size={48} strokeWidth={4} cancelled={!!workout.canceled_at} />
                         <div>
                           <h4 className="font-bold">
                             {format(new Date(workout.date + 'T00:00:00'), 'MMM d, yyyy')}
@@ -402,7 +402,7 @@ export default function ClientDetails() {
                               onClick={() => handleViewWorkout(child.id)}
                             >
                               <CornerDownRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                              <ProgressRing progress={childProgress} size={32} strokeWidth={3} textClassName="text-[10px]" />
+                              <ProgressRing progress={childProgress} size={32} strokeWidth={3} textClassName="text-[10px]" cancelled={!!child.canceled_at} />
                               <div className="flex-1 min-w-0">
                                 <h4 className="font-semibold text-sm">
                                   {format(new Date(child.date + 'T00:00:00'), 'MMM d, yyyy')}
