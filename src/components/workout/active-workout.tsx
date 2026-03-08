@@ -210,6 +210,32 @@ export function ActiveWorkout({
     loadInjuries();
   }, [currentWorkout]);
 
+  // Load child workouts (duplicates of this workout)
+  useEffect(() => {
+    const loadChildWorkouts = async () => {
+      if (!currentWorkout) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from("workout")
+          .select("*, client:client_id (id, name)")
+          .eq("parent_workout_id", currentWorkout.id)
+          .order("date", { ascending: true });
+
+        if (error) throw error;
+        setChildWorkouts((data || []).map(w => ({
+          ...w,
+          client: Array.isArray(w.client) ? w.client[0] : w.client
+        })) as Workout[]);
+      } catch (error) {
+        console.error("Error loading child workouts:", error);
+        setChildWorkouts([]);
+      }
+    };
+
+    loadChildWorkouts();
+  }, [currentWorkout, workouts]);
+
   const handleEditInjury = (injury: Injury) => {
     setEditingInjury(injury);
     setShowEditInjury(true);
