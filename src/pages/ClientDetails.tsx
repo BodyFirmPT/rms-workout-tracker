@@ -157,8 +157,22 @@ export default function ClientDetails() {
     navigate(`/workout/${workoutId}`);
   };
   const workoutOffset = client?.workout_count_offset || 0;
-  const totalWorkouts = activeWorkouts.length + workoutOffset;
-  const completedWorkouts = activeWorkouts.filter(w => w.status === 'completed').length + workoutOffset;
+  
+  // Get trainer's workout count mode
+  const trainer = client ? trainers.find(t => t.id === client.trainer_id) : null;
+  const countMode: WorkoutCountMode = (trainer?.workout_count_mode as WorkoutCountMode) || 'all';
+  
+  // Filter workouts based on count mode for numbering
+  const shouldCount = (w: Workout) => {
+    if (countMode === 'exclude_self_led' && w.self_led) return false;
+    if (countMode === 'exclude_linked' && w.parent_workout_id) return false;
+    if (countMode === 'exclude_self_led_linked' && (w.self_led || w.parent_workout_id)) return false;
+    return true;
+  };
+  
+  const countedWorkouts = activeWorkouts.filter(shouldCount);
+  const totalWorkouts = countedWorkouts.length + workoutOffset;
+  const completedWorkouts = countedWorkouts.filter(w => w.status === 'completed').length + workoutOffset;
   const thisWeekWorkouts = activeWorkouts.filter(w => {
     const workoutDate = new Date(w.date);
     const weekAgo = new Date();
