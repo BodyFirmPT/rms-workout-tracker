@@ -18,7 +18,7 @@ import { EditInjuryDialog } from "@/components/injury/edit-injury-dialog";
 import { ManageEquipmentDialog } from "@/components/workout/manage-equipment-dialog";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { format } from "date-fns";
-import { CreateWorkoutExerciseInput, WorkoutExercise } from "@/types/workout";
+import { CreateWorkoutExerciseInput, Workout, WorkoutExercise } from "@/types/workout";
 import { Injury } from "@/types/injury";
 import { supabase } from "@/integrations/supabase/client";
 
