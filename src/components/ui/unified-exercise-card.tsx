@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Check, Plus, Edit, Trash2, Zap, Dumbbell, MoreVertical, Wind, Clock, Cable, Image } from "lucide-react";
+import { Check, Plus, Edit, Trash2, Zap, Dumbbell, MoreVertical, Wind, Clock, Cable, Paperclip } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "./button";
 import { Badge } from "./badge";
 import { cn } from "@/lib/utils";
 import { ExerciseTimer } from "@/components/workout/exercise-timer";
-import { ExerciseImageModal } from "@/components/workout/exercise-image-modal";
+import { ExerciseMediaModal } from "@/components/workout/exercise-media-modal";
+import { ExerciseMedia } from "@/types/workout";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,8 +45,8 @@ interface UnifiedExerciseCardProps {
   bandColor?: string | null;
   bandType?: string | null;
   imageUrl?: string | null;
+  media?: ExerciseMedia[];
   workoutDate?: string;
-  clientName?: string;
   onAdd?: () => void;
   onCompleteSet?: (decrement?: boolean) => void;
   onEdit?: () => void;
