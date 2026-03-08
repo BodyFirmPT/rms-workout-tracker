@@ -39,6 +39,7 @@ export interface WorkoutUpdateInput {
   note?: string;
   date?: string;
   location_id?: string | null;
+  self_led?: boolean;
 }
 
 export interface WorkoutExercise {
