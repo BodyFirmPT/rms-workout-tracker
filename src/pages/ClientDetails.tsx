@@ -343,9 +343,11 @@ export default function ClientDetails() {
                             {workout.location_id && locations[workout.location_id] && <> · {locations[workout.location_id].name}</>}
                           </h4>
                           <p className="text-xs text-muted-foreground italic mt-1">
-                            {!workout.canceled_at && `Workout #${workoutNumber}`}
-                            {!workout.canceled_at && workout.note && ` · `}
+                            {!workout.canceled_at && workoutNumber > 0 && `Workout #${workoutNumber}`}
+                            {!workout.canceled_at && workoutNumber > 0 && workout.note && ` · `}
                             {workout.note}
+                            {workout.self_led && ((!workout.canceled_at && workoutNumber > 0) || workout.note ? ' · ' : '')}
+                            {workout.self_led && 'Self-led'}
                           </p>
                         </div>
                       </div>
@@ -404,8 +406,9 @@ export default function ClientDetails() {
                                   {child.location_id && locations[child.location_id] && <> · {locations[child.location_id].name}</>}
                                 </h4>
                                 <p className="text-xs text-muted-foreground italic">
-                                  {!child.canceled_at && `Workout #${childWorkoutNumber}`}
-                                  {child.self_led && ' · Self-led'}
+                                  {!child.canceled_at && childWorkoutNumber > 0 && `Workout #${childWorkoutNumber}`}
+                                  {child.self_led && ((!child.canceled_at && childWorkoutNumber > 0) ? ' · ' : '')}
+                                  {child.self_led && 'Self-led'}
                                 </p>
                               </div>
                               <div className="flex items-center gap-1 shrink-0">
