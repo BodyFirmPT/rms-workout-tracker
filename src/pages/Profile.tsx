@@ -301,6 +301,8 @@ const Profile = () => {
               >
                 {savingCountMode ? "Saving..." : "Save"}
               </Button>
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader>
