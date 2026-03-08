@@ -66,8 +66,12 @@ const Profile = () => {
 
   const [initialCountMode, setInitialCountMode] = useState<WorkoutCountMode>("all");
 
-  const handleSaveCountMode = async () => {
-    if (!trainerId) return;
+  const handleSaveCountMode = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!trainerId) {
+      console.error("No trainerId found, cannot save workout count mode");
+      return;
+    }
     
     setSavingCountMode(true);
     try {
