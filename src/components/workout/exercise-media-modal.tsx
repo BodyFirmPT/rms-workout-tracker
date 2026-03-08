@@ -69,44 +69,48 @@ export function ExerciseMediaModal({ open, onOpenChange, media, exerciseName, in
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg p-2">
-        <div className="relative">
-          {renderMedia()}
+        {hasMultiple ? (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-10 w-10 p-0 rounded-full shrink-0 border-2 border-primary bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground"
+              onClick={() => setCurrentIndex((currentIndex - 1 + media.length) % media.length)}
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
 
-          {hasMultiple && (
-            <>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 rounded-full opacity-80 hover:opacity-100"
-                onClick={() => setCurrentIndex((currentIndex - 1 + media.length) % media.length)}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 rounded-full opacity-80 hover:opacity-100"
-                onClick={() => setCurrentIndex((currentIndex + 1) % media.length)}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+            <div className="flex-1 min-w-0">
+              {renderMedia()}
+            </div>
 
-              {/* Dots */}
-              <div className="flex justify-center gap-1.5 mt-2">
-                {media.map((_, i) => (
-                  <button
-                    key={i}
-                    className={cn(
-                      "w-2 h-2 rounded-full transition-colors",
-                      i === currentIndex ? "bg-primary" : "bg-muted-foreground/30"
-                    )}
-                    onClick={() => setCurrentIndex(i)}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-        </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-10 w-10 p-0 rounded-full shrink-0 border-2 border-primary bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground"
+              onClick={() => setCurrentIndex((currentIndex + 1) % media.length)}
+            >
+              <ChevronRight className="h-5 w-5" />
+            </Button>
+          </div>
+        ) : (
+          renderMedia()
+        )}
+
+        {hasMultiple && (
+          <div className="flex justify-center gap-1.5 mt-1">
+            {media.map((_, i) => (
+              <button
+                key={i}
+                className={cn(
+                  "w-2.5 h-2.5 rounded-full transition-colors",
+                  i === currentIndex ? "bg-primary" : "bg-muted-foreground/30"
+                )}
+                onClick={() => setCurrentIndex(i)}
+              />
+            ))}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
