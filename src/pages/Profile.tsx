@@ -12,6 +12,7 @@ import { resetPostHogUser } from "@/lib/posthog";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Badge } from "@/components/ui/badge";
 import { WorkoutCountMode } from "@/types/workout";
+import { useEmulation } from "@/contexts/EmulationContext";
 
 const Profile = () => {
   const navigate = useNavigate();
