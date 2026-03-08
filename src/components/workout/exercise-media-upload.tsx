@@ -99,7 +99,8 @@ export function ExerciseMediaUpload({ media, onMediaChange, disabled }: Exercise
 
     // Detect if it's a video URL
     const isVideo = /\.(mp4|mov|webm|avi)$/i.test(url) ||
-      /youtube\.com|youtu\.be|vimeo\.com/i.test(url);
+      /youtube\.com|youtu\.be|vimeo\.com/i.test(url) ||
+      /youtube\.com\/shorts\//i.test(url);
 
     onMediaChange([...media, {
       media_type: isVideo ? 'video' : 'image',
@@ -123,7 +124,7 @@ export function ExerciseMediaUpload({ media, onMediaChange, disabled }: Exercise
   };
 
   const getYouTubeEmbedUrl = (url: string): string | null => {
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+    const match = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]+)/);
     return match ? `https://www.youtube.com/embed/${match[1]}` : null;
   };
 
