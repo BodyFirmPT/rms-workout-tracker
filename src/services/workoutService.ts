@@ -315,6 +315,10 @@ export class WorkoutService {
 
     // Duplicate all exercises
     if (originalExercises && originalExercises.length > 0) {
+      // Get media for all original exercises
+      const originalExerciseIds = originalExercises.map(e => e.id);
+      const originalMediaMap = await this.getMediaForExercises(originalExerciseIds);
+
       const exercisesToInsert = originalExercises.map(exercise => ({
         workout_id: newWorkout.id,
         muscle_group_id: exercise.muscle_group_id,
@@ -338,13 +342,34 @@ export class WorkoutService {
         is_completed: false
       }));
 
-      const { error: insertExercisesError } = await supabase
+      const { data: newExercises, error: insertExercisesError } = await supabase
         .from('workout_exercise')
-        .insert(exercisesToInsert);
+        .insert(exercisesToInsert)
+        .select();
 
       if (insertExercisesError) {
         console.error('Error duplicating exercises:', insertExercisesError);
         throw insertExercisesError;
+      }
+
+      // Copy media for each exercise
+      if (newExercises) {
+        const mediaToInsert: any[] = [];
+        originalExercises.forEach((origEx, index) => {
+          const mediaItems = originalMediaMap[origEx.id] || [];
+          mediaItems.forEach(m => {
+            mediaToInsert.push({
+              exercise_id: newExercises[index].id,
+              media_type: m.media_type,
+              url: m.url,
+              sort_order: m.sort_order,
+            });
+          });
+        });
+
+        if (mediaToInsert.length > 0) {
+          await supabase.from('exercise_media').insert(mediaToInsert);
+        }
       }
     }
 
