@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -7,8 +8,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useWorkoutStore } from "@/stores/workoutStore";
-import { WorkoutExercise, CreateWorkoutExerciseInput } from "@/types/workout";
+import { WorkoutExercise, CreateWorkoutExerciseInput, ExerciseMedia, CreateExerciseMediaInput } from "@/types/workout";
 import { ExerciseForm } from "@/components/workout/exercise-form";
+import { WorkoutService } from "@/services/workoutService";
 
 interface EditExerciseDialogProps {
   open: boolean;
@@ -24,6 +26,14 @@ export function EditExerciseDialog({
   workoutId,
 }: EditExerciseDialogProps) {
   const { updateExercise, addMuscleGroup } = useWorkoutStore();
+  const [exerciseMedia, setExerciseMedia] = useState<ExerciseMedia[]>([]);
+
+  // Load media when exercise changes
+  useEffect(() => {
+    if (exercise && open) {
+      WorkoutService.getExerciseMedia(exercise.id).then(setExerciseMedia).catch(console.error);
+    }
+  }, [exercise?.id, open]);
 
   const handleSubmit = async (exerciseData: CreateWorkoutExerciseInput, newMuscleGroupName?: string) => {
     if (!exercise) return;
@@ -58,6 +68,18 @@ export function EditExerciseDialog({
     }
   };
 
+  const mediaAsInput: CreateExerciseMediaInput[] = exerciseMedia.map(m => ({
+    media_type: m.media_type,
+    url: m.url,
+    sort_order: m.sort_order,
+  }));
+
+  // Also include legacy image_url as media if no media entries exist
+  const legacyMedia: CreateExerciseMediaInput[] = 
+    exercise?.image_url && exerciseMedia.length === 0
+      ? [{ media_type: 'image' as const, url: exercise.image_url, sort_order: 0 }]
+      : [];
+
   const initialValues = exercise ? {
     exerciseName: exercise.exercise_name,
     muscleGroupId: exercise.muscle_group_id,
@@ -72,6 +94,7 @@ export function EditExerciseDialog({
     bandColor: exercise.band_color || "",
     bandType: exercise.band_type || "",
     imageUrl: exercise.image_url,
+    media: mediaAsInput.length > 0 ? mediaAsInput : legacyMedia,
   } : undefined;
 
   return (
