@@ -47,6 +47,7 @@ interface UnifiedExerciseCardProps {
   imageUrl?: string | null;
   media?: ExerciseMedia[];
   workoutDate?: string;
+  clientName?: string;
   onAdd?: () => void;
   onCompleteSet?: (decrement?: boolean) => void;
   onEdit?: () => void;
@@ -72,6 +73,7 @@ export function UnifiedExerciseCard({
   bandColor,
   bandType,
   imageUrl,
+  media,
   workoutDate,
   clientName,
   onAdd,
