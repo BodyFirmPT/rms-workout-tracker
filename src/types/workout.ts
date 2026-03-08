@@ -72,6 +72,21 @@ export interface WorkoutExercise {
   count?: number;
 }
 
+export interface ExerciseMedia {
+  id: string;
+  exercise_id: string;
+  media_type: 'image' | 'video';
+  url: string;
+  sort_order: number;
+  created_at?: string;
+}
+
+export interface CreateExerciseMediaInput {
+  media_type: 'image' | 'video';
+  url: string;
+  sort_order: number;
+}
+
 export interface CreateWorkoutExerciseInput {
   muscle_group_id: string;
   exercise_name: string;
@@ -86,4 +101,5 @@ export interface CreateWorkoutExerciseInput {
   band_color?: string;
   band_type?: string;
   image_url?: string | null;
+  media?: CreateExerciseMediaInput[];
 }
