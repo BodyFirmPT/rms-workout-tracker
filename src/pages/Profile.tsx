@@ -4,12 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, CreditCard, Crown, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { resetPostHogUser } from "@/lib/posthog";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Badge } from "@/components/ui/badge";
+import { WorkoutCountMode } from "@/types/workout";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -22,6 +24,9 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [loadingName, setLoadingName] = useState(false);
   const [loadingSubscription, setLoadingSubscription] = useState(false);
+  const [workoutCountMode, setWorkoutCountMode] = useState<WorkoutCountMode>("all");
+  const [savingCountMode, setSavingCountMode] = useState(false);
+  const [trainerId, setTrainerId] = useState<string | null>(null);
 
   useEffect(() => {
     const getUser = async () => {
@@ -33,17 +38,49 @@ const Profile = () => {
       if (user?.id) {
         const { data } = await supabase
           .from('users')
-          .select('full_name')
+          .select('full_name, trainer_id')
           .eq('id', user.id)
           .maybeSingle();
         
         if (data?.full_name) {
           setFullName(data.full_name);
         }
+        if (data?.trainer_id) {
+          setTrainerId(data.trainer_id);
+          // Load trainer settings
+          const { data: trainerData } = await supabase
+            .from('trainer')
+            .select('workout_count_mode')
+            .eq('id', data.trainer_id)
+            .maybeSingle();
+          if (trainerData?.workout_count_mode) {
+            setWorkoutCountMode(trainerData.workout_count_mode as WorkoutCountMode);
+          }
+        }
       }
     };
     getUser();
   }, []);
+
+  const handleUpdateCountMode = async (value: WorkoutCountMode) => {
+    setWorkoutCountMode(value);
+    if (!trainerId) return;
+    
+    setSavingCountMode(true);
+    try {
+      const { error } = await supabase
+        .from('trainer')
+        .update({ workout_count_mode: value })
+        .eq('id', trainerId);
+      
+      if (error) throw error;
+      toast({ title: "Success", description: "Workout count setting updated" });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setSavingCountMode(false);
+    }
+  };
 
   const handleUpdateName = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -219,6 +256,40 @@ const Profile = () => {
                   {loadingName ? "Updating..." : "Update Name"}
                 </Button>
               </form>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Workout Counting</CardTitle>
+              <CardDescription>
+                Choose which workouts count toward client workout numbers
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <RadioGroup
+                value={workoutCountMode}
+                onValueChange={(v) => handleUpdateCountMode(v as WorkoutCountMode)}
+                disabled={savingCountMode}
+                className="space-y-3"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="all" id="count-all" />
+                  <Label htmlFor="count-all" className="font-normal cursor-pointer">All workouts</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="exclude_self_led" id="count-no-self" />
+                  <Label htmlFor="count-no-self" className="font-normal cursor-pointer">Exclude self-led workouts</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="exclude_linked" id="count-no-linked" />
+                  <Label htmlFor="count-no-linked" className="font-normal cursor-pointer">Exclude linked workouts</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="exclude_self_led_linked" id="count-no-both" />
+                  <Label htmlFor="count-no-both" className="font-normal cursor-pointer">Exclude self-led &amp; linked workouts</Label>
+                </div>
+              </RadioGroup>
             </CardContent>
           </Card>
 

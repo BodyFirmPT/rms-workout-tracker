@@ -1,6 +1,9 @@
+export type WorkoutCountMode = 'all' | 'exclude_self_led' | 'exclude_self_led_linked' | 'exclude_linked';
+
 export interface Trainer {
   id: string;
   name: string;
+  workout_count_mode?: WorkoutCountMode;
   created_at?: string;
 }
 

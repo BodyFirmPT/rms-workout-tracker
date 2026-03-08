@@ -32,7 +32,7 @@ export class WorkoutService {
       .order('name');
     
     if (error) throw error;
-    return data || [];
+    return (data || []) as Trainer[];
   }
 
   static async addTrainer(name: string): Promise<Trainer> {
@@ -43,7 +43,7 @@ export class WorkoutService {
       .single();
     
     if (error) throw error;
-    return data;
+    return data as Trainer;
   }
 
   // Clients

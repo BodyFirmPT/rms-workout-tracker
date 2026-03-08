@@ -13,7 +13,7 @@ import { EditWorkoutDialog } from "@/components/workout/edit-workout-dialog";
 import { DuplicateWorkoutDialog } from "@/components/workout/duplicate-workout-dialog";
 import { EditClientDialog } from "@/components/workout/edit-client-dialog";
 import { format } from "date-fns";
-import { Workout } from "@/types/workout";
+import { Workout, WorkoutCountMode } from "@/types/workout";
 import { supabase } from "@/integrations/supabase/client";
 interface Location {
   id: string;
@@ -43,6 +43,7 @@ export default function ClientDetails() {
   const {
     workouts,
     clients,
+    trainers,
     startWorkout,
     getWorkoutProgress,
     getClientById,
@@ -156,8 +157,22 @@ export default function ClientDetails() {
     navigate(`/workout/${workoutId}`);
   };
   const workoutOffset = client?.workout_count_offset || 0;
-  const totalWorkouts = activeWorkouts.length + workoutOffset;
-  const completedWorkouts = activeWorkouts.filter(w => w.status === 'completed').length + workoutOffset;
+  
+  // Get trainer's workout count mode
+  const trainer = client ? trainers.find(t => t.id === client.trainer_id) : null;
+  const countMode: WorkoutCountMode = (trainer?.workout_count_mode as WorkoutCountMode) || 'all';
+  
+  // Filter workouts based on count mode for numbering
+  const shouldCount = (w: Workout) => {
+    if (countMode === 'exclude_self_led' && w.self_led) return false;
+    if (countMode === 'exclude_linked' && w.parent_workout_id) return false;
+    if (countMode === 'exclude_self_led_linked' && (w.self_led || w.parent_workout_id)) return false;
+    return true;
+  };
+  
+  const countedWorkouts = activeWorkouts.filter(shouldCount);
+  const totalWorkouts = countedWorkouts.length + workoutOffset;
+  const completedWorkouts = countedWorkouts.filter(w => w.status === 'completed').length + workoutOffset;
   const thisWeekWorkouts = activeWorkouts.filter(w => {
     const workoutDate = new Date(w.date);
     const weekAgo = new Date();
@@ -314,8 +329,8 @@ export default function ClientDetails() {
                   <p>No workouts found matching "{searchQuery}"</p>
                 </div> : clientWorkouts.map(workout => {
               const progress = workoutProgresses[workout.id] || 0;
-              // Calculate workout number based on active workouts only
-              const workoutIndex = activeWorkouts.findIndex(w => w.id === workout.id);
+              // Calculate workout number based on counted workouts only
+              const workoutIndex = countedWorkouts.findIndex(w => w.id === workout.id);
               const workoutNumber = workoutIndex >= 0 ? totalWorkouts - workoutIndex : 0;
               const children = childWorkoutsMap[workout.id] || [];
               return <div key={workout.id} className="relative">
@@ -373,7 +388,7 @@ export default function ClientDetails() {
                       <div className="mx-4 -mt-3 relative z-0 border border-t-0 rounded-b-lg bg-card pt-4 pb-1.5 px-3 space-y-1">
                         {children.map(child => {
                           const childProgress = workoutProgresses[child.id] || 0;
-                          const childWorkoutIndex = activeWorkouts.findIndex(w => w.id === child.id);
+                          const childWorkoutIndex = countedWorkouts.findIndex(w => w.id === child.id);
                           const childWorkoutNumber = childWorkoutIndex >= 0 ? totalWorkouts - childWorkoutIndex : 0;
                           return (
                             <div
