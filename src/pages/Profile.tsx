@@ -62,18 +62,20 @@ const Profile = () => {
     getUser();
   }, []);
 
-  const handleUpdateCountMode = async (value: WorkoutCountMode) => {
-    setWorkoutCountMode(value);
+  const [initialCountMode, setInitialCountMode] = useState<WorkoutCountMode>("all");
+
+  const handleSaveCountMode = async () => {
     if (!trainerId) return;
     
     setSavingCountMode(true);
     try {
       const { error } = await supabase
         .from('trainer')
-        .update({ workout_count_mode: value })
+        .update({ workout_count_mode: workoutCountMode })
         .eq('id', trainerId);
       
       if (error) throw error;
+      setInitialCountMode(workoutCountMode);
       toast({ title: "Success", description: "Workout count setting updated" });
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
