@@ -549,6 +549,53 @@ export function ActiveWorkout({
         </Collapsible>
       )}
 
+      {/* Child Workouts Drawer */}
+      {childWorkouts.length > 0 && (
+        <Collapsible open={childWorkoutsOpen} onOpenChange={setChildWorkoutsOpen}>
+          <Card className={`border-border mx-4 relative rounded-t-none -mt-5 sm:-mt-8 ${activeInjuries.length > 0 && availableEquipment.length > 0 ? 'z-[1]' : activeInjuries.length > 0 || availableEquipment.length > 0 ? 'z-[5]' : 'z-0'}`}>
+            <CollapsibleTrigger className="w-full">
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors pt-4 pb-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Copy className="h-4 w-4 text-primary" />
+                    <CardTitle className="text-sm font-medium">
+                      {childWorkouts.length} Linked {childWorkouts.length === 1 ? 'Workout' : 'Workouts'}
+                    </CardTitle>
+                  </div>
+                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${childWorkoutsOpen ? 'rotate-180' : ''}`} />
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0 space-y-3">
+                {childWorkouts.map((child) => (
+                  <div
+                    key={child.id}
+                    className="group p-3 bg-muted/50 rounded-lg border cursor-pointer hover:bg-muted transition-colors"
+                    onClick={() => navigate(`/workout/${child.id}`)}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-foreground text-sm">
+                          {format(new Date(child.date), 'MMM d, yyyy')}
+                          <span className="font-normal text-muted-foreground">
+                            {' · '}
+                            {(child as any).client?.name || 'Unknown client'}
+                          </span>
+                        </h4>
+                      </div>
+                      <Badge variant={child.status === 'completed' ? 'default' : child.status === 'started' ? 'secondary' : 'outline'} className="shrink-0">
+                        {child.status === 'completed' ? 'Completed' : child.status === 'started' ? 'Started' : 'Draft'}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      )}
+
       {/* Exercises Section - Split into incomplete and completed when started */}
       {isStarted ? (
         <>
