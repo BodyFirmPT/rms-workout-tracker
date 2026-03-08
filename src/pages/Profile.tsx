@@ -54,7 +54,9 @@ const Profile = () => {
             .eq('id', data.trainer_id)
             .maybeSingle();
           if (trainerData?.workout_count_mode) {
-            setWorkoutCountMode(trainerData.workout_count_mode as WorkoutCountMode);
+            const mode = trainerData.workout_count_mode as WorkoutCountMode;
+            setWorkoutCountMode(mode);
+            setInitialCountMode(mode);
           }
         }
       }
@@ -271,7 +273,7 @@ const Profile = () => {
             <CardContent>
               <RadioGroup
                 value={workoutCountMode}
-                onValueChange={(v) => handleUpdateCountMode(v as WorkoutCountMode)}
+                onValueChange={(v) => setWorkoutCountMode(v as WorkoutCountMode)}
                 disabled={savingCountMode}
                 className="space-y-3"
               >
@@ -292,8 +294,13 @@ const Profile = () => {
                   <Label htmlFor="count-no-both" className="font-normal cursor-pointer">Exclude self-led &amp; linked workouts</Label>
                 </div>
               </RadioGroup>
-            </CardContent>
-          </Card>
+              <Button 
+                onClick={handleSaveCountMode} 
+                disabled={savingCountMode || workoutCountMode === initialCountMode}
+                className="mt-4"
+              >
+                {savingCountMode ? "Saving..." : "Save"}
+              </Button>
 
           <Card>
             <CardHeader>
