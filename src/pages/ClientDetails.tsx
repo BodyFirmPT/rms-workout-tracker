@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { Calendar, Clock, Play, Plus, Target, ArrowLeft, Settings, Trash2, Timer, Edit, Copy, User, Search, AlertCircle, XCircle, Ban, MapPin, Upload, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Calendar, Clock, Play, Plus, Target, ArrowLeft, Settings, Trash2, Timer, Edit, Copy, User, Search, AlertCircle, XCircle, Ban, MapPin, Upload, ChevronLeft, ChevronRight, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgressRing } from "@/components/ui/progress-ring";
@@ -109,6 +109,31 @@ export default function ClientDetails() {
     }
   }, [workouts, clientId, getWorkoutProgress, currentPage]);
   const client = clientId ? getClientById(clientId) : null;
+  const allClientWorkouts = workouts.filter(w => w.client_id === clientId).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  // Build parent→children map and identify child workout IDs
+  const { childWorkoutsMap, childWorkoutIds } = useMemo(() => {
+    const map: { [parentId: string]: Workout[] } = {};
+    const ids = new Set<string>();
+    allClientWorkouts.forEach(w => {
+      if (w.parent_workout_id) {
+        ids.add(w.id);
+        if (!map[w.parent_workout_id]) map[w.parent_workout_id] = [];
+        map[w.parent_workout_id].push(w);
+      }
+    });
+    Object.values(map).forEach(children => children.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+    return { childWorkoutsMap: map, childWorkoutIds: ids };
+  }, [allClientWorkouts]);
+
+  const cancelledWorkouts = allClientWorkouts.filter(w => w.canceled_at);
+  const activeWorkouts = allClientWorkouts.filter(w => !w.canceled_at);
+  const filteredWorkouts = (searchQuery.trim() ? allClientWorkouts.filter(w => w.note?.toLowerCase().includes(searchQuery.toLowerCase()) || format(new Date(w.date + 'T00:00:00'), 'MMM d, yyyy').toLowerCase().includes(searchQuery.toLowerCase())) : allClientWorkouts).filter(w => !childWorkoutIds.has(w.id));
+  const totalPages = Math.ceil(filteredWorkouts.length / workoutsPerPage);
+  const startIndex = (currentPage - 1) * workoutsPerPage;
+  const endIndex = startIndex + workoutsPerPage;
+  const clientWorkouts = filteredWorkouts.slice(startIndex, endIndex);
+
   if (!client && !loading) {
     return <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -121,20 +146,6 @@ export default function ClientDetails() {
         </div>
       </div>;
   }
-  const allClientWorkouts = workouts.filter(w => w.client_id === clientId).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-  // Separate cancelled and active workouts
-  const cancelledWorkouts = allClientWorkouts.filter(w => w.canceled_at);
-  const activeWorkouts = allClientWorkouts.filter(w => !w.canceled_at);
-
-  // Filter workouts based on search query
-  const filteredWorkouts = searchQuery.trim() ? allClientWorkouts.filter(w => w.note?.toLowerCase().includes(searchQuery.toLowerCase()) || format(new Date(w.date + 'T00:00:00'), 'MMM d, yyyy').toLowerCase().includes(searchQuery.toLowerCase())) : allClientWorkouts;
-
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredWorkouts.length / workoutsPerPage);
-  const startIndex = (currentPage - 1) * workoutsPerPage;
-  const endIndex = startIndex + workoutsPerPage;
-  const clientWorkouts = filteredWorkouts.slice(startIndex, endIndex);
   const startedWorkout = getStartedWorkout();
   const clientStartedWorkout = startedWorkout?.client_id === clientId ? startedWorkout : null;
   const handleViewWorkout = (workoutId: string) => {
@@ -306,7 +317,9 @@ export default function ClientDetails() {
               // Calculate workout number based on active workouts only
               const workoutIndex = activeWorkouts.findIndex(w => w.id === workout.id);
               const workoutNumber = workoutIndex >= 0 ? totalWorkouts - workoutIndex : 0;
-              return <div key={workout.id} className="group flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+              const children = childWorkoutsMap[workout.id] || [];
+              return <div key={workout.id}>
+                    <div className="group flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-4 flex-1 cursor-pointer" onClick={() => handleViewWorkout(workout.id)}>
                         <ProgressRing progress={progress} size={48} strokeWidth={4} />
                         <div>
@@ -355,7 +368,53 @@ export default function ClientDetails() {
                              Start
                            </Button>}
                       </div>
-                    </div>;
+                    </div>
+                    {/* Linked child workouts */}
+                    {children.length > 0 && (
+                      <div className="ml-6 sm:ml-10 mt-1 space-y-1">
+                        {children.map(child => {
+                          const childProgress = workoutProgresses[child.id] || 0;
+                          const childWorkoutIndex = activeWorkouts.findIndex(w => w.id === child.id);
+                          const childWorkoutNumber = childWorkoutIndex >= 0 ? totalWorkouts - childWorkoutIndex : 0;
+                          return (
+                            <div
+                              key={child.id}
+                              className="group flex items-center gap-3 p-3 border border-dashed rounded-md hover:bg-muted/50 transition-colors cursor-pointer"
+                              onClick={() => handleViewWorkout(child.id)}
+                            >
+                              <Link2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                              <ProgressRing progress={childProgress} size={32} strokeWidth={3} />
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold text-sm">
+                                  {format(new Date(child.date + 'T00:00:00'), 'MMM d, yyyy')}
+                                  {child.location_id && locations[child.location_id] && <> · {locations[child.location_id].name}</>}
+                                </h4>
+                                <p className="text-xs text-muted-foreground italic">
+                                  {!child.canceled_at && `Workout #${childWorkoutNumber}`}
+                                  {child.self_led && ' · Self-led'}
+                                </p>
+                              </div>
+                              {child.canceled_at ? (
+                                <div className="px-2 py-1 bg-destructive/10 text-destructive text-xs font-medium rounded-md flex items-center gap-1 shrink-0">
+                                  <XCircle className="h-3 w-3" />
+                                  {child.late_cancelled ? 'Late canceled' : 'Canceled'}
+                                </div>
+                              ) : child.status === 'completed' ? (
+                                <div className="px-2 py-1 bg-success/10 text-success text-xs font-medium rounded-md flex items-center gap-1 shrink-0">
+                                  <Target className="h-3 w-3" />
+                                  Completed
+                                </div>
+                              ) : (
+                                <div className="px-2 py-1 bg-muted text-muted-foreground text-xs font-medium rounded-md shrink-0">
+                                  Draft
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>;
             })}
               
               {/* Pagination Controls */}
