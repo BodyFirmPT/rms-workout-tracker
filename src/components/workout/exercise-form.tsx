@@ -454,7 +454,7 @@ export function ExerciseForm({
       </div>
 
       <div className="space-y-2">
-        <Label>Media (optional — up to 5)</Label>
+        <Label>Media (optional)</Label>
         <ExerciseMediaUpload
           media={media}
           onMediaChange={setMedia}
