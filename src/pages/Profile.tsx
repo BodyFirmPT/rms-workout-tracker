@@ -275,36 +275,37 @@ const Profile = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <RadioGroup
-                value={workoutCountMode}
-                onValueChange={(v) => setWorkoutCountMode(v as WorkoutCountMode)}
-                disabled={savingCountMode}
-                className="space-y-3"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="all" id="count-all" />
-                  <Label htmlFor="count-all" className="font-normal cursor-pointer">All workouts</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="exclude_self_led" id="count-no-self" />
-                  <Label htmlFor="count-no-self" className="font-normal cursor-pointer">Exclude self-led workouts</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="exclude_linked" id="count-no-linked" />
-                  <Label htmlFor="count-no-linked" className="font-normal cursor-pointer">Exclude linked workouts</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="exclude_self_led_linked" id="count-no-both" />
-                  <Label htmlFor="count-no-both" className="font-normal cursor-pointer">Exclude self-led &amp; linked workouts</Label>
-                </div>
-              </RadioGroup>
-              <Button 
-                onClick={handleSaveCountMode} 
-                disabled={savingCountMode || workoutCountMode === initialCountMode}
-                className="mt-4"
-              >
-                {savingCountMode ? "Saving..." : "Save"}
-              </Button>
+              <form onSubmit={handleSaveCountMode} className="space-y-4">
+                <RadioGroup
+                  value={workoutCountMode}
+                  onValueChange={(v) => setWorkoutCountMode(v as WorkoutCountMode)}
+                  disabled={savingCountMode}
+                  className="space-y-3"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="all" id="count-all" />
+                    <Label htmlFor="count-all" className="font-normal cursor-pointer">All workouts</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="exclude_self_led" id="count-no-self" />
+                    <Label htmlFor="count-no-self" className="font-normal cursor-pointer">Exclude self-led workouts</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="exclude_linked" id="count-no-linked" />
+                    <Label htmlFor="count-no-linked" className="font-normal cursor-pointer">Exclude linked workouts</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="exclude_self_led_linked" id="count-no-both" />
+                    <Label htmlFor="count-no-both" className="font-normal cursor-pointer">Exclude self-led &amp; linked workouts</Label>
+                  </div>
+                </RadioGroup>
+                <Button 
+                  type="submit"
+                  disabled={savingCountMode || workoutCountMode === initialCountMode}
+                >
+                  {savingCountMode ? "Saving..." : "Save"}
+                </Button>
+              </form>
             </CardContent>
           </Card>
 
