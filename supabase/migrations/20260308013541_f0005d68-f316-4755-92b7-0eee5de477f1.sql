@@ -1,0 +1,1 @@
+ALTER TABLE public.workout ADD COLUMN self_led boolean NOT NULL DEFAULT false;
