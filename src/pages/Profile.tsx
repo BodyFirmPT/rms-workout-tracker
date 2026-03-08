@@ -54,7 +54,9 @@ const Profile = () => {
             .eq('id', data.trainer_id)
             .maybeSingle();
           if (trainerData?.workout_count_mode) {
-            setWorkoutCountMode(trainerData.workout_count_mode as WorkoutCountMode);
+            const mode = trainerData.workout_count_mode as WorkoutCountMode;
+            setWorkoutCountMode(mode);
+            setInitialCountMode(mode);
           }
         }
       }
@@ -62,18 +64,20 @@ const Profile = () => {
     getUser();
   }, []);
 
-  const handleUpdateCountMode = async (value: WorkoutCountMode) => {
-    setWorkoutCountMode(value);
+  const [initialCountMode, setInitialCountMode] = useState<WorkoutCountMode>("all");
+
+  const handleSaveCountMode = async () => {
     if (!trainerId) return;
     
     setSavingCountMode(true);
     try {
       const { error } = await supabase
         .from('trainer')
-        .update({ workout_count_mode: value })
+        .update({ workout_count_mode: workoutCountMode })
         .eq('id', trainerId);
       
       if (error) throw error;
+      setInitialCountMode(workoutCountMode);
       toast({ title: "Success", description: "Workout count setting updated" });
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -269,7 +273,7 @@ const Profile = () => {
             <CardContent>
               <RadioGroup
                 value={workoutCountMode}
-                onValueChange={(v) => handleUpdateCountMode(v as WorkoutCountMode)}
+                onValueChange={(v) => setWorkoutCountMode(v as WorkoutCountMode)}
                 disabled={savingCountMode}
                 className="space-y-3"
               >
@@ -290,6 +294,13 @@ const Profile = () => {
                   <Label htmlFor="count-no-both" className="font-normal cursor-pointer">Exclude self-led &amp; linked workouts</Label>
                 </div>
               </RadioGroup>
+              <Button 
+                onClick={handleSaveCountMode} 
+                disabled={savingCountMode || workoutCountMode === initialCountMode}
+                className="mt-4"
+              >
+                {savingCountMode ? "Saving..." : "Save"}
+              </Button>
             </CardContent>
           </Card>
 
