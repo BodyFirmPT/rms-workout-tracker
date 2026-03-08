@@ -31,6 +31,7 @@ export interface Workout {
   late_cancelled?: boolean;
   self_led?: boolean;
   share_token?: string | null;
+  parent_workout_id?: string | null;
   created_at?: string;
   exercises?: WorkoutExercise[];
 }

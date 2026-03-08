@@ -1,0 +1,1 @@
+ALTER TABLE public.workout ADD COLUMN parent_workout_id uuid REFERENCES public.workout(id) ON DELETE SET NULL DEFAULT NULL;

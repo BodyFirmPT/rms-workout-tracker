@@ -300,6 +300,7 @@ export class WorkoutService {
         note: newNote,
         date: date.toISOString().split('T')[0],
         self_led: selfLed !== undefined ? selfLed : (originalWorkout.self_led || false),
+        parent_workout_id: workoutId,
         status: 'draft'
       })
       .select()

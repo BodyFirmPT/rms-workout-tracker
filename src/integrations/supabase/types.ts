@@ -345,6 +345,7 @@ export type Database = {
           late_cancelled: boolean | null
           location_id: string | null
           note: string
+          parent_workout_id: string | null
           self_led: boolean
           share_token: string | null
           status: string
@@ -358,6 +359,7 @@ export type Database = {
           late_cancelled?: boolean | null
           location_id?: string | null
           note: string
+          parent_workout_id?: string | null
           self_led?: boolean
           share_token?: string | null
           status?: string
@@ -371,6 +373,7 @@ export type Database = {
           late_cancelled?: boolean | null
           location_id?: string | null
           note?: string
+          parent_workout_id?: string | null
           self_led?: boolean
           share_token?: string | null
           status?: string
@@ -388,6 +391,13 @@ export type Database = {
             columns: ["location_id"]
             isOneToOne: false
             referencedRelation: "location"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_parent_workout_id_fkey"
+            columns: ["parent_workout_id"]
+            isOneToOne: false
+            referencedRelation: "workout"
             referencedColumns: ["id"]
           },
         ]

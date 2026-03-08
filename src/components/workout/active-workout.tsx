@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown, Pencil, MoreVertical, XCircle, Wrench } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown, Pencil, MoreVertical, XCircle, Wrench, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +19,7 @@ import { EditInjuryDialog } from "@/components/injury/edit-injury-dialog";
 import { ManageEquipmentDialog } from "@/components/workout/manage-equipment-dialog";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { format } from "date-fns";
-import { CreateWorkoutExerciseInput, WorkoutExercise } from "@/types/workout";
+import { CreateWorkoutExerciseInput, Workout, WorkoutExercise } from "@/types/workout";
 import { Injury } from "@/types/injury";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -55,6 +56,9 @@ export function ActiveWorkout({
   const [availableEquipment, setAvailableEquipment] = useState<Equipment[]>([]);
   const [equipmentOpen, setEquipmentOpen] = useState(false);
   const [showManageEquipment, setShowManageEquipment] = useState(false);
+  const [childWorkouts, setChildWorkouts] = useState<Workout[]>([]);
+  const [childWorkoutsOpen, setChildWorkoutsOpen] = useState(false);
+  const navigate = useNavigate();
   const {
     workouts,
     workoutExercises,
@@ -205,6 +209,32 @@ export function ActiveWorkout({
 
     loadInjuries();
   }, [currentWorkout]);
+
+  // Load child workouts (duplicates of this workout)
+  useEffect(() => {
+    const loadChildWorkouts = async () => {
+      if (!currentWorkout) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from("workout")
+          .select("*, client:client_id (id, name)")
+          .eq("parent_workout_id", currentWorkout.id)
+          .order("date", { ascending: true });
+
+        if (error) throw error;
+        setChildWorkouts((data || []).map(w => ({
+          ...w,
+          client: Array.isArray(w.client) ? w.client[0] : w.client
+        })) as Workout[]);
+      } catch (error) {
+        console.error("Error loading child workouts:", error);
+        setChildWorkouts([]);
+      }
+    };
+
+    loadChildWorkouts();
+  }, [currentWorkout, workouts]);
 
   const handleEditInjury = (injury: Injury) => {
     setEditingInjury(injury);
@@ -513,6 +543,53 @@ export function ActiveWorkout({
                     </li>
                   ))}
                 </ul>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      )}
+
+      {/* Child Workouts Drawer */}
+      {childWorkouts.length > 0 && (
+        <Collapsible open={childWorkoutsOpen} onOpenChange={setChildWorkoutsOpen}>
+          <Card className={`border-border mx-4 relative rounded-t-none -mt-5 sm:-mt-8 ${activeInjuries.length > 0 && availableEquipment.length > 0 ? 'z-[1]' : activeInjuries.length > 0 || availableEquipment.length > 0 ? 'z-[5]' : 'z-0'}`}>
+            <CollapsibleTrigger className="w-full">
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors pt-4 pb-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Copy className="h-4 w-4 text-primary" />
+                    <CardTitle className="text-sm font-medium">
+                      {childWorkouts.length} Linked {childWorkouts.length === 1 ? 'Workout' : 'Workouts'}
+                    </CardTitle>
+                  </div>
+                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${childWorkoutsOpen ? 'rotate-180' : ''}`} />
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0 space-y-3">
+                {childWorkouts.map((child) => (
+                  <div
+                    key={child.id}
+                    className="group p-3 bg-muted/50 rounded-lg border cursor-pointer hover:bg-muted transition-colors"
+                    onClick={() => navigate(`/workout/${child.id}`)}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-foreground text-sm">
+                          {format(new Date(child.date), 'MMM d, yyyy')}
+                          <span className="font-normal text-muted-foreground">
+                            {' · '}
+                            {(child as any).client?.name || 'Unknown client'}
+                          </span>
+                        </h4>
+                      </div>
+                      <Badge variant={child.status === 'completed' ? 'default' : child.status === 'started' ? 'secondary' : 'outline'} className="shrink-0">
+                        {child.status === 'completed' ? 'Completed' : child.status === 'started' ? 'Started' : 'Draft'}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
               </CardContent>
             </CollapsibleContent>
           </Card>
