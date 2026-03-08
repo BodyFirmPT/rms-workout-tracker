@@ -402,7 +402,7 @@ export default function ClientDetails() {
                               onClick={() => handleViewWorkout(child.id)}
                             >
                               <CornerDownRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                              <ProgressRing progress={childProgress} size={32} strokeWidth={3} textClassName="text-[10px]" />
+                              <ProgressRing progress={childProgress} size={32} strokeWidth={3} textClassName="text-[10px]" cancelled={!!child.canceled_at} />
                               <div className="flex-1 min-w-0">
                                 <h4 className="font-semibold text-sm">
                                   {format(new Date(child.date + 'T00:00:00'), 'MMM d, yyyy')}
