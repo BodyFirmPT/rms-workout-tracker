@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown, Pencil, MoreVertical, XCircle, Wrench, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,6 +56,9 @@ export function ActiveWorkout({
   const [availableEquipment, setAvailableEquipment] = useState<Equipment[]>([]);
   const [equipmentOpen, setEquipmentOpen] = useState(false);
   const [showManageEquipment, setShowManageEquipment] = useState(false);
+  const [childWorkouts, setChildWorkouts] = useState<Workout[]>([]);
+  const [childWorkoutsOpen, setChildWorkoutsOpen] = useState(false);
+  const navigate = useNavigate();
   const {
     workouts,
     workoutExercises,
