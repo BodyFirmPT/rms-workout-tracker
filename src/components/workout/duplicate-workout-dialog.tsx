@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -21,6 +23,7 @@ interface DuplicateWorkoutDialogProps {
 export function DuplicateWorkoutDialog({ open, onOpenChange, workout }: DuplicateWorkoutDialogProps) {
   const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selfLed, setSelfLed] = useState(workout.self_led || false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   
@@ -100,6 +103,17 @@ export function DuplicateWorkoutDialog({ open, onOpenChange, workout }: Duplicat
                 />
               </PopoverContent>
             </Popover>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="duplicate-self-led"
+              checked={selfLed}
+              onCheckedChange={(checked) => setSelfLed(checked === true)}
+            />
+            <Label htmlFor="duplicate-self-led" className="text-sm font-normal cursor-pointer">
+              Self-led workout
+            </Label>
           </div>
         </div>
         
