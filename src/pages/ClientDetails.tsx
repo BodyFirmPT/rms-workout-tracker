@@ -109,18 +109,6 @@ export default function ClientDetails() {
     }
   }, [workouts, clientId, getWorkoutProgress, currentPage]);
   const client = clientId ? getClientById(clientId) : null;
-  if (!client && !loading) {
-    return <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">Client not found</p>
-            <Button onClick={() => navigate("/dashboard")} className="mt-4">
-              Back to Home
-            </Button>
-          </div>
-        </div>
-      </div>;
-  }
   const allClientWorkouts = workouts.filter(w => w.client_id === clientId).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   // Build parent→children map and identify child workout IDs
@@ -134,23 +122,30 @@ export default function ClientDetails() {
         map[w.parent_workout_id].push(w);
       }
     });
-    // Sort children by date
     Object.values(map).forEach(children => children.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
     return { childWorkoutsMap: map, childWorkoutIds: ids };
   }, [allClientWorkouts]);
 
-  // Separate cancelled and active workouts
   const cancelledWorkouts = allClientWorkouts.filter(w => w.canceled_at);
   const activeWorkouts = allClientWorkouts.filter(w => !w.canceled_at);
-
-  // Filter workouts based on search query, then exclude child workouts from top-level list
   const filteredWorkouts = (searchQuery.trim() ? allClientWorkouts.filter(w => w.note?.toLowerCase().includes(searchQuery.toLowerCase()) || format(new Date(w.date + 'T00:00:00'), 'MMM d, yyyy').toLowerCase().includes(searchQuery.toLowerCase())) : allClientWorkouts).filter(w => !childWorkoutIds.has(w.id));
-
-  // Pagination calculations
   const totalPages = Math.ceil(filteredWorkouts.length / workoutsPerPage);
   const startIndex = (currentPage - 1) * workoutsPerPage;
   const endIndex = startIndex + workoutsPerPage;
   const clientWorkouts = filteredWorkouts.slice(startIndex, endIndex);
+
+  if (!client && !loading) {
+    return <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">Client not found</p>
+            <Button onClick={() => navigate("/dashboard")} className="mt-4">
+              Back to Home
+            </Button>
+          </div>
+        </div>
+      </div>;
+  }
   const startedWorkout = getStartedWorkout();
   const clientStartedWorkout = startedWorkout?.client_id === clientId ? startedWorkout : null;
   const handleViewWorkout = (workoutId: string) => {
