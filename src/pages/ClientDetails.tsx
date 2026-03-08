@@ -43,6 +43,7 @@ export default function ClientDetails() {
   const {
     workouts,
     clients,
+    trainers,
     startWorkout,
     getWorkoutProgress,
     getClientById,
