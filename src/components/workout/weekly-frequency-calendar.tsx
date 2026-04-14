@@ -64,7 +64,7 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
     <TooltipProvider delayDuration={100}>
       <div className="w-full py-1.5">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-6">
           <h3 className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wider">
             Workout Frequency
           </h3>
