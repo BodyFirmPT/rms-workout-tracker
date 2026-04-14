@@ -80,9 +80,9 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
             <div
               key={i}
               className={cn(
-                "inline-flex flex-col items-center justify-center rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors flex-1 min-w-[72px]",
-                isCurrentWeek ? "border-2 border-dashed border-pink-400" : "border",
-                getIntensityClasses(week.count, maxCount)
+                "inline-flex flex-col items-center justify-center rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors flex-1 min-w-[72px] border",
+                isCurrentWeek && "border-2 border-dashed border-pink-400",
+                getIntensityClasses(week.count, maxCount, isCurrentWeek)
               )}
               title={`${label}: ${week.count} workout${week.count !== 1 ? "s" : ""}${week.cancelled ? `, ${week.cancelled} cancelled` : ""}`}
             >
