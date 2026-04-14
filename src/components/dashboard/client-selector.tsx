@@ -253,7 +253,7 @@ export function ClientSelector() {
                           e.stopPropagation();
                           setEditingClient(client);
                         }}
-                        className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                        className="h-7 w-7 p-0 text-muted-foreground"
                       >
                         <Edit className="h-3 w-3" />
                       </Button>
