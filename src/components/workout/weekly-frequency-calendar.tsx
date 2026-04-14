@@ -63,6 +63,8 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
     return count;
   }, [weeks]);
 
+  const maxCount = useMemo(() => Math.max(...weeks.map(w => w.count), 1), [weeks]);
+
   return (
     <div className="w-full">
       <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-thin">
