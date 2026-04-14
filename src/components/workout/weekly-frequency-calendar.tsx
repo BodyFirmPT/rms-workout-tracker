@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { startOfWeek, endOfWeek, format, subWeeks, isWithinInterval, parseISO, isSameWeek } from "date-fns";
+import { Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Workout } from "@/types/workout";
 
@@ -52,6 +53,16 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
     return result;
   }, [workouts, weeksToShow]);
 
+  // Calculate current streak (consecutive weeks with ≥1 workout, counting back from current week)
+  const streak = useMemo(() => {
+    let count = 0;
+    for (let i = weeks.length - 1; i >= 0; i--) {
+      if (weeks[i].count > 0) count++;
+      else break;
+    }
+    return count;
+  }, [weeks]);
+
   const maxCount = useMemo(() => Math.max(...weeks.map(w => w.count), 1), [weeks]);
 
   return (
@@ -80,6 +91,14 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
           );
         })}
       </div>
+      {streak > 1 && (
+        <div className="flex justify-end mt-1.5">
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+            <Flame className="h-3.5 w-3.5" />
+            {streak} week streak!
+          </span>
+        </div>
+      )}
     </div>
   );
 }
