@@ -67,6 +67,10 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
 
   return (
     <div className="w-full">
+      <div className="flex items-center gap-2 mb-2">
+        <CalendarDays className="h-4 w-4 text-pink-500" />
+        <h3 className="text-sm font-semibold text-foreground">Workout Frequency</h3>
+      </div>
       <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-thin">
         {weeks.map((week, i) => {
           const isCurrentWeek = isSameWeek(new Date(), week.start, { weekStartsOn: 1 });
@@ -76,7 +80,7 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
               key={i}
               className={cn(
                 "inline-flex flex-col items-center justify-center rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors flex-1 min-w-[72px]",
-                isCurrentWeek ? "border-2 border-dashed border-primary/50" : "border",
+                isCurrentWeek ? "border-2 border-dashed border-pink-400" : "border",
                 getIntensityClasses(week.count, maxCount)
               )}
               title={`${label}: ${week.count} workout${week.count !== 1 ? "s" : ""}${week.cancelled ? `, ${week.cancelled} cancelled` : ""}`}
@@ -93,7 +97,7 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
       </div>
       {streak > 1 && (
         <div className="flex justify-end mt-1.5">
-          <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-pink-500">
             <Flame className="h-3.5 w-3.5" />
             {streak} week streak!
           </span>
