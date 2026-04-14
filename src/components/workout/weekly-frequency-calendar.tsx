@@ -111,7 +111,7 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">
-                    <p className="font-medium">{label}</p>
+                    <p className="font-medium">{isCurrentWeek ? "This week" : label}</p>
                     <p className="text-muted-foreground">
                       {week.count} workout{week.count !== 1 ? "s" : ""}
                       {week.cancelled > 0 && ` · ${week.cancelled} cancelled`}
