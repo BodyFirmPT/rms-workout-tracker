@@ -22,12 +22,11 @@ interface WeekData {
   cancelled: number;
 }
 
-function getDotStyle(count: number, isCurrentWeek: boolean) {
-  const base = isCurrentWeek ? 1 : 0;
-  if (count === 0) return { size: 6 + base, className: "bg-muted-foreground/20" };
-  if (count === 1) return { size: 8 + base, className: "bg-pink-300 dark:bg-pink-800" };
-  if (count === 2) return { size: 10 + base, className: "bg-pink-400 dark:bg-pink-600" };
-  return { size: 12 + base, className: "bg-pink-600 dark:bg-pink-400" };
+function getDotStyle(count: number) {
+  if (count === 0) return { size: 8, className: "bg-muted-foreground/20" };
+  if (count === 1) return { size: 10, className: "bg-pink-300 dark:bg-pink-800" };
+  if (count === 2) return { size: 13, className: "bg-pink-400 dark:bg-pink-600" };
+  return { size: 16, className: "bg-pink-600 dark:bg-pink-400" };
 }
 
 export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFrequencyCalendarProps) {
@@ -86,21 +85,28 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
           <div className="relative flex items-center justify-between w-full">
             {weeks.map((week, i) => {
               const isCurrentWeek = isSameWeek(new Date(), week.start, { weekStartsOn: 1 });
-              const { size, className } = getDotStyle(week.count, isCurrentWeek);
+              const { size, className } = getDotStyle(week.count);
               const label = `${format(week.start, "MMM d")} – ${format(week.end, "MMM d")}`;
 
               return (
                 <Tooltip key={i}>
                   <TooltipTrigger asChild>
                     <div className="flex-1 flex justify-center cursor-default group">
-                      <div
-                        className={cn(
-                          "rounded-full transition-all duration-150",
-                          "group-hover:scale-125 group-hover:brightness-110",
-                          className
+                      <div className={cn("relative flex items-center justify-center", isCurrentWeek && "animate-pulse")}>
+                        {isCurrentWeek && (
+                          <div
+                            className="absolute rounded-full border-2 border-pink-400/60 dark:border-pink-500/50"
+                            style={{ width: size + 8, height: size + 8 }}
+                          />
                         )}
-                        style={{ width: size, height: size }}
-                      />
+                        <div
+                          className={cn(
+                            "rounded-full transition-all duration-150",
+                            "group-hover:scale-125 group-hover:brightness-110",
+                            className
+                          )}
+                        />
+                      </div>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">
