@@ -105,10 +105,10 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
                             "group-hover:scale-125 group-hover:brightness-110",
                             className
                           )}
-                          style={{ width: size, height: size }}
-                      />
+                        />
                       </div>
                     </div>
+                  </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">
                     <p className="font-medium">{label}</p>
                     <p className="text-muted-foreground">
