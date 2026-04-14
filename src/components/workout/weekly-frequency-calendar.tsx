@@ -22,12 +22,11 @@ interface WeekData {
   cancelled: number;
 }
 
-function getDotStyle(count: number, isCurrentWeek: boolean) {
-  const base = isCurrentWeek ? 1 : 0;
-  if (count === 0) return { size: 6 + base, className: "bg-muted-foreground/20" };
-  if (count === 1) return { size: 8 + base, className: "bg-pink-300 dark:bg-pink-800" };
-  if (count === 2) return { size: 10 + base, className: "bg-pink-400 dark:bg-pink-600" };
-  return { size: 12 + base, className: "bg-pink-600 dark:bg-pink-400" };
+function getDotStyle(count: number) {
+  if (count === 0) return { size: 8, className: "bg-muted-foreground/20" };
+  if (count === 1) return { size: 10, className: "bg-pink-300 dark:bg-pink-800" };
+  if (count === 2) return { size: 13, className: "bg-pink-400 dark:bg-pink-600" };
+  return { size: 16, className: "bg-pink-600 dark:bg-pink-400" };
 }
 
 export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFrequencyCalendarProps) {
