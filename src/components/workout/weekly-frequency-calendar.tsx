@@ -19,10 +19,10 @@ interface WeekData {
 function getIntensityClasses(count: number, maxCount: number): string {
   if (count === 0) return "bg-muted text-muted-foreground";
   const ratio = count / Math.max(maxCount, 1);
-  if (ratio <= 0.25) return "bg-primary/20 text-primary";
-  if (ratio <= 0.5) return "bg-primary/40 text-primary-foreground";
-  if (ratio <= 0.75) return "bg-primary/70 text-primary-foreground";
-  return "bg-primary text-primary-foreground";
+  if (ratio <= 0.25) return "bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300";
+  if (ratio <= 0.5) return "bg-pink-200 text-pink-800 dark:bg-pink-900 dark:text-pink-200";
+  if (ratio <= 0.75) return "bg-pink-400 text-white dark:bg-pink-700 dark:text-pink-100";
+  return "bg-pink-600 text-white dark:bg-pink-500 dark:text-white";
 }
 
 export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFrequencyCalendarProps) {
