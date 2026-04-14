@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { startOfWeek, endOfWeek, format, subWeeks, isWithinInterval, parseISO } from "date-fns";
+import { startOfWeek, endOfWeek, format, subWeeks, isWithinInterval, parseISO, isSameWeek } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Workout } from "@/types/workout";
 
@@ -58,18 +58,20 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
     <div className="w-full">
       <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-thin">
         {weeks.map((week, i) => {
+          const isCurrentWeek = isSameWeek(new Date(), week.start, { weekStartsOn: 1 });
           const label = `${format(week.start, "MMM d")}–${format(week.end, "d")}`;
           return (
             <div
               key={i}
               className={cn(
-                "inline-flex flex-col items-center justify-center rounded-md border px-2.5 py-1.5 text-xs font-semibold transition-colors shrink-0 min-w-[72px]",
+                "inline-flex flex-col items-center justify-center rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors flex-1 min-w-[72px]",
+                isCurrentWeek ? "border-2 border-dashed border-primary/50" : "border",
                 getIntensityClasses(week.count, maxCount)
               )}
               title={`${label}: ${week.count} workout${week.count !== 1 ? "s" : ""}${week.cancelled ? `, ${week.cancelled} cancelled` : ""}`}
             >
               <span className="text-[10px] font-medium opacity-80 leading-tight">
-                {format(week.start, "M/d")}–{format(week.end, "M/d")}
+                {isCurrentWeek ? "This week" : `${format(week.start, "M/d")}–${format(week.end, "M/d")}`}
               </span>
               <span className="text-sm font-bold leading-tight mt-0.5">
                 {week.count}
