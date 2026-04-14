@@ -91,6 +91,14 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
           );
         })}
       </div>
+      {streak > 1 && (
+        <div className="flex justify-end mt-1.5">
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+            <Flame className="h-3.5 w-3.5" />
+            {streak} week streak!
+          </span>
+        </div>
+      )}
     </div>
   );
 }
