@@ -309,7 +309,7 @@ export default function ClientDetails() {
                         <Button variant="ghost" size="sm" onClick={e => {
                     e.stopPropagation();
                     setDuplicatingWorkout(workout);
-                  }} className="hidden group-hover:inline-flex text-muted-foreground hover:text-foreground">
+                  }} className="hidden group-hover:inline-flex text-muted-foreground">
                           <Copy className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={e => {
