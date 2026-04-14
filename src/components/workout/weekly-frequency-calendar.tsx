@@ -43,7 +43,7 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
         const d = parseISO(w.date);
         if (isWithinInterval(d, { start, end })) {
           if (w.canceled_at) cancelled++;
-          else count++;
+          else if (w.status === "completed") count++;
         }
       });
       result.push({ start, end, count, cancelled });
