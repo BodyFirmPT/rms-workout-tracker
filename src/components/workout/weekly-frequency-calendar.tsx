@@ -16,13 +16,14 @@ interface WeekData {
   cancelled: number;
 }
 
-function getIntensityClasses(count: number, maxCount: number): string {
-  if (count === 0) return "bg-muted text-muted-foreground";
+function getIntensityClasses(count: number, maxCount: number, isCurrentWeek: boolean): string {
+  if (count === 0) return "bg-muted text-muted-foreground border-border";
   const ratio = count / Math.max(maxCount, 1);
-  if (ratio <= 0.25) return "bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300";
-  if (ratio <= 0.5) return "bg-pink-200 text-pink-800 dark:bg-pink-900 dark:text-pink-200";
-  if (ratio <= 0.75) return "bg-pink-400 text-white dark:bg-pink-700 dark:text-pink-100";
-  return "bg-pink-600 text-white dark:bg-pink-500 dark:text-white";
+  const dashedBorder = isCurrentWeek ? "" : " border-solid";
+  if (ratio <= 0.25) return `bg-pink-100 text-pink-700 border-pink-200 dark:bg-pink-950 dark:text-pink-300 dark:border-pink-800${dashedBorder}`;
+  if (ratio <= 0.5) return `bg-pink-200 text-pink-800 border-pink-300 dark:bg-pink-900 dark:text-pink-200 dark:border-pink-700${dashedBorder}`;
+  if (ratio <= 0.75) return `bg-pink-400 text-white border-pink-500 dark:bg-pink-700 dark:text-pink-100 dark:border-pink-600${dashedBorder}`;
+  return `bg-pink-600 text-white border-pink-700 dark:bg-pink-500 dark:text-white dark:border-pink-400${dashedBorder}`;
 }
 
 export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFrequencyCalendarProps) {
@@ -79,9 +80,9 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
             <div
               key={i}
               className={cn(
-                "inline-flex flex-col items-center justify-center rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors flex-1 min-w-[72px]",
-                isCurrentWeek ? "border-2 border-dashed border-pink-400" : "border",
-                getIntensityClasses(week.count, maxCount)
+                "inline-flex flex-col items-center justify-center rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors flex-1 min-w-[72px] border",
+                isCurrentWeek && "border-2 border-dashed border-pink-400",
+                getIntensityClasses(week.count, maxCount, isCurrentWeek)
               )}
               title={`${label}: ${week.count} workout${week.count !== 1 ? "s" : ""}${week.cancelled ? `, ${week.cancelled} cancelled` : ""}`}
             >
