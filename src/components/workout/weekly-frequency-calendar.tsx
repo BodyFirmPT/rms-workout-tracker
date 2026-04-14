@@ -53,7 +53,15 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
     return result;
   }, [workouts, weeksToShow]);
 
-  const maxCount = useMemo(() => Math.max(...weeks.map(w => w.count), 1), [weeks]);
+  // Calculate current streak (consecutive weeks with ≥1 workout, counting back from current week)
+  const streak = useMemo(() => {
+    let count = 0;
+    for (let i = weeks.length - 1; i >= 0; i--) {
+      if (weeks[i].count > 0) count++;
+      else break;
+    }
+    return count;
+  }, [weeks]);
 
   return (
     <div className="w-full">
