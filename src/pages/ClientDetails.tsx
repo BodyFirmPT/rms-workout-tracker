@@ -213,6 +213,10 @@ export default function ClientDetails() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setEditingClient(true)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Client
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate(`/client/${clientId}/injuries`)}>
                   <AlertCircle className="h-4 w-4 mr-2" />
                   Injuries
