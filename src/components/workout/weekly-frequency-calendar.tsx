@@ -105,6 +105,7 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
                             "group-hover:scale-125 group-hover:brightness-110",
                             className
                           )}
+                          style={{ width: size, height: size }}
                         />
                       </div>
                     </div>
