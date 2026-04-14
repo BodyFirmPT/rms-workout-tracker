@@ -107,8 +107,8 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
                           )}
                           style={{ width: size, height: size }}
                       />
+                      </div>
                     </div>
-                  </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">
                     <p className="font-medium">{label}</p>
                     <p className="text-muted-foreground">
