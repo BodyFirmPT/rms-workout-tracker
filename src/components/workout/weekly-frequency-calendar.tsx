@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { startOfWeek, endOfWeek, format, subWeeks, isWithinInterval, parseISO, isSameWeek } from "date-fns";
+import { Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Workout } from "@/types/workout";
 
