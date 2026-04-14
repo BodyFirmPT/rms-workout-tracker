@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { startOfWeek, endOfWeek, format, subWeeks, isWithinInterval, parseISO } from "date-fns";
+import { startOfWeek, endOfWeek, format, subWeeks, isWithinInterval, parseISO, isSameWeek } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Workout } from "@/types/workout";
 
