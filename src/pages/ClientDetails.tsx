@@ -200,14 +200,9 @@ export default function ClientDetails() {
                 <User className="h-8 w-8 text-primary" />
               </div>
               <div>
-                <div className="group flex items-center gap-3">
-                  <h1 className="text-4xl font-bold text-foreground">
+                <h1 className="text-4xl font-bold text-foreground">
                     {client?.name}
                   </h1>
-                  <Button variant="ghost" size="sm" onClick={() => setEditingClient(true)} className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </div>
               </div>
             </div>
             
@@ -218,6 +213,10 @@ export default function ClientDetails() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setEditingClient(true)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Client
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate(`/client/${clientId}/injuries`)}>
                   <AlertCircle className="h-4 w-4 mr-2" />
                   Injuries
