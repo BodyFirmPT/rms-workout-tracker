@@ -85,20 +85,27 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
           <div className="relative flex items-center justify-between w-full">
             {weeks.map((week, i) => {
               const isCurrentWeek = isSameWeek(new Date(), week.start, { weekStartsOn: 1 });
-              const { size, className } = getDotStyle(week.count, isCurrentWeek);
+              const { size, className } = getDotStyle(week.count);
               const label = `${format(week.start, "MMM d")} – ${format(week.end, "MMM d")}`;
 
               return (
                 <Tooltip key={i}>
                   <TooltipTrigger asChild>
                     <div className="flex-1 flex justify-center cursor-default group">
-                      <div
-                        className={cn(
-                          "rounded-full transition-all duration-150",
-                          "group-hover:scale-125 group-hover:brightness-110",
-                          className
+                      <div className={cn("relative flex items-center justify-center", isCurrentWeek && "animate-pulse")}>
+                        {isCurrentWeek && (
+                          <div
+                            className="absolute rounded-full border-2 border-pink-400/60 dark:border-pink-500/50"
+                            style={{ width: size + 8, height: size + 8 }}
+                          />
                         )}
-                        style={{ width: size, height: size }}
+                        <div
+                          className={cn(
+                            "rounded-full transition-all duration-150",
+                            "group-hover:scale-125 group-hover:brightness-110",
+                            className
+                          )}
+                          style={{ width: size, height: size }}
                       />
                     </div>
                   </TooltipTrigger>
