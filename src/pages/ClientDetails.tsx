@@ -315,7 +315,7 @@ export default function ClientDetails() {
                         <Button variant="ghost" size="sm" onClick={e => {
                     e.stopPropagation();
                     setEditingWorkout(workout);
-                  }} className="hidden group-hover:inline-flex text-muted-foreground hover:text-foreground">
+                  }} className="hidden group-hover:inline-flex text-muted-foreground">
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={e => {
