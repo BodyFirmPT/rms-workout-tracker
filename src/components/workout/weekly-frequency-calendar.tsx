@@ -22,8 +22,8 @@ function getIntensityClasses(count: number, maxCount: number, isCurrentWeek: boo
   const dashedBorder = isCurrentWeek ? "" : " border-solid";
   if (ratio <= 0.25) return `bg-pink-100 text-pink-700 border-pink-200 dark:bg-pink-950 dark:text-pink-300 dark:border-pink-800${dashedBorder}`;
   if (ratio <= 0.5) return `bg-pink-200 text-pink-800 border-pink-300 dark:bg-pink-900 dark:text-pink-200 dark:border-pink-700${dashedBorder}`;
-  if (ratio <= 0.75) return `bg-pink-400 text-white border-pink-500 dark:bg-pink-700 dark:text-pink-100 dark:border-pink-600${dashedBorder}`;
-  return `bg-pink-600 text-white border-pink-700 dark:bg-pink-500 dark:text-white dark:border-pink-400${dashedBorder}`;
+  if (ratio <= 0.75) return `bg-pink-400 text-white border-pink-400 dark:bg-pink-700 dark:text-pink-100 dark:border-pink-700${dashedBorder}`;
+  return `bg-pink-600 text-white border-pink-600 dark:bg-pink-500 dark:text-white dark:border-pink-500${dashedBorder}`;
 }
 
 export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFrequencyCalendarProps) {
