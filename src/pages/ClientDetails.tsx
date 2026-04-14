@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
-import { Calendar, Clock, Play, Plus, Target, ArrowLeft, Settings, Trash2, Timer, Edit, Copy, User, Search, AlertCircle, XCircle, Ban, MapPin, Upload, ChevronLeft, ChevronRight, CornerDownRight } from "lucide-react";
+import { Calendar, Clock, Play, Plus, Target, ArrowLeft, Settings, Trash2, Timer, Edit, Copy, User, Search, AlertCircle, XCircle, Ban, MapPin, Upload, ChevronLeft, ChevronRight, CornerDownRight, MoreVertical } from "lucide-react";
 import { WeeklyFrequencyCalendar } from "@/components/workout/weekly-frequency-calendar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
