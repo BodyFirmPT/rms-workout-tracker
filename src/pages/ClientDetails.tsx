@@ -211,24 +211,31 @@ export default function ClientDetails() {
               </div>
             </div>
             
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" onClick={() => navigate(`/client/${clientId}/injuries`)} className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4" />
-                Injuries
-              </Button>
-              <Button variant="outline" onClick={() => navigate(`/client/${clientId}/restricted-exercises`)} className="flex items-center gap-2">
-                <Ban className="h-4 w-4" />
-                Restrictions
-              </Button>
-              <Button variant="outline" onClick={() => navigate(`/client/${clientId}/locations`)} className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                Locations
-              </Button>
-              <Button variant="outline" onClick={() => navigate(`/client/${clientId}/import`)} className="flex items-center gap-2">
-                <Upload className="h-4 w-4" />
-                Import
-              </Button>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => navigate(`/client/${clientId}/injuries`)}>
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  Injuries
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate(`/client/${clientId}/restricted-exercises`)}>
+                  <Ban className="h-4 w-4 mr-2" />
+                  Restrictions
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate(`/client/${clientId}/locations`)}>
+                  <MapPin className="h-4 w-4 mr-2" />
+                  Locations
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate(`/client/${clientId}/import`)}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
