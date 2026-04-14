@@ -208,7 +208,6 @@ export default function ClientDetails() {
                   </Button>
                 </div>
               </div>
-              </div>
             </div>
             
             <div className="flex flex-wrap gap-2">
