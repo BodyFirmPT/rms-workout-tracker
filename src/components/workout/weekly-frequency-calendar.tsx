@@ -1,8 +1,14 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { startOfWeek, endOfWeek, format, subWeeks, isWithinInterval, parseISO, isSameWeek } from "date-fns";
-import { Flame, CalendarDays } from "lucide-react";
+import { Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Workout } from "@/types/workout";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface WeeklyFrequencyCalendarProps {
   workouts: Workout[];
@@ -16,14 +22,11 @@ interface WeekData {
   cancelled: number;
 }
 
-function getIntensityClasses(count: number, maxCount: number, isCurrentWeek: boolean): string {
-  if (count === 0) return "bg-muted text-muted-foreground border-border";
-  const ratio = count / Math.max(maxCount, 1);
-  const dashedBorder = isCurrentWeek ? "" : " border-solid";
-  if (ratio <= 0.25) return `bg-pink-100 text-pink-700 border-pink-200 dark:bg-pink-950 dark:text-pink-300 dark:border-pink-800${dashedBorder}`;
-  if (ratio <= 0.5) return `bg-pink-200 text-pink-800 border-pink-300 dark:bg-pink-900 dark:text-pink-200 dark:border-pink-700${dashedBorder}`;
-  if (ratio <= 0.75) return `bg-pink-400 text-white border-pink-400 dark:bg-pink-700 dark:text-pink-100 dark:border-pink-700${dashedBorder}`;
-  return `bg-pink-600 text-white border-pink-600 dark:bg-pink-500 dark:text-white dark:border-pink-500${dashedBorder}`;
+function getBarColor(count: number): string {
+  if (count === 0) return "bg-muted";
+  if (count === 1) return "bg-pink-200 dark:bg-pink-900";
+  if (count === 2) return "bg-pink-400 dark:bg-pink-600";
+  return "bg-pink-600 dark:bg-pink-400";
 }
 
 export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFrequencyCalendarProps) {
@@ -54,7 +57,6 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
     return result;
   }, [workouts, weeksToShow]);
 
-  // Calculate current streak (consecutive weeks with ≥1 workout, counting back from current week)
   const streak = useMemo(() => {
     let count = 0;
     for (let i = weeks.length - 1; i >= 0; i--) {
@@ -66,44 +68,81 @@ export function WeeklyFrequencyCalendar({ workouts, weeksToShow = 12 }: WeeklyFr
 
   const maxCount = useMemo(() => Math.max(...weeks.map(w => w.count), 1), [weeks]);
 
+  const maxBarHeight = 32;
+  const minBarHeight = 3;
+
   return (
-    <div className="w-full">
-      <div className="flex items-center gap-2 mb-2">
-        <CalendarDays className="h-4 w-4 text-pink-500" />
-        <h3 className="text-sm font-semibold text-foreground">Workout Frequency</h3>
-      </div>
-      <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-thin">
-        {weeks.map((week, i) => {
-          const isCurrentWeek = isSameWeek(new Date(), week.start, { weekStartsOn: 1 });
-          const label = `${format(week.start, "MMM d")}–${format(week.end, "d")}`;
-          return (
-            <div
-              key={i}
-              className={cn(
-                "inline-flex flex-col items-center justify-center rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors flex-1 min-w-[72px] border-2",
-                isCurrentWeek && "border-dashed border-pink-400",
-                getIntensityClasses(week.count, maxCount, isCurrentWeek)
-              )}
-              title={`${label}: ${week.count} workout${week.count !== 1 ? "s" : ""}${week.cancelled ? `, ${week.cancelled} cancelled` : ""}`}
-            >
-              <span className="text-[10px] font-medium opacity-80 leading-tight">
-                {isCurrentWeek ? "This week" : `${format(week.start, "M/d")}–${format(week.end, "M/d")}`}
-              </span>
-              <span className="text-sm font-bold leading-tight mt-0.5">
-                {week.count}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-      {streak > 1 && (
-        <div className="flex justify-end mt-1.5">
-          <span className="inline-flex items-center gap-1 text-xs font-semibold text-pink-500">
-            <Flame className="h-3.5 w-3.5" />
-            {streak} week streak!
-          </span>
+    <TooltipProvider delayDuration={100}>
+      <div className="w-full py-2">
+        {/* Header row */}
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            Workout Frequency
+          </h3>
+          {streak > 1 && (
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-pink-500">
+              <Flame className="h-3 w-3" />
+              {streak}-week streak
+            </span>
+          )}
         </div>
-      )}
-    </div>
+
+        {/* Bar chart */}
+        <div className="flex items-end gap-[3px] h-[40px]">
+          {weeks.map((week, i) => {
+            const isCurrentWeek = isSameWeek(new Date(), week.start, { weekStartsOn: 1 });
+            const barHeight = week.count === 0
+              ? minBarHeight
+              : Math.max(minBarHeight + 4, (week.count / maxCount) * maxBarHeight);
+            const label = `${format(week.start, "MMM d")} – ${format(week.end, "MMM d")}`;
+
+            return (
+              <Tooltip key={i}>
+                <TooltipTrigger asChild>
+                  <div
+                    className="flex-1 flex items-end justify-center group cursor-default"
+                    style={{ height: maxBarHeight + 4 }}
+                  >
+                    <div
+                      className={cn(
+                        "w-full rounded-sm transition-all duration-150",
+                        "group-hover:opacity-80 group-hover:scale-y-110 origin-bottom",
+                        getBarColor(week.count),
+                        isCurrentWeek && "ring-1 ring-pink-400/50 ring-offset-1 ring-offset-background"
+                      )}
+                      style={{ height: barHeight }}
+                    />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  <p className="font-medium">{label}</p>
+                  <p className="text-muted-foreground">
+                    {week.count} workout{week.count !== 1 ? "s" : ""}
+                    {week.cancelled > 0 && ` · ${week.cancelled} cancelled`}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
+        </div>
+
+        {/* Subtle tick labels */}
+        <div className="flex items-start gap-[3px] mt-1">
+          {weeks.map((week, i) => {
+            // Show label every 4 weeks and for the last item
+            const showLabel = i % 4 === 0 || i === weeks.length - 1;
+            return (
+              <div key={i} className="flex-1 text-center">
+                {showLabel && (
+                  <span className="text-[9px] text-muted-foreground/60 leading-none">
+                    {format(week.start, "M/d")}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </TooltipProvider>
   );
 }
