@@ -207,9 +207,7 @@ export default function ClientDetails() {
                     <Edit className="h-4 w-4" />
                   </Button>
                 </div>
-                <p className="text-lg text-muted-foreground">
-                  Training progress and workout history
-                </p>
+              </div>
               </div>
             </div>
             
