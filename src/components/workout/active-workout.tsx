@@ -953,7 +953,7 @@ export function ActiveWorkout({
           <EditExerciseDialog open={showEditExercise} onOpenChange={open => {
         setShowEditExercise(open);
         if (!open) setEditingExercise(null);
-      }} exercise={editingExercise} workoutId={currentWorkout.id} />
+      }} exercise={editingExercise} workoutId={currentWorkout.id} clientId={currentWorkout.client_id} />
         </>}
 
       {/* Copy Exercises Dialog */}
