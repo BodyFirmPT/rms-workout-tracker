@@ -198,7 +198,7 @@ export default function AdminBandColors() {
                 />
                 <span
                   className="text-sm font-medium"
-                  style={{ color: newHex }}
+                  style={getTextStyle(newHex)}
                 >
                   {newName || "Preview"}
                 </span>
@@ -261,7 +261,7 @@ export default function AdminBandColors() {
                       />
                       <span
                         className="text-sm font-medium whitespace-nowrap"
-                        style={{ color: color.hex }}
+                        style={getTextStyle(color.hex)}
                       >
                         {color.name}
                       </span>
