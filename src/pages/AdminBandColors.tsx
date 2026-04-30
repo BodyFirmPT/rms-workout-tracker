@@ -171,13 +171,21 @@ export default function AdminBandColors() {
             </div>
             <div>
               <Label htmlFor="new-hex">Color</Label>
-              <Input
-                id="new-hex"
-                type="color"
-                value={newHex}
-                onChange={(e) => setNewHex(e.target.value)}
-                className="w-20 h-10 p-1"
-              />
+              <div className="flex items-center gap-2">
+                <Input
+                  id="new-hex"
+                  type="color"
+                  value={newHex}
+                  onChange={(e) => setNewHex(e.target.value)}
+                  className="w-20 h-10 p-1"
+                />
+                <span
+                  className="text-sm font-medium"
+                  style={{ color: newHex }}
+                >
+                  {newName || "Preview"}
+                </span>
+              </div>
             </div>
             <div>
               <Label htmlFor="new-sort">Order</Label>
