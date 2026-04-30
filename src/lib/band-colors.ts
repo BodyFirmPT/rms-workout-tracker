@@ -7,7 +7,8 @@ export type ResistanceLevel =
   | 'light'
   | 'medium'
   | 'heavy'
-  | 'extra_heavy';
+  | 'extra_heavy'
+  | 'two_x_heavy';
 
 export interface BandColorOption {
   id: string;
