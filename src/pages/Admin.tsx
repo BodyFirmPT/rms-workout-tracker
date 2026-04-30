@@ -267,9 +267,14 @@ export default function Admin() {
       <div className="container mx-auto py-8 px-4">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-4xl font-bold">Admin Panel</h1>
-          <Button variant="outline" onClick={() => navigate("/dashboard")}>
-            Back to Home
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => navigate("/admin/band-colors")}>
+              Band Colors
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/dashboard")}>
+              Back to Home
+            </Button>
+          </div>
         </div>
 
         <div className="bg-card rounded-lg border shadow-sm">
