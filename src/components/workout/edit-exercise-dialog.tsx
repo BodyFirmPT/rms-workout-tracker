@@ -93,6 +93,8 @@ export function EditExerciseDialog({
     note: exercise.note || "",
     bandColor: exercise.band_color || "",
     bandType: exercise.band_type || "",
+    resistanceLevel: exercise.resistance_level || "",
+    bandCategory: exercise.band_category || "",
     imageUrl: exercise.image_url,
     media: mediaAsInput.length > 0 ? mediaAsInput : legacyMedia,
   } : undefined;
