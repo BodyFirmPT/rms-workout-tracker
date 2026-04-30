@@ -123,6 +123,7 @@ export function EditExerciseDialog({
             initialValues={initialValues}
             submitLabel="Update Exercise"
             isEditing={true}
+            clientId={clientId}
           />
         </div>
       </DialogContent>
