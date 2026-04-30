@@ -229,6 +229,10 @@ export default function ClientDetails() {
                   <MapPin className="h-4 w-4 mr-2" />
                   Locations
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate(`/client/${clientId}/band-mapping`)}>
+                  <Settings className="h-4 w-4 mr-2" />
+                  Band Colors
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate(`/client/${clientId}/import`)}>
                   <Upload className="h-4 w-4 mr-2" />
                   Import
