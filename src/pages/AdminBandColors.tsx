@@ -32,19 +32,19 @@ interface BandColor {
   sort_order: number;
 }
 
-// Returns a text-shadow outline for colors that are too light to read on a white-ish bg.
+// For light colors, render a subtle gray pill background so the text remains legible.
 function getTextStyle(hex: string): React.CSSProperties {
   const h = hex.replace("#", "");
   if (h.length !== 6) return { color: hex };
   const r = parseInt(h.slice(0, 2), 16);
   const g = parseInt(h.slice(2, 4), 16);
   const b = parseInt(h.slice(4, 6), 16);
-  // Perceived luminance (0-255)
   const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
   const style: React.CSSProperties = { color: hex };
   if (luminance > 200) {
-    style.textShadow =
-      "-1px -1px 0 hsl(var(--foreground)), 1px -1px 0 hsl(var(--foreground)), -1px 1px 0 hsl(var(--foreground)), 1px 1px 0 hsl(var(--foreground))";
+    style.backgroundColor = "hsl(var(--muted))";
+    style.padding = "2px 8px";
+    style.borderRadius = "4px";
   }
   return style;
 }
