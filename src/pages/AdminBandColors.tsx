@@ -32,7 +32,7 @@ interface BandColor {
   sort_order: number;
 }
 
-// For light colors, render a subtle gray pill background so the text remains legible.
+// For light colors, add a soft dark drop shadow behind the text for legibility.
 function getTextStyle(hex: string): React.CSSProperties {
   const h = hex.replace("#", "");
   if (h.length !== 6) return { color: hex };
@@ -42,9 +42,7 @@ function getTextStyle(hex: string): React.CSSProperties {
   const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
   const style: React.CSSProperties = { color: hex };
   if (luminance > 200) {
-    style.backgroundColor = "hsl(var(--muted))";
-    style.padding = "2px 8px";
-    style.borderRadius = "4px";
+    style.textShadow = "0 1px 3px rgba(0, 0, 0, 0.45), 0 0 1px rgba(0, 0, 0, 0.35)";
   }
   return style;
 }
