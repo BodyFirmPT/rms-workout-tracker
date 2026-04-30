@@ -233,14 +233,22 @@ export default function AdminBandColors() {
                     />
                   </TableCell>
                   <TableCell>
-                    <Input
-                      type="color"
-                      value={color.hex}
-                      onChange={(e) =>
-                        updateLocal(color.id, { hex: e.target.value })
-                      }
-                      className="w-16 h-9 p-1"
-                    />
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="color"
+                        value={color.hex}
+                        onChange={(e) =>
+                          updateLocal(color.id, { hex: e.target.value })
+                        }
+                        className="w-16 h-9 p-1"
+                      />
+                      <span
+                        className="text-sm font-medium whitespace-nowrap"
+                        style={{ color: color.hex }}
+                      >
+                        {color.name}
+                      </span>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Input
