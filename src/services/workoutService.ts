@@ -461,6 +461,8 @@ export class WorkoutService {
         left_weight: exerciseData.left_weight,
         band_color: exerciseData.band_color,
         band_type: exerciseData.band_type,
+        resistance_level: exerciseData.resistance_level,
+        band_category: exerciseData.band_category,
         image_url: exerciseData.image_url,
         // Keep old fields for compatibility
         reps: exerciseData.reps_count.toString(),
