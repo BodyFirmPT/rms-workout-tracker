@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Plus, ArrowLeftRight, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,14 @@ import { CreateWorkoutExerciseInput, CreateExerciseMediaInput } from "@/types/wo
 import { supabase } from "@/integrations/supabase/client";
 import { ViewRestrictionsDialog } from "@/components/workout/view-restrictions-dialog";
 import { ExerciseMediaUpload } from "@/components/workout/exercise-media-upload";
+import {
+  RESISTANCE_LEVELS,
+  RESISTANCE_LABELS,
+  categoryFromBandType,
+  resolveBandColor,
+  type ResistanceLevel,
+  type BandCategory,
+} from "@/lib/band-colors";
 
 interface Restriction {
   id: string;
@@ -34,6 +42,8 @@ interface ExerciseFormProps {
     note?: string;
     bandColor?: string;
     bandType?: string;
+    resistanceLevel?: string;
+    bandCategory?: string;
     imageUrl?: string | null;
     media?: CreateExerciseMediaInput[];
   };
