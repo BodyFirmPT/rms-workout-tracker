@@ -27,7 +27,7 @@ export interface ClientBandMapping {
 
 // Resistance levels per category (in order, weakest → strongest).
 export const RESISTANCE_LEVELS: Record<BandCategory, ResistanceLevel[]> = {
-  band: ['extra_light', 'light', 'medium', 'heavy', 'extra_heavy'],
+  band: ['extra_light', 'light', 'medium', 'heavy', 'extra_heavy', 'two_x_heavy'],
   ankle_weight: ['light', 'medium', 'heavy'],
 };
 
@@ -37,6 +37,7 @@ export const RESISTANCE_LABELS: Record<ResistanceLevel, string> = {
   medium: 'Medium',
   heavy: 'Heavy',
   extra_heavy: 'Extra Heavy',
+  two_x_heavy: '2X Heavy',
 };
 
 // System default mapping (resistance level → color name).
@@ -48,8 +49,9 @@ export const DEFAULT_BAND_MAPPING: Record<
     extra_light: 'White',
     light: 'Yellow',
     medium: 'Green',
-    heavy: 'Blue',
-    extra_heavy: 'Black',
+    heavy: 'Red',
+    extra_heavy: 'Blue',
+    two_x_heavy: 'Black',
   },
   ankle_weight: {
     light: 'Green',
