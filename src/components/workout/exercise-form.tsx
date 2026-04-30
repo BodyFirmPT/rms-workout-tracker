@@ -79,17 +79,19 @@ export function ExerciseForm({
   const [note, setNote] = useState(initialValues?.note || "");
   const [bandColor, setBandColor] = useState(initialValues?.bandColor || "");
   const [bandType, setBandType] = useState(initialValues?.bandType || "");
+  const [resistanceLevel, setResistanceLevel] = useState<string>(initialValues?.resistanceLevel || "");
   const [media, setMedia] = useState<CreateExerciseMediaInput[]>(initialValues?.media || []);
   const [showNewMuscleGroup, setShowNewMuscleGroup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [restrictions, setRestrictions] = useState<Restriction[]>([]);
   const [showRestrictionsDialog, setShowRestrictionsDialog] = useState(false);
 
-  const { muscleGroups, loadData, getMuscleGroupById } = useWorkoutStore();
+  const { muscleGroups, loadData, getMuscleGroupById, bandColors, clientBandMappings, loadBandData } = useWorkoutStore();
 
   useEffect(() => {
     loadData();
-  }, [loadData]);
+    loadBandData();
+  }, [loadData, loadBandData]);
 
   // Set preselected muscle group when provided
   useEffect(() => {
