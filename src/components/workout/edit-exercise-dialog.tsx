@@ -11,6 +11,29 @@ import { useWorkoutStore } from "@/stores/workoutStore";
 import { WorkoutExercise, CreateWorkoutExerciseInput, ExerciseMedia, CreateExerciseMediaInput } from "@/types/workout";
 import { ExerciseForm } from "@/components/workout/exercise-form";
 import { WorkoutService } from "@/services/workoutService";
+import {
+  DEFAULT_BAND_MAPPING,
+  categoryFromBandType,
+  type BandCategory,
+  type ResistanceLevel,
+} from "@/lib/band-colors";
+
+// Reverse-lookup: derive a resistance level from a legacy band color name
+// using the system default mapping. Used for back-compat when editing
+// exercises saved before resistance_level existed.
+function inferResistanceFromLegacy(
+  bandColor: string | null | undefined,
+  bandType: string | null | undefined,
+): ResistanceLevel | "" {
+  if (!bandColor) return "";
+  const category: BandCategory = categoryFromBandType(bandType);
+  const mapping = DEFAULT_BAND_MAPPING[category];
+  const target = bandColor.toLowerCase();
+  for (const [level, name] of Object.entries(mapping)) {
+    if (name && name.toLowerCase() === target) return level as ResistanceLevel;
+  }
+  return "";
+}
 
 interface EditExerciseDialogProps {
   open: boolean;
