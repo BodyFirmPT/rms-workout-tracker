@@ -163,6 +163,9 @@ const SharedWorkout = () => {
         type={(exercise.type === 'exercise' ? 'weight' : exercise.type) as 'weight' | 'band' | 'stretch'}
         bandColor={exercise.band_color}
         bandType={exercise.band_type}
+        resistanceLevel={exercise.resistance_level}
+        bandCategory={exercise.band_category}
+        clientId={(workout as any)?.client_id}
         imageUrl={exercise.image_url}
         media={exerciseMedia[exercise.id]}
         variant="added"
