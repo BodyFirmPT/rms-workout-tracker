@@ -117,6 +117,7 @@ export function ExerciseForm({
       setNote(initialValues.note || "");
       setBandColor(initialValues.bandColor || "");
       setBandType(initialValues.bandType || "");
+      setResistanceLevel(initialValues.resistanceLevel || "");
       setMedia(initialValues.media || []);
       setShowNewMuscleGroup(false);
       setNewMuscleGroup("");
@@ -167,8 +168,10 @@ export function ExerciseForm({
         image_url: null, // Deprecated, using media table now
         media: media.length > 0 ? media : undefined,
         ...(exerciseType === 'band' && {
-          band_color: bandColor,
           band_type: bandType,
+          resistance_level: resistanceLevel || null,
+          band_category: categoryFromBandType(bandType),
+          band_color: null, // legacy field; new exercises use resistance_level
         }),
       };
 
