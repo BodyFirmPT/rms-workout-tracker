@@ -52,6 +52,9 @@ interface UnifiedExerciseCardProps {
   type?: 'exercise' | 'weight' | 'band' | 'stretch';
   bandColor?: string | null;
   bandType?: string | null;
+  resistanceLevel?: string | null;
+  bandCategory?: string | null;
+  clientId?: string | null;
   imageUrl?: string | null;
   media?: ExerciseMedia[];
   workoutDate?: string;
@@ -80,6 +83,9 @@ export function UnifiedExerciseCard({
   type = 'weight',
   bandColor,
   bandType,
+  resistanceLevel,
+  bandCategory,
+  clientId,
   imageUrl,
   media,
   workoutDate,
