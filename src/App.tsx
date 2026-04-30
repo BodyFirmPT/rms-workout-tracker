@@ -14,7 +14,7 @@ import ClientDetails from "./pages/ClientDetails";
 import ClientInjuries from "./pages/ClientInjuries";
 import ClientRestrictedExercises from "./pages/ClientRestrictedExercises";
 import ClientLocations from "./pages/ClientLocations";
-import ClientBandMapping from "./pages/ClientBandMapping";
+import EditClient from "./pages/EditClient";
 import ImportWorkout from "./pages/ImportWorkout";
 import ActiveWorkout from "./pages/ActiveWorkout";
 import PrintWorkout from "./pages/PrintWorkout";
@@ -59,7 +59,8 @@ const App = () => {
               <Route path="/client/:clientId/injuries" element={<ProtectedRoute><ClientInjuries /></ProtectedRoute>} />
               <Route path="/client/:clientId/restricted-exercises" element={<ProtectedRoute><ClientRestrictedExercises /></ProtectedRoute>} />
               <Route path="/client/:clientId/locations" element={<ProtectedRoute><ClientLocations /></ProtectedRoute>} />
-              <Route path="/client/:clientId/band-mapping" element={<ProtectedRoute><ClientBandMapping /></ProtectedRoute>} />
+              <Route path="/client/:clientId/edit" element={<ProtectedRoute><EditClient /></ProtectedRoute>} />
+              <Route path="/client/:clientId/band-mapping" element={<ProtectedRoute><EditClient /></ProtectedRoute>} />
               <Route path="/client/:clientId/import" element={<ProtectedRoute><ImportWorkout /></ProtectedRoute>} />
               <Route path="/workout/:id?" element={<ProtectedRoute><ActiveWorkout /></ProtectedRoute>} />
               <Route path="/workout/:id/print" element={<ProtectedRoute><PrintWorkout /></ProtectedRoute>} />

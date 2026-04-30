@@ -13,7 +13,7 @@ import { CreateWorkoutDialog } from "@/components/workout/create-workout-dialog"
 import { DeleteWorkoutDialog } from "@/components/workout/delete-workout-dialog";
 import { EditWorkoutDialog } from "@/components/workout/edit-workout-dialog";
 import { DuplicateWorkoutDialog } from "@/components/workout/duplicate-workout-dialog";
-import { EditClientDialog } from "@/components/workout/edit-client-dialog";
+
 import { format } from "date-fns";
 import { Workout, WorkoutCountMode } from "@/types/workout";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,7 +32,7 @@ export default function ClientDetails() {
   const [deletingWorkout, setDeletingWorkout] = useState<Workout | null>(null);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
   const [duplicatingWorkout, setDuplicatingWorkout] = useState<Workout | null>(null);
-  const [editingClient, setEditingClient] = useState(false);
+  // editingClient modal removed — Edit Client is now a dedicated page at /client/:id/edit
   const [workoutProgresses, setWorkoutProgresses] = useState<{
     [id: string]: number;
   }>({});
@@ -213,7 +213,7 @@ export default function ClientDetails() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setEditingClient(true)}>
+                <DropdownMenuItem onClick={() => navigate(`/client/${clientId}/edit`)}>
                   <Edit className="h-4 w-4 mr-2" />
                   Edit Client
                 </DropdownMenuItem>
@@ -228,10 +228,6 @@ export default function ClientDetails() {
                 <DropdownMenuItem onClick={() => navigate(`/client/${clientId}/locations`)}>
                   <MapPin className="h-4 w-4 mr-2" />
                   Locations
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate(`/client/${clientId}/band-mapping`)}>
-                  <Settings className="h-4 w-4 mr-2" />
-                  Band Colors
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate(`/client/${clientId}/import`)}>
                   <Upload className="h-4 w-4 mr-2" />
@@ -442,7 +438,7 @@ export default function ClientDetails() {
 
           {duplicatingWorkout && <DuplicateWorkoutDialog open={!!duplicatingWorkout} onOpenChange={open => !open && setDuplicatingWorkout(null)} workout={duplicatingWorkout} />}
 
-          {client && editingClient && <EditClientDialog open={editingClient} onOpenChange={setEditingClient} client={client} />}
+          
         </div>
       </div>
     </div>;
