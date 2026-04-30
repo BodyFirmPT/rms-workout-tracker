@@ -118,8 +118,8 @@ export function EditExerciseDialog({
     note: exercise.note || "",
     bandColor: exercise.band_color || "",
     bandType: exercise.band_type || "",
-    resistanceLevel: exercise.resistance_level || "",
-    bandCategory: exercise.band_category || "",
+    resistanceLevel: exercise.resistance_level || inferResistanceFromLegacy(exercise.band_color, exercise.band_type),
+    bandCategory: exercise.band_category || (exercise.band_type ? categoryFromBandType(exercise.band_type) : ""),
     imageUrl: exercise.image_url,
     media: mediaAsInput.length > 0 ? mediaAsInput : legacyMedia,
   } : undefined;
