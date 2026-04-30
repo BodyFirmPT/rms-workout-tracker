@@ -7,6 +7,13 @@ import { cn } from "@/lib/utils";
 import { ExerciseTimer } from "@/components/workout/exercise-timer";
 import { ExerciseMediaModal } from "@/components/workout/exercise-media-modal";
 import { ExerciseMedia } from "@/types/workout";
+import { useWorkoutStore } from "@/stores/workoutStore";
+import {
+  resolveBandColor,
+  categoryFromBandType,
+  type BandCategory,
+  type ResistanceLevel,
+} from "@/lib/band-colors";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const BAND_COLOR_MAP: Record<string, string> = {
+const LEGACY_BAND_COLOR_MAP: Record<string, string> = {
   Black: '#374151',
   Blue: '#3b82f6',
   Purple: '#8b5cf6',
@@ -22,10 +29,11 @@ const BAND_COLOR_MAP: Record<string, string> = {
   Green: '#22c55e',
   Yellow: '#eab308',
   Pink: '#ec4899',
+  White: '#ffffff',
 };
 
-function getBandDisplayColor(color: string): string {
-  return BAND_COLOR_MAP[color] ?? 'currentColor';
+function getLegacyBandDisplayColor(color: string): string {
+  return LEGACY_BAND_COLOR_MAP[color] ?? 'currentColor';
 }
 
 interface UnifiedExerciseCardProps {
