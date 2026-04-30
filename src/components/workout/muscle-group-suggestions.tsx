@@ -173,6 +173,9 @@ export function MuscleGroupSuggestions({
                     type={(exercise.type === 'exercise' ? 'weight' : exercise.type) as 'weight' | 'band' | 'stretch'}
                     bandColor={exercise.band_color}
                     bandType={exercise.band_type}
+                    resistanceLevel={exercise.resistance_level}
+                    bandCategory={exercise.band_category}
+                    clientId={exercise.exercise_client_id || clientId}
                     imageUrl={exercise.image_url}
                     workoutDate={exercise.workout_date}
                     clientName={exercise.exercise_client_id !== clientId ? exercise.client_name : undefined}

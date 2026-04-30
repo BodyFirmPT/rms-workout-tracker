@@ -10,6 +10,8 @@ import {
   ExerciseMedia
 } from '@/types/workout';
 import { WorkoutService } from '@/services/workoutService';
+import { supabase } from '@/integrations/supabase/client';
+import { BandColorOption, ClientBandMapping } from '@/lib/band-colors';
 import { toast } from '@/hooks/use-toast';
 
 interface WorkoutStore {
@@ -20,12 +22,15 @@ interface WorkoutStore {
   workouts: Workout[];
   workoutExercises: { [workoutId: string]: WorkoutExercise[] };
   exerciseMedia: { [exerciseId: string]: ExerciseMedia[] };
+  bandColors: BandColorOption[];
+  clientBandMappings: ClientBandMapping[];
   
   // Loading states
   loading: boolean;
   
   // Actions
   loadData: () => Promise<void>;
+  loadBandData: () => Promise<void>;
   addTrainer: (name: string) => Promise<void>;
   addClient: (name: string, trainerId: string) => Promise<void>;
   updateClient: (id: string, updates: Partial<{ name: string; trainer_id: string; workout_count_offset: number }>) => Promise<void>;
@@ -63,6 +68,8 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
   workouts: [],
   workoutExercises: {},
   exerciseMedia: {},
+  bandColors: [],
+  clientBandMappings: [],
   loading: false,
 
   loadData: async () => {
@@ -82,9 +89,28 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
         workouts,
         loading: false 
       });
+      // Fire-and-forget band data load
+      get().loadBandData().catch((e) => console.error('Failed to load band data:', e));
     } catch (error) {
       console.error('Failed to load data:', error);
       set({ loading: false });
+    }
+  },
+
+  loadBandData: async () => {
+    try {
+      const [colorsRes, mappingsRes] = await Promise.all([
+        (supabase.from as any)('band_color_option').select('*').order('sort_order'),
+        (supabase.from as any)('client_band_mapping').select('*'),
+      ]);
+      if (colorsRes.error) throw colorsRes.error;
+      if (mappingsRes.error) throw mappingsRes.error;
+      set({
+        bandColors: (colorsRes.data || []) as BandColorOption[],
+        clientBandMappings: (mappingsRes.data || []) as ClientBandMapping[],
+      });
+    } catch (error) {
+      console.error('Failed to load band color data:', error);
     }
   },
 

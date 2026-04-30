@@ -7,6 +7,13 @@ import { cn } from "@/lib/utils";
 import { ExerciseTimer } from "@/components/workout/exercise-timer";
 import { ExerciseMediaModal } from "@/components/workout/exercise-media-modal";
 import { ExerciseMedia } from "@/types/workout";
+import { useWorkoutStore } from "@/stores/workoutStore";
+import {
+  resolveBandColor,
+  categoryFromBandType,
+  type BandCategory,
+  type ResistanceLevel,
+} from "@/lib/band-colors";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const BAND_COLOR_MAP: Record<string, string> = {
+const LEGACY_BAND_COLOR_MAP: Record<string, string> = {
   Black: '#374151',
   Blue: '#3b82f6',
   Purple: '#8b5cf6',
@@ -22,10 +29,11 @@ const BAND_COLOR_MAP: Record<string, string> = {
   Green: '#22c55e',
   Yellow: '#eab308',
   Pink: '#ec4899',
+  White: '#ffffff',
 };
 
-function getBandDisplayColor(color: string): string {
-  return BAND_COLOR_MAP[color] ?? 'currentColor';
+function getLegacyBandDisplayColor(color: string): string {
+  return LEGACY_BAND_COLOR_MAP[color] ?? 'currentColor';
 }
 
 interface UnifiedExerciseCardProps {
@@ -44,6 +52,9 @@ interface UnifiedExerciseCardProps {
   type?: 'exercise' | 'weight' | 'band' | 'stretch';
   bandColor?: string | null;
   bandType?: string | null;
+  resistanceLevel?: string | null;
+  bandCategory?: string | null;
+  clientId?: string | null;
   imageUrl?: string | null;
   media?: ExerciseMedia[];
   workoutDate?: string;
@@ -72,6 +83,9 @@ export function UnifiedExerciseCard({
   type = 'weight',
   bandColor,
   bandType,
+  resistanceLevel,
+  bandCategory,
+  clientId,
   imageUrl,
   media,
   workoutDate,
@@ -89,6 +103,24 @@ export function UnifiedExerciseCard({
   const isStretch = type === 'stretch';
   const isBand = type === 'band';
   const isTimedExercise = !isSuggested && (repsUnit.toLowerCase() === 'sec' || repsUnit.toLowerCase() === 'seconds');
+
+  // Resolve band color: prefer resistance level + per-client mapping;
+  // fall back to legacy band_color string for older exercises.
+  const palette = useWorkoutStore((s) => s.bandColors);
+  const mappings = useWorkoutStore((s) => s.clientBandMappings);
+  let resolvedBandLabel: { name: string; hex: string } | null = null;
+  if (isBand && resistanceLevel) {
+    const cat = (bandCategory as BandCategory) || categoryFromBandType(bandType);
+    resolvedBandLabel = resolveBandColor({
+      clientId: clientId || null,
+      bandCategory: cat,
+      resistanceLevel: resistanceLevel as ResistanceLevel,
+      palette,
+      mappings,
+    });
+  } else if (isBand && bandColor) {
+    resolvedBandLabel = { name: bandColor, hex: getLegacyBandDisplayColor(bandColor) };
+  }
   
   return (
     <div 
@@ -143,8 +175,8 @@ export function UnifiedExerciseCard({
             isSuggested ? "text-muted-foreground/70" : "text-muted-foreground"
           )}>
             {setCount} × {repsCount} {repsUnit}
-            {isBand && bandColor && bandType 
-              ? <> • <span style={{ color: getBandDisplayColor(bandColor) }} className="font-semibold">{bandColor}</span> {bandType} band</>
+            {isBand && resolvedBandLabel && bandType 
+              ? <> • <span style={{ color: resolvedBandLabel.hex }} className="font-semibold">{resolvedBandLabel.name}</span> {bandType} band</>
               : weightCount > 0 && leftWeight !== null && leftWeight !== undefined 
                 ? ` @ R:${weightCount} ${weightUnit} L:${leftWeight} ${weightUnit}` 
                 : weightCount > 0 

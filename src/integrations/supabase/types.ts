@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      band_color_option: {
+        Row: {
+          created_at: string
+          hex: string
+          id: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          hex: string
+          id?: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          hex?: string
+          id?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       client: {
         Row: {
           created_at: string
@@ -42,6 +66,41 @@ export type Database = {
             columns: ["trainer_id"]
             isOneToOne: false
             referencedRelation: "trainer"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_band_mapping: {
+        Row: {
+          band_category: string
+          client_id: string
+          color_id: string
+          created_at: string
+          id: string
+          resistance_level: string
+        }
+        Insert: {
+          band_category: string
+          client_id: string
+          color_id: string
+          created_at?: string
+          id?: string
+          resistance_level: string
+        }
+        Update: {
+          band_category?: string
+          client_id?: string
+          color_id?: string
+          created_at?: string
+          id?: string
+          resistance_level?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_band_mapping_color_id_fkey"
+            columns: ["color_id"]
+            isOneToOne: false
+            referencedRelation: "band_color_option"
             referencedColumns: ["id"]
           },
         ]
@@ -442,6 +501,7 @@ export type Database = {
       }
       workout_exercise: {
         Row: {
+          band_category: string | null
           band_color: string | null
           band_type: string | null
           completed_sets: number
@@ -458,6 +518,7 @@ export type Database = {
           reps: string
           reps_count: number
           reps_unit: string
+          resistance_level: string | null
           set_count: number
           type: string
           unit: string
@@ -466,6 +527,7 @@ export type Database = {
           workout_id: string
         }
         Insert: {
+          band_category?: string | null
           band_color?: string | null
           band_type?: string | null
           completed_sets?: number
@@ -482,6 +544,7 @@ export type Database = {
           reps: string
           reps_count: number
           reps_unit?: string
+          resistance_level?: string | null
           set_count: number
           type?: string
           unit: string
@@ -490,6 +553,7 @@ export type Database = {
           workout_id: string
         }
         Update: {
+          band_category?: string | null
           band_color?: string | null
           band_type?: string | null
           completed_sets?: number
@@ -506,6 +570,7 @@ export type Database = {
           reps?: string
           reps_count?: number
           reps_unit?: string
+          resistance_level?: string | null
           set_count?: number
           type?: string
           unit?: string

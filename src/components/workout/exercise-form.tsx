@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Plus, ArrowLeftRight, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,14 @@ import { CreateWorkoutExerciseInput, CreateExerciseMediaInput } from "@/types/wo
 import { supabase } from "@/integrations/supabase/client";
 import { ViewRestrictionsDialog } from "@/components/workout/view-restrictions-dialog";
 import { ExerciseMediaUpload } from "@/components/workout/exercise-media-upload";
+import {
+  RESISTANCE_LEVELS,
+  RESISTANCE_LABELS,
+  categoryFromBandType,
+  resolveBandColor,
+  type ResistanceLevel,
+  type BandCategory,
+} from "@/lib/band-colors";
 
 interface Restriction {
   id: string;
@@ -34,6 +42,8 @@ interface ExerciseFormProps {
     note?: string;
     bandColor?: string;
     bandType?: string;
+    resistanceLevel?: string;
+    bandCategory?: string;
     imageUrl?: string | null;
     media?: CreateExerciseMediaInput[];
   };
@@ -69,17 +79,19 @@ export function ExerciseForm({
   const [note, setNote] = useState(initialValues?.note || "");
   const [bandColor, setBandColor] = useState(initialValues?.bandColor || "");
   const [bandType, setBandType] = useState(initialValues?.bandType || "");
+  const [resistanceLevel, setResistanceLevel] = useState<string>(initialValues?.resistanceLevel || "");
   const [media, setMedia] = useState<CreateExerciseMediaInput[]>(initialValues?.media || []);
   const [showNewMuscleGroup, setShowNewMuscleGroup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [restrictions, setRestrictions] = useState<Restriction[]>([]);
   const [showRestrictionsDialog, setShowRestrictionsDialog] = useState(false);
 
-  const { muscleGroups, loadData, getMuscleGroupById } = useWorkoutStore();
+  const { muscleGroups, loadData, getMuscleGroupById, bandColors, clientBandMappings, loadBandData } = useWorkoutStore();
 
   useEffect(() => {
     loadData();
-  }, [loadData]);
+    loadBandData();
+  }, [loadData, loadBandData]);
 
   // Set preselected muscle group when provided
   useEffect(() => {
@@ -105,6 +117,7 @@ export function ExerciseForm({
       setNote(initialValues.note || "");
       setBandColor(initialValues.bandColor || "");
       setBandType(initialValues.bandType || "");
+      setResistanceLevel(initialValues.resistanceLevel || "");
       setMedia(initialValues.media || []);
       setShowNewMuscleGroup(false);
       setNewMuscleGroup("");
@@ -155,8 +168,10 @@ export function ExerciseForm({
         image_url: null, // Deprecated, using media table now
         media: media.length > 0 ? media : undefined,
         ...(exerciseType === 'band' && {
-          band_color: bandColor,
           band_type: bandType,
+          resistance_level: resistanceLevel || null,
+          band_category: categoryFromBandType(bandType),
+          band_color: null, // legacy field; new exercises use resistance_level
         }),
       };
 
@@ -326,45 +341,83 @@ export function ExerciseForm({
       </div>
 
       {/* Band-specific fields */}
-      {exerciseType === 'band' && (
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="band-color">Band Color</Label>
-            <Select value={bandColor} onValueChange={setBandColor} required>
-              <SelectTrigger id="band-color">
-                <SelectValue placeholder="Select color" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Black">Black</SelectItem>
-                <SelectItem value="Blue">Blue</SelectItem>
-                <SelectItem value="Purple">Purple</SelectItem>
-                <SelectItem value="Red">Red</SelectItem>
-                <SelectItem value="Green">Green</SelectItem>
-                <SelectItem value="Yellow">Yellow</SelectItem>
-                <SelectItem value="Pink">Pink</SelectItem>
-              </SelectContent>
-            </Select>
+      {exerciseType === 'band' && (() => {
+        const bandCategory: BandCategory = categoryFromBandType(bandType);
+        const availableLevels = RESISTANCE_LEVELS[bandCategory];
+        const resolvedPreview = resistanceLevel
+          ? resolveBandColor({
+              clientId: clientId || null,
+              bandCategory,
+              resistanceLevel: resistanceLevel as ResistanceLevel,
+              palette: bandColors,
+              mappings: clientBandMappings,
+            })
+          : null;
+        return (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="band-type">Band Type</Label>
+                <Select value={bandType} onValueChange={(v) => { setBandType(v); /* reset level when switching category */ const newCat = categoryFromBandType(v); if (resistanceLevel && !RESISTANCE_LEVELS[newCat].includes(resistanceLevel as ResistanceLevel)) setResistanceLevel(""); }} required>
+                  <SelectTrigger id="band-type">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1-handle">1-handle</SelectItem>
+                    <SelectItem value="2-handle">2-handle</SelectItem>
+                    <SelectItem value="flat">Flat</SelectItem>
+                    <SelectItem value="figure-8">Figure-8</SelectItem>
+                    <SelectItem value="double-leg-cuff">Double leg cuff</SelectItem>
+                    <SelectItem value="single-leg-cuff">Single leg cuff</SelectItem>
+                    <SelectItem value="ankle-weight">Ankle weight</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="resistance-level">Resistance</Label>
+                <Select value={resistanceLevel} onValueChange={setResistanceLevel} required>
+                  <SelectTrigger id="resistance-level">
+                    <SelectValue placeholder="Select resistance" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableLevels.map((lvl) => {
+                      const swatch = resolveBandColor({
+                        clientId: clientId || null,
+                        bandCategory,
+                        resistanceLevel: lvl,
+                        palette: bandColors,
+                        mappings: clientBandMappings,
+                      });
+                      return (
+                        <SelectItem key={lvl} value={lvl}>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="inline-block h-3 w-3 rounded-full border border-border"
+                              style={{ backgroundColor: swatch.hex }}
+                            />
+                            <span>{RESISTANCE_LABELS[lvl]}</span>
+                            <span className="text-xs text-muted-foreground">· {swatch.name}</span>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            {resolvedPreview && (
+              <p className="text-xs text-muted-foreground">
+                Will display as{" "}
+                <span className="font-semibold" style={{ color: resolvedPreview.hex }}>
+                  {resolvedPreview.name}
+                </span>{" "}
+                {bandType && <>{bandType} band</>}
+              </p>
+            )}
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="band-type">Band Type</Label>
-            <Select value={bandType} onValueChange={setBandType} required>
-              <SelectTrigger id="band-type">
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1-handle">1-handle</SelectItem>
-                <SelectItem value="2-handle">2-handle</SelectItem>
-                <SelectItem value="flat">Flat</SelectItem>
-                <SelectItem value="figure-8">Figure-8</SelectItem>
-                <SelectItem value="double-leg-cuff">Double leg cuff</SelectItem>
-                <SelectItem value="single-leg-cuff">Single leg cuff</SelectItem>
-                <SelectItem value="ankle-weight">Ankle weight</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Weight section - only show for weight exercises */}
       {exerciseType === 'weight' && (

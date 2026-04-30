@@ -17,6 +17,7 @@ interface EditExerciseDialogProps {
   onOpenChange: (open: boolean) => void;
   exercise: WorkoutExercise | null;
   workoutId: string;
+  clientId?: string;
 }
 
 export function EditExerciseDialog({
@@ -24,6 +25,7 @@ export function EditExerciseDialog({
   onOpenChange,
   exercise,
   workoutId,
+  clientId,
 }: EditExerciseDialogProps) {
   const { updateExercise, addMuscleGroup } = useWorkoutStore();
   const [exerciseMedia, setExerciseMedia] = useState<ExerciseMedia[]>([]);
@@ -93,6 +95,8 @@ export function EditExerciseDialog({
     note: exercise.note || "",
     bandColor: exercise.band_color || "",
     bandType: exercise.band_type || "",
+    resistanceLevel: exercise.resistance_level || "",
+    bandCategory: exercise.band_category || "",
     imageUrl: exercise.image_url,
     media: mediaAsInput.length > 0 ? mediaAsInput : legacyMedia,
   } : undefined;
@@ -119,6 +123,7 @@ export function EditExerciseDialog({
             initialValues={initialValues}
             submitLabel="Update Exercise"
             isEditing={true}
+            clientId={clientId}
           />
         </div>
       </DialogContent>

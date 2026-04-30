@@ -63,6 +63,8 @@ export interface WorkoutExercise {
   type: 'exercise' | 'weight' | 'band' | 'stretch';
   band_color?: string | null;
   band_type?: string | null;
+  resistance_level?: string | null;
+  band_category?: string | null;
   image_url?: string | null;
   raw_import_data?: string | null;
   created_at?: string;
@@ -98,8 +100,10 @@ export interface CreateWorkoutExerciseInput {
   note?: string;
   set_count: number;
   type?: 'exercise' | 'weight' | 'band' | 'stretch';
-  band_color?: string;
+  band_color?: string | null;
   band_type?: string;
+  resistance_level?: string | null;
+  band_category?: string | null;
   image_url?: string | null;
   media?: CreateExerciseMediaInput[];
 }
