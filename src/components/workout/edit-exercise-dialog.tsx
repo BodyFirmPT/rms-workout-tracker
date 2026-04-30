@@ -17,6 +17,7 @@ interface EditExerciseDialogProps {
   onOpenChange: (open: boolean) => void;
   exercise: WorkoutExercise | null;
   workoutId: string;
+  clientId?: string;
 }
 
 export function EditExerciseDialog({
@@ -24,6 +25,7 @@ export function EditExerciseDialog({
   onOpenChange,
   exercise,
   workoutId,
+  clientId,
 }: EditExerciseDialogProps) {
   const { updateExercise, addMuscleGroup } = useWorkoutStore();
   const [exerciseMedia, setExerciseMedia] = useState<ExerciseMedia[]>([]);
