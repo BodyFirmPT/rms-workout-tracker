@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { CreateClientDialog } from "@/components/workout/create-client-dialog";
-import { EditClientDialog } from "@/components/workout/edit-client-dialog";
+
 import { DeleteClientDialog } from "@/components/workout/delete-client-dialog";
 import { UpgradeModal } from "@/components/upgrade/UpgradeModal";
 import { Client } from "@/types/workout";
@@ -25,7 +25,7 @@ export function ClientSelector() {
   const { isPaid, refresh: refreshSubscription } = useSubscription();
   const [showCreateClient, setShowCreateClient] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  // editingClient modal removed — navigates to /client/:id/edit page instead
   const [deletingClient, setDeletingClient] = useState<Client | null>(null);
   const [userClientId, setUserClientId] = useState<string | null>(null);
   const [userClient, setUserClient] = useState<Client | null>(null);
@@ -251,7 +251,7 @@ export function ClientSelector() {
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setEditingClient(client);
+                          navigate(`/client/${client.id}/edit`);
                         }}
                         className="h-7 w-7 p-0 text-muted-foreground"
                       >
@@ -303,13 +303,6 @@ export function ClientSelector() {
         onOpenChange={setShowCreateClient}
       />
 
-      {editingClient && (
-        <EditClientDialog
-          open={!!editingClient}
-          onOpenChange={(open) => !open && setEditingClient(null)}
-          client={editingClient}
-        />
-      )}
 
       {deletingClient && (
         <DeleteClientDialog
