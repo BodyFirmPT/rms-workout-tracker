@@ -3,10 +3,16 @@ import { useParams } from "react-router-dom";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { format } from "date-fns";
 import { WorkoutExercise } from "@/types/workout";
+import {
+  resolveBandColor,
+  categoryFromBandType,
+  type BandCategory,
+  type ResistanceLevel,
+} from "@/lib/band-colors";
 
 const PrintWorkout = () => {
   const { id } = useParams();
-  const { workouts, workoutExercises, muscleGroups, getClientById, getMuscleGroupById, loadData, loadWorkoutExercises } = useWorkoutStore();
+  const { workouts, workoutExercises, muscleGroups, bandColors, clientBandMappings, getClientById, getMuscleGroupById, loadData, loadWorkoutExercises } = useWorkoutStore();
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -41,6 +47,50 @@ const PrintWorkout = () => {
 
   const client = getClientById(currentWorkout.client_id);
   const exercises = workoutExercises[currentWorkout.id] || [];
+
+  const renderWeight = (exercise: WorkoutExercise) => {
+    if (exercise.type === 'band') {
+      const category: BandCategory =
+        (exercise.band_category as BandCategory) ||
+        categoryFromBandType(exercise.band_type);
+      const level = exercise.resistance_level as ResistanceLevel | undefined;
+      if (level) {
+        const resolved = resolveBandColor({
+          clientId: currentWorkout.client_id,
+          bandCategory: category,
+          resistanceLevel: level,
+          palette: bandColors,
+          mappings: clientBandMappings,
+        });
+        const label = category === 'ankle_weight' ? 'Ankle' : 'Band';
+        return (
+          <div className="flex items-center justify-center gap-1.5">
+            <span
+              className="inline-block w-3 h-3 rounded-full border border-gray-400"
+              style={{ backgroundColor: resolved.hex }}
+            />
+            <span>{resolved.name}</span>
+            <span className="text-gray-500">({label})</span>
+          </div>
+        );
+      }
+      if (exercise.band_color) return exercise.band_color;
+      return '-';
+    }
+    if (exercise.weight_count > 0) {
+      if (exercise.left_weight !== null && exercise.left_weight !== undefined) {
+        return (
+          <div className="text-xs">
+            <div>R: {exercise.weight_count} {exercise.weight_unit}</div>
+            <div>L: {exercise.left_weight} {exercise.weight_unit}</div>
+          </div>
+        );
+      }
+      return `${exercise.weight_count} ${exercise.weight_unit}`;
+    }
+    return '-';
+  };
+
 
   // Group exercises by muscle group and category
   const defaultMuscleGroups = muscleGroups.filter(mg => mg.default_group);
@@ -148,17 +198,9 @@ const PrintWorkout = () => {
                           {exercise.reps_count} {exercise.reps_unit}
                         </td>
                         <td className="py-1.5 text-center align-top text-black">
-                          {exercise.weight_count > 0 ? (
-                            exercise.left_weight !== null && exercise.left_weight !== undefined ? (
-                              <div className="text-xs">
-                                <div>R: {exercise.weight_count} {exercise.weight_unit}</div>
-                                <div>L: {exercise.left_weight} {exercise.weight_unit}</div>
-                              </div>
-                            ) : (
-                              `${exercise.weight_count} ${exercise.weight_unit}`
-                            )
-                          ) : '-'}
+                          {renderWeight(exercise)}
                         </td>
+
                       </tr>
                     ));
                   })}
@@ -211,17 +253,9 @@ const PrintWorkout = () => {
                         {exercise.reps_count} {exercise.reps_unit}
                       </td>
                       <td className="py-1.5 text-center align-top text-black">
-                        {exercise.weight_count > 0 ? (
-                          exercise.left_weight !== null && exercise.left_weight !== undefined ? (
-                            <div className="text-xs">
-                              <div>R: {exercise.weight_count} {exercise.weight_unit}</div>
-                              <div>L: {exercise.left_weight} {exercise.weight_unit}</div>
-                            </div>
-                          ) : (
-                            `${exercise.weight_count} ${exercise.weight_unit}`
-                          )
-                        ) : '-'}
+                        {renderWeight(exercise)}
                       </td>
+
                     </tr>
                   ));
                 })}
