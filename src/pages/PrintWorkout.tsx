@@ -48,6 +48,50 @@ const PrintWorkout = () => {
   const client = getClientById(currentWorkout.client_id);
   const exercises = workoutExercises[currentWorkout.id] || [];
 
+  const renderWeight = (exercise: WorkoutExercise) => {
+    if (exercise.type === 'band') {
+      const category: BandCategory =
+        (exercise.band_category as BandCategory) ||
+        categoryFromBandType(exercise.band_type);
+      const level = exercise.resistance_level as ResistanceLevel | undefined;
+      if (level) {
+        const resolved = resolveBandColor({
+          clientId: currentWorkout.client_id,
+          bandCategory: category,
+          resistanceLevel: level,
+          palette: bandColors,
+          mappings: clientBandMappings,
+        });
+        const label = category === 'ankle_weight' ? 'Ankle' : 'Band';
+        return (
+          <div className="flex items-center justify-center gap-1.5">
+            <span
+              className="inline-block w-3 h-3 rounded-full border border-gray-400"
+              style={{ backgroundColor: resolved.hex }}
+            />
+            <span>{resolved.name}</span>
+            <span className="text-gray-500">({label})</span>
+          </div>
+        );
+      }
+      if (exercise.band_color) return exercise.band_color;
+      return '-';
+    }
+    if (exercise.weight_count > 0) {
+      if (exercise.left_weight !== null && exercise.left_weight !== undefined) {
+        return (
+          <div className="text-xs">
+            <div>R: {exercise.weight_count} {exercise.weight_unit}</div>
+            <div>L: {exercise.left_weight} {exercise.weight_unit}</div>
+          </div>
+        );
+      }
+      return `${exercise.weight_count} ${exercise.weight_unit}`;
+    }
+    return '-';
+  };
+
+
   // Group exercises by muscle group and category
   const defaultMuscleGroups = muscleGroups.filter(mg => mg.default_group);
   const exercisesByMuscleGroupId = exercises.reduce((acc, exercise) => {
