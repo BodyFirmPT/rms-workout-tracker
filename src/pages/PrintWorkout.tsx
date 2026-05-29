@@ -3,10 +3,16 @@ import { useParams } from "react-router-dom";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { format } from "date-fns";
 import { WorkoutExercise } from "@/types/workout";
+import {
+  resolveBandColor,
+  categoryFromBandType,
+  type BandCategory,
+  type ResistanceLevel,
+} from "@/lib/band-colors";
 
 const PrintWorkout = () => {
   const { id } = useParams();
-  const { workouts, workoutExercises, muscleGroups, getClientById, getMuscleGroupById, loadData, loadWorkoutExercises } = useWorkoutStore();
+  const { workouts, workoutExercises, muscleGroups, bandColors, clientBandMappings, getClientById, getMuscleGroupById, loadData, loadWorkoutExercises } = useWorkoutStore();
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
