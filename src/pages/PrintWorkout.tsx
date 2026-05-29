@@ -198,17 +198,9 @@ const PrintWorkout = () => {
                           {exercise.reps_count} {exercise.reps_unit}
                         </td>
                         <td className="py-1.5 text-center align-top text-black">
-                          {exercise.weight_count > 0 ? (
-                            exercise.left_weight !== null && exercise.left_weight !== undefined ? (
-                              <div className="text-xs">
-                                <div>R: {exercise.weight_count} {exercise.weight_unit}</div>
-                                <div>L: {exercise.left_weight} {exercise.weight_unit}</div>
-                              </div>
-                            ) : (
-                              `${exercise.weight_count} ${exercise.weight_unit}`
-                            )
-                          ) : '-'}
+                          {renderWeight(exercise)}
                         </td>
+
                       </tr>
                     ));
                   })}
