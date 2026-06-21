@@ -5,8 +5,8 @@ import { format } from "date-fns";
 import { WorkoutExercise } from "@/types/workout";
 import {
   resolveBandColor,
+  normalizeBandType,
   categoryFromBandType,
-  type BandCategory,
   type ResistanceLevel,
 } from "@/lib/band-colors";
 
