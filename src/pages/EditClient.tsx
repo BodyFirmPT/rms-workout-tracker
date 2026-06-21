@@ -23,11 +23,13 @@ import { CreateTrainerDialog } from "@/components/workout/create-trainer-dialog"
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
-  RESISTANCE_LEVELS,
+  RESISTANCE_LEVELS_BY_TYPE,
   RESISTANCE_LABELS,
-  DEFAULT_BAND_MAPPING,
+  DEFAULT_BAND_MAPPING_BY_TYPE,
+  BAND_TYPES,
+  BAND_TYPE_LABELS,
   resolveBandColor,
-  type BandCategory,
+  type BandType,
   type ResistanceLevel,
 } from "@/lib/band-colors";
 
