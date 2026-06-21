@@ -1,7 +1,14 @@
 // Band color resolution: maps a (band type, resistance level) tuple to a
 // named/colored swatch using either a per-client override or the system default.
 
-export type BandType = '1-handle' | '2-handle' | 'flat' | 'figure-8' | 'ankle-weight';
+export type BandType =
+  | '1-handle'
+  | '2-handle'
+  | 'flat'
+  | 'figure-8'
+  | 'double-leg-cuff'
+  | 'single-leg-cuff'
+  | 'ankle-weight';
 
 // Kept as a coarse category for resistance-level scale selection only.
 export type BandCategory = 'band' | 'ankle_weight';
