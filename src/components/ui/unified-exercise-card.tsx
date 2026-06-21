@@ -10,8 +10,7 @@ import { ExerciseMedia } from "@/types/workout";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import {
   resolveBandColor,
-  categoryFromBandType,
-  type BandCategory,
+  normalizeBandType,
   type ResistanceLevel,
 } from "@/lib/band-colors";
 import {
