@@ -72,7 +72,7 @@ export type Database = {
       }
       client_band_mapping: {
         Row: {
-          band_category: string
+          band_type: string
           client_id: string
           color_id: string
           created_at: string
@@ -80,7 +80,7 @@ export type Database = {
           resistance_level: string
         }
         Insert: {
-          band_category: string
+          band_type: string
           client_id: string
           color_id: string
           created_at?: string
@@ -88,7 +88,7 @@ export type Database = {
           resistance_level: string
         }
         Update: {
-          band_category?: string
+          band_type?: string
           client_id?: string
           color_id?: string
           created_at?: string
