@@ -12,9 +12,8 @@ import { WorkoutExercise, CreateWorkoutExerciseInput, ExerciseMedia, CreateExerc
 import { ExerciseForm } from "@/components/workout/exercise-form";
 import { WorkoutService } from "@/services/workoutService";
 import {
-  DEFAULT_BAND_MAPPING,
-  categoryFromBandType,
-  type BandCategory,
+  DEFAULT_BAND_MAPPING_BY_TYPE,
+  normalizeBandType,
   type ResistanceLevel,
 } from "@/lib/band-colors";
 
@@ -26,11 +25,12 @@ function inferResistanceFromLegacy(
   bandType: string | null | undefined,
 ): ResistanceLevel | "" {
   if (!bandColor) return "";
-  const category: BandCategory = categoryFromBandType(bandType);
-  const mapping = DEFAULT_BAND_MAPPING[category];
+  const nt = normalizeBandType(bandType);
+  if (!nt) return "";
+  const mapping = DEFAULT_BAND_MAPPING_BY_TYPE[nt];
   const target = bandColor.toLowerCase();
   for (const [level, name] of Object.entries(mapping)) {
-    if (name && name.toLowerCase() === target) return level as ResistanceLevel;
+    if (name && (name as string).toLowerCase() === target) return level as ResistanceLevel;
   }
   return "";
 }
@@ -119,7 +119,7 @@ export function EditExerciseDialog({
     bandColor: exercise.band_color || "",
     bandType: exercise.band_type || "",
     resistanceLevel: exercise.resistance_level || inferResistanceFromLegacy(exercise.band_color, exercise.band_type),
-    bandCategory: exercise.band_category || (exercise.band_type ? categoryFromBandType(exercise.band_type) : ""),
+    bandCategory: exercise.band_category || "",
     imageUrl: exercise.image_url,
     media: mediaAsInput.length > 0 ? mediaAsInput : legacyMedia,
   } : undefined;

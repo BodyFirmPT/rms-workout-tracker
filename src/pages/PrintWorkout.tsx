@@ -5,8 +5,8 @@ import { format } from "date-fns";
 import { WorkoutExercise } from "@/types/workout";
 import {
   resolveBandColor,
+  normalizeBandType,
   categoryFromBandType,
-  type BandCategory,
   type ResistanceLevel,
 } from "@/lib/band-colors";
 
@@ -50,19 +50,17 @@ const PrintWorkout = () => {
 
   const renderWeight = (exercise: WorkoutExercise) => {
     if (exercise.type === 'band') {
-      const category: BandCategory =
-        (exercise.band_category as BandCategory) ||
-        categoryFromBandType(exercise.band_type);
+      const nt = normalizeBandType(exercise.band_type);
       const level = exercise.resistance_level as ResistanceLevel | undefined;
-      if (level) {
+      if (nt && level) {
         const resolved = resolveBandColor({
           clientId: currentWorkout.client_id,
-          bandCategory: category,
+          bandType: nt,
           resistanceLevel: level,
           palette: bandColors,
           mappings: clientBandMappings,
         });
-        const label = category === 'ankle_weight' ? 'Ankle' : 'Band';
+        const label = categoryFromBandType(exercise.band_type) === 'ankle_weight' ? 'Ankle' : 'Band';
         return (
           <div className="flex items-center justify-center gap-1.5">
             <span

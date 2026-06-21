@@ -10,8 +10,7 @@ import { ExerciseMedia } from "@/types/workout";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import {
   resolveBandColor,
-  categoryFromBandType,
-  type BandCategory,
+  normalizeBandType,
   type ResistanceLevel,
 } from "@/lib/band-colors";
 import {
@@ -109,18 +108,23 @@ export function UnifiedExerciseCard({
   const palette = useWorkoutStore((s) => s.bandColors);
   const mappings = useWorkoutStore((s) => s.clientBandMappings);
   let resolvedBandLabel: { name: string; hex: string } | null = null;
-  if (isBand && resistanceLevel) {
-    const cat = (bandCategory as BandCategory) || categoryFromBandType(bandType);
-    resolvedBandLabel = resolveBandColor({
-      clientId: clientId || null,
-      bandCategory: cat,
-      resistanceLevel: resistanceLevel as ResistanceLevel,
-      palette,
-      mappings,
-    });
-  } else if (isBand && bandColor) {
+  if (isBand && resistanceLevel && bandType) {
+    const nt = normalizeBandType(bandType);
+    if (nt) {
+      resolvedBandLabel = resolveBandColor({
+        clientId: clientId || null,
+        bandType: nt,
+        resistanceLevel: resistanceLevel as ResistanceLevel,
+        palette,
+        mappings,
+      });
+    }
+  }
+  if (!resolvedBandLabel && isBand && bandColor) {
     resolvedBandLabel = { name: bandColor, hex: getLegacyBandDisplayColor(bandColor) };
   }
+
+
   
   return (
     <div 

@@ -12,12 +12,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { ViewRestrictionsDialog } from "@/components/workout/view-restrictions-dialog";
 import { ExerciseMediaUpload } from "@/components/workout/exercise-media-upload";
 import {
-  RESISTANCE_LEVELS,
+  RESISTANCE_LEVELS_BY_TYPE,
   RESISTANCE_LABELS,
   categoryFromBandType,
+  normalizeBandType,
   resolveBandColor,
   type ResistanceLevel,
-  type BandCategory,
+  type BandType,
 } from "@/lib/band-colors";
 
 interface Restriction {
@@ -342,12 +343,12 @@ export function ExerciseForm({
 
       {/* Band-specific fields */}
       {exerciseType === 'band' && (() => {
-        const bandCategory: BandCategory = categoryFromBandType(bandType);
-        const availableLevels = RESISTANCE_LEVELS[bandCategory];
-        const resolvedPreview = resistanceLevel
+        const normalizedType = normalizeBandType(bandType);
+        const availableLevels = normalizedType ? RESISTANCE_LEVELS_BY_TYPE[normalizedType] : [];
+        const resolvedPreview = normalizedType && resistanceLevel
           ? resolveBandColor({
               clientId: clientId || null,
-              bandCategory,
+              bandType: normalizedType,
               resistanceLevel: resistanceLevel as ResistanceLevel,
               palette: bandColors,
               mappings: clientBandMappings,
@@ -358,7 +359,7 @@ export function ExerciseForm({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="band-type">Band Type</Label>
-                <Select value={bandType} onValueChange={(v) => { setBandType(v); /* reset level when switching category */ const newCat = categoryFromBandType(v); if (resistanceLevel && !RESISTANCE_LEVELS[newCat].includes(resistanceLevel as ResistanceLevel)) setResistanceLevel(""); }} required>
+                <Select value={bandType} onValueChange={(v) => { setBandType(v); const nt = normalizeBandType(v); if (resistanceLevel && (!nt || !RESISTANCE_LEVELS_BY_TYPE[nt].includes(resistanceLevel as ResistanceLevel))) setResistanceLevel(""); }} required>
                   <SelectTrigger id="band-type">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
@@ -382,13 +383,13 @@ export function ExerciseForm({
                   </SelectTrigger>
                   <SelectContent>
                     {availableLevels.map((lvl) => {
-                      const swatch = resolveBandColor({
+                      const swatch = normalizedType ? resolveBandColor({
                         clientId: clientId || null,
-                        bandCategory,
+                        bandType: normalizedType,
                         resistanceLevel: lvl,
                         palette: bandColors,
                         mappings: clientBandMappings,
-                      });
+                      }) : { name: '', hex: '#9ca3af' };
                       return (
                         <SelectItem key={lvl} value={lvl}>
                           <div className="flex items-center gap-2">
@@ -397,7 +398,7 @@ export function ExerciseForm({
                               style={{ backgroundColor: swatch.hex }}
                             />
                             <span>{RESISTANCE_LABELS[lvl]}</span>
-                            <span className="text-xs text-muted-foreground">· {swatch.name}</span>
+                            {swatch.name && <span className="text-xs text-muted-foreground">· {swatch.name}</span>}
                           </div>
                         </SelectItem>
                       );
@@ -406,6 +407,7 @@ export function ExerciseForm({
                 </Select>
               </div>
             </div>
+
             {resolvedPreview && (
               <p className="text-xs text-muted-foreground">
                 Will display as{" "}

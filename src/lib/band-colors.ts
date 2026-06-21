@@ -1,7 +1,14 @@
 // Band color resolution: maps a (band type, resistance level) tuple to a
 // named/colored swatch using either a per-client override or the system default.
 
-export type BandType = '1-handle' | '2-handle' | 'flat' | 'figure-8' | 'ankle-weight';
+export type BandType =
+  | '1-handle'
+  | '2-handle'
+  | 'flat'
+  | 'figure-8'
+  | 'double-leg-cuff'
+  | 'single-leg-cuff'
+  | 'ankle-weight';
 
 // Kept as a coarse category for resistance-level scale selection only.
 export type BandCategory = 'band' | 'ankle_weight';
@@ -34,6 +41,8 @@ export const BAND_TYPES: BandType[] = [
   '2-handle',
   'flat',
   'figure-8',
+  'double-leg-cuff',
+  'single-leg-cuff',
   'ankle-weight',
 ];
 
@@ -42,6 +51,8 @@ export const BAND_TYPE_LABELS: Record<BandType, string> = {
   '2-handle': '2-Handle Band',
   'flat': 'Flat Band',
   'figure-8': 'Figure-8 Band',
+  'double-leg-cuff': 'Double Leg Cuff',
+  'single-leg-cuff': 'Single Leg Cuff',
   'ankle-weight': 'Ankle Weight',
 };
 
@@ -61,6 +72,8 @@ export const RESISTANCE_LEVELS_BY_TYPE: Record<BandType, ResistanceLevel[]> = {
   '2-handle': BAND_LEVELS,
   'flat': BAND_LEVELS,
   'figure-8': BAND_LEVELS,
+  'double-leg-cuff': BAND_LEVELS,
+  'single-leg-cuff': BAND_LEVELS,
   'ankle-weight': ANKLE_LEVELS,
 };
 
@@ -103,6 +116,8 @@ export const DEFAULT_BAND_MAPPING_BY_TYPE: Record<
   '2-handle': BAND_DEFAULTS,
   'flat': BAND_DEFAULTS,
   'figure-8': BAND_DEFAULTS,
+  'double-leg-cuff': BAND_DEFAULTS,
+  'single-leg-cuff': BAND_DEFAULTS,
   'ankle-weight': ANKLE_DEFAULTS,
 };
 
