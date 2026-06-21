@@ -41,6 +41,8 @@ export const BAND_TYPES: BandType[] = [
   '2-handle',
   'flat',
   'figure-8',
+  'double-leg-cuff',
+  'single-leg-cuff',
   'ankle-weight',
 ];
 
@@ -49,6 +51,8 @@ export const BAND_TYPE_LABELS: Record<BandType, string> = {
   '2-handle': '2-Handle Band',
   'flat': 'Flat Band',
   'figure-8': 'Figure-8 Band',
+  'double-leg-cuff': 'Double Leg Cuff',
+  'single-leg-cuff': 'Single Leg Cuff',
   'ankle-weight': 'Ankle Weight',
 };
 
