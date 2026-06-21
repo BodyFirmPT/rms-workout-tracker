@@ -116,6 +116,8 @@ export const DEFAULT_BAND_MAPPING_BY_TYPE: Record<
   '2-handle': BAND_DEFAULTS,
   'flat': BAND_DEFAULTS,
   'figure-8': BAND_DEFAULTS,
+  'double-leg-cuff': BAND_DEFAULTS,
+  'single-leg-cuff': BAND_DEFAULTS,
   'ankle-weight': ANKLE_DEFAULTS,
 };
 
