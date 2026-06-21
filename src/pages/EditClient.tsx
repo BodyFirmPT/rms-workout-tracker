@@ -348,22 +348,13 @@ export default function EditClient() {
             <div>
               <h2 className="text-xl font-bold">Band Color Mapping</h2>
               <p className="text-sm text-muted-foreground">
-                Customize which physical color each resistance level maps to. Unset
-                levels use the system defaults.
+                Each band type has its own color scheme. Unset resistance levels use
+                the system defaults.
               </p>
             </div>
           </div>
 
-          {renderBandSection(
-            "band",
-            "Resistance Bands",
-            "1-handle, 2-handle, flat, figure-8, leg cuffs.",
-          )}
-          {renderBandSection(
-            "ankle_weight",
-            "Ankle Weights",
-            "Used for ankle-weight band exercises.",
-          )}
+          {BAND_TYPES.map((bt) => renderBandTypeSection(bt))}
         </div>
       </div>
 
