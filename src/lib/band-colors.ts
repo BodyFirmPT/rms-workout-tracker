@@ -72,6 +72,8 @@ export const RESISTANCE_LEVELS_BY_TYPE: Record<BandType, ResistanceLevel[]> = {
   '2-handle': BAND_LEVELS,
   'flat': BAND_LEVELS,
   'figure-8': BAND_LEVELS,
+  'double-leg-cuff': BAND_LEVELS,
+  'single-leg-cuff': BAND_LEVELS,
   'ankle-weight': ANKLE_LEVELS,
 };
 
