@@ -12,12 +12,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { ViewRestrictionsDialog } from "@/components/workout/view-restrictions-dialog";
 import { ExerciseMediaUpload } from "@/components/workout/exercise-media-upload";
 import {
-  RESISTANCE_LEVELS,
+  RESISTANCE_LEVELS_BY_TYPE,
   RESISTANCE_LABELS,
   categoryFromBandType,
+  normalizeBandType,
   resolveBandColor,
   type ResistanceLevel,
-  type BandCategory,
+  type BandType,
 } from "@/lib/band-colors";
 
 interface Restriction {
