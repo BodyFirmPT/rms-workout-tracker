@@ -109,7 +109,6 @@ export function UnifiedExerciseCard({
   const mappings = useWorkoutStore((s) => s.clientBandMappings);
   let resolvedBandLabel: { name: string; hex: string } | null = null;
   if (isBand && resistanceLevel && bandType) {
-    const { normalizeBandType } = require('@/lib/band-colors') as typeof import('@/lib/band-colors');
     const nt = normalizeBandType(bandType);
     if (nt) {
       resolvedBandLabel = resolveBandColor({
@@ -124,6 +123,7 @@ export function UnifiedExerciseCard({
   if (!resolvedBandLabel && isBand && bandColor) {
     resolvedBandLabel = { name: bandColor, hex: getLegacyBandDisplayColor(bandColor) };
   }
+
 
   
   return (
