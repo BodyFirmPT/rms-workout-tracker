@@ -88,7 +88,7 @@ export default function EditClient() {
   };
 
   const setMapping = async (
-    bandCategory: BandCategory,
+    bandType: BandType,
     resistanceLevel: ResistanceLevel,
     colorId: string,
   ) => {
@@ -98,7 +98,7 @@ export default function EditClient() {
       const existing = clientBandMappings.find(
         (m) =>
           m.client_id === clientId &&
-          m.band_category === bandCategory &&
+          m.band_type === bandType &&
           m.resistance_level === resistanceLevel,
       );
       if (existing) {
@@ -109,7 +109,7 @@ export default function EditClient() {
       } else {
         const { error } = await (supabase.from as any)("client_band_mapping").insert({
           client_id: clientId,
-          band_category: bandCategory,
+          band_type: bandType,
           resistance_level: resistanceLevel,
           color_id: colorId,
         });
@@ -125,14 +125,14 @@ export default function EditClient() {
   };
 
   const resetMapping = async (
-    bandCategory: BandCategory,
+    bandType: BandType,
     resistanceLevel: ResistanceLevel,
   ) => {
     if (!clientId) return;
     const existing = clientBandMappings.find(
       (m) =>
         m.client_id === clientId &&
-        m.band_category === bandCategory &&
+        m.band_type === bandType &&
         m.resistance_level === resistanceLevel,
     );
     if (!existing) return;
@@ -151,21 +151,19 @@ export default function EditClient() {
     }
   };
 
-  const renderBandSection = (
-    bandCategory: BandCategory,
-    title: string,
-    description: string,
-  ) => (
-    <Card>
+  const renderBandTypeSection = (bandType: BandType) => (
+    <Card key={bandType}>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <CardTitle>{BAND_TYPE_LABELS[bandType]}</CardTitle>
+        <CardDescription>
+          Color shown for each resistance level on {BAND_TYPE_LABELS[bandType].toLowerCase()} exercises.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
-        {RESISTANCE_LEVELS[bandCategory].map((level) => {
+        {RESISTANCE_LEVELS_BY_TYPE[bandType].map((level) => {
           const resolved = resolveBandColor({
             clientId: clientId || null,
-            bandCategory,
+            bandType,
             resistanceLevel: level,
             palette: bandColors,
             mappings: clientBandMappings,
@@ -173,10 +171,10 @@ export default function EditClient() {
           const override = clientBandMappings.find(
             (m) =>
               m.client_id === clientId &&
-              m.band_category === bandCategory &&
+              m.band_type === bandType &&
               m.resistance_level === level,
           );
-          const defaultColorName = DEFAULT_BAND_MAPPING[bandCategory][level];
+          const defaultColorName = DEFAULT_BAND_MAPPING_BY_TYPE[bandType][level];
           return (
             <div key={level} className="flex items-center gap-3 flex-wrap">
               <div className="w-28">
@@ -188,7 +186,7 @@ export default function EditClient() {
               />
               <Select
                 value={override?.color_id ?? ""}
-                onValueChange={(v) => setMapping(bandCategory, level, v)}
+                onValueChange={(v) => setMapping(bandType, level, v)}
                 disabled={savingMapping}
               >
                 <SelectTrigger className="w-[220px]">
@@ -216,7 +214,7 @@ export default function EditClient() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => resetMapping(bandCategory, level)}
+                  onClick={() => resetMapping(bandType, level)}
                   disabled={savingMapping}
                 >
                   Reset
@@ -228,6 +226,7 @@ export default function EditClient() {
       </CardContent>
     </Card>
   );
+
 
   if (!client) {
     return (
