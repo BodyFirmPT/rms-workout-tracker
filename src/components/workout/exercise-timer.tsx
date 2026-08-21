@@ -17,7 +17,12 @@ export function ExerciseTimer({ duration, setCount = 1, completedSets = 0, onCom
   const [isRunning, setIsRunning] = useState(false);
   const [hasCompleted, setHasCompleted] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const allSetsComplete = completedSets >= setCount;
+  const hasMoreSets = completedSets < setCount;
+
   useEffect(() => {
+
     if (isRunning && timeRemaining > 0) {
       intervalRef.current = setInterval(() => {
         setTimeRemaining((prev) => {
