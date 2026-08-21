@@ -10,6 +10,7 @@ export interface TabataSettings {
   mode: TabataMode;
   rounds: number;
   leadInSeconds: number;
+  roundRestSeconds: number;
 }
 
 export const DEFAULT_TABATA_SETTINGS: TabataSettings = {
@@ -18,6 +19,7 @@ export const DEFAULT_TABATA_SETTINGS: TabataSettings = {
   mode: 'sets',
   rounds: 4,
   leadInSeconds: 5,
+  roundRestSeconds: 0,
 };
 
 export const TABATA_SETTINGS_KEY = 'tabata-settings';
@@ -48,7 +50,7 @@ export interface TabataInterval {
   roundTotal: number;
 }
 
-export type TabataPhase = 'leadin' | 'work' | 'rest' | 'done';
+export type TabataPhase = 'leadin' | 'work' | 'rest' | 'roundrest' | 'done';
 
 export function buildIntervals(
   exercises: WorkoutExercise[],
@@ -111,6 +113,7 @@ export function useTabataEngine({
   const phaseDuration = useCallback(
     (p: TabataPhase) => {
       if (p === 'leadin') return settings.leadInSeconds;
+      if (p === 'roundrest') return settings.roundRestSeconds;
       if (p === 'rest') return settings.restSeconds;
       return settings.workSeconds;
     },
@@ -150,6 +153,14 @@ export function useTabataEngine({
           onFinishedRef.current?.();
           return;
         }
+        const endOfRound =
+          settings.mode === 'circuit' &&
+          intervals[index + 1] &&
+          intervals[index + 1].round !== current?.round;
+        if (endOfRound && settings.roundRestSeconds > 0) {
+          goTo(index, 'roundrest');
+          return;
+        }
         if (settings.restSeconds > 0) {
           goTo(index, 'rest');
         } else {
@@ -159,11 +170,11 @@ export function useTabataEngine({
         return;
       }
 
-      // rest
+      // rest / round rest
       goTo(index + 1, 'work');
       playStartBeep();
     },
-    [phase, index, intervals, settings.restSeconds, goTo]
+    [phase, index, intervals, settings.restSeconds, settings.roundRestSeconds, settings.mode, goTo]
   );
 
   const back = useCallback(() => {
@@ -172,7 +183,7 @@ export function useTabataEngine({
       setIsRunning(false);
       return;
     }
-    if (phase === 'rest') {
+    if (phase === 'rest' || phase === 'roundrest') {
       goTo(index, 'work');
       return;
     }
