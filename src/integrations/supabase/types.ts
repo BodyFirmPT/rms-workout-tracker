@@ -520,6 +520,7 @@ export type Database = {
           reps_unit: string
           resistance_level: string | null
           set_count: number
+          sort_order: number
           type: string
           unit: string
           weight_count: number
@@ -546,6 +547,7 @@ export type Database = {
           reps_unit?: string
           resistance_level?: string | null
           set_count: number
+          sort_order?: number
           type?: string
           unit: string
           weight_count: number
@@ -572,6 +574,7 @@ export type Database = {
           reps_unit?: string
           resistance_level?: string | null
           set_count?: number
+          sort_order?: number
           type?: string
           unit?: string
           weight_count?: number
