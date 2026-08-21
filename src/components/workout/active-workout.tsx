@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown, Pencil, MoreVertical, XCircle, Wrench, Copy } from "lucide-react";
+import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown, Pencil, MoreVertical, XCircle, Wrench, Copy, ArrowUpDown, LayoutList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ import { MuscleGroupSuggestions } from "@/components/workout/muscle-group-sugges
 import { MuscleGroupHeader } from "@/components/workout/muscle-group-header";
 import { CategoryHeader } from "@/components/workout/category-header";
 import { CopyExercisesDialog } from "@/components/workout/copy-exercises-dialog";
+import { ExerciseOrderList } from "@/components/workout/exercise-order-list";
 import { AddInjuryDialog } from "@/components/injury/add-injury-dialog";
 import { EditInjuryDialog } from "@/components/injury/edit-injury-dialog";
 import { ManageEquipmentDialog } from "@/components/workout/manage-equipment-dialog";
@@ -40,6 +41,7 @@ export function ActiveWorkout({
   workoutId
 }: ActiveWorkoutProps) {
   const [showAddExercise, setShowAddExercise] = useState(false);
+  const [viewMode, setViewMode] = useState<'group' | 'order'>('group');
   const [showEditExercise, setShowEditExercise] = useState(false);
   const [editingExercise, setEditingExercise] = useState<WorkoutExercise | null>(null);
   const [selectedMuscleGroupId, setSelectedMuscleGroupId] = useState<string | null>(null);
@@ -71,6 +73,7 @@ export function ActiveWorkout({
     deleteExercise,
     updateExercise,
     addExerciseToWorkout,
+    reorderExercises,
     getClientExerciseHistory,
     startWorkout,
     getExerciseMedia
