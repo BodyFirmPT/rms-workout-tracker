@@ -73,6 +73,7 @@ serve(async (req) => {
         .from('workout_exercise')
         .select('*')
         .eq('workout_id', workout.id)
+        .order('sort_order')
         .order('created_at');
 
       if (exercisesError) {
