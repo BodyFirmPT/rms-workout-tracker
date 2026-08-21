@@ -438,14 +438,37 @@ export class WorkoutService {
       .from('workout_exercise')
       .select('*')
       .eq('workout_id', workoutId)
+      .order('sort_order')
       .order('created_at');
     
     if (error) throw error;
     return (data || []) as WorkoutExercise[];
   }
 
+  static async reorderExercises(workoutId: string, orderedIds: string[]): Promise<void> {
+    await Promise.all(
+      orderedIds.map((id, index) =>
+        supabase
+          .from('workout_exercise')
+          .update({ sort_order: index })
+          .eq('id', id)
+          .eq('workout_id', workoutId)
+      )
+    );
+  }
+
   static async addExerciseToWorkout(workoutId: string, exercise: CreateWorkoutExerciseInput): Promise<WorkoutExercise> {
     const { media, ...exerciseData } = exercise;
+
+    // Place new exercises at the end of the custom order
+    const { data: lastRow } = await supabase
+      .from('workout_exercise')
+      .select('sort_order')
+      .eq('workout_id', workoutId)
+      .order('sort_order', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const nextSortOrder = ((lastRow?.sort_order as number | undefined) ?? -1) + 1;
     
     const { data, error } = await supabase
       .from('workout_exercise')
@@ -471,7 +494,8 @@ export class WorkoutService {
         note: exerciseData.note || '',
         set_count: exerciseData.set_count,
         completed_sets: 0,
-        is_completed: false
+        is_completed: false,
+        sort_order: nextSortOrder
       })
       .select()
       .single();
