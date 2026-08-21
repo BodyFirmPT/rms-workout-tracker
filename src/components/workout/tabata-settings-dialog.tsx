@@ -94,18 +94,36 @@ export function TabataSettingsDialog({ open, onOpenChange, onStart }: TabataSett
           </div>
 
           {settings.mode === 'circuit' && (
-            <div className="space-y-2">
-              <Label htmlFor="rounds">Rounds</Label>
-              <Input
-                id="rounds"
-                type="number"
-                min={1}
-                max={20}
-                value={settings.rounds}
-                onChange={e => update('rounds', Math.max(1, Number(e.target.value) || 1))}
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="rounds">Rounds</Label>
+                <Input
+                  id="rounds"
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={settings.rounds}
+                  onChange={e => update('rounds', Math.max(1, Number(e.target.value) || 1))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="round-rest">Rest between rounds (min)</Label>
+                <Input
+                  id="round-rest"
+                  type="number"
+                  min={0}
+                  max={30}
+                  step={0.5}
+                  value={settings.roundRestSeconds / 60}
+                  onChange={e =>
+                    update('roundRestSeconds', Math.max(0, Math.round((Number(e.target.value) || 0) * 60)))
+                  }
+                />
+                <p className="text-xs text-muted-foreground">0 for no extra rest</p>
+              </div>
             </div>
           )}
+
 
           <div className="space-y-2">
             <Label htmlFor="lead-in">Lead-in countdown (seconds)</Label>

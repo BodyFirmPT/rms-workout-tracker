@@ -117,7 +117,8 @@ const TabataMode = () => {
 
   const { phase, remaining, duration, currentInterval, nextIntervals, index, total, isRunning } = engine;
   const isWork = phase === 'work';
-  const isRest = phase === 'rest';
+  const isRoundRest = phase === 'roundrest';
+  const isRest = phase === 'rest' || isRoundRest;
   const isDone = phase === 'done';
   const current = currentInterval;
   const band = current ? bandInfo(current.exercise) : null;
@@ -126,7 +127,19 @@ const TabataMode = () => {
   const radius = 130;
   const circumference = 2 * Math.PI * radius;
 
-  const phaseLabel = isDone ? 'Complete' : isRest ? 'Rest' : phase === 'leadin' ? 'Get ready' : 'Work';
+  const phaseLabel = isDone
+    ? 'Complete'
+    : isRoundRest
+      ? 'Round rest'
+      : isRest
+        ? 'Rest'
+        : phase === 'leadin'
+          ? 'Get ready'
+          : 'Work';
+  const timeLabel =
+    remaining >= 60
+      ? `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, '0')}`
+      : `${remaining}`;
 
   return (
     <div
@@ -197,11 +210,12 @@ const TabataMode = () => {
             ) : (
               <span
                 className={cn(
-                  "font-mono text-7xl font-bold tabular-nums",
+                  "font-mono font-bold tabular-nums",
+                  remaining >= 60 ? "text-6xl" : "text-7xl",
                   isWork ? "text-primary-foreground" : "text-foreground"
                 )}
               >
-                {remaining}
+                {timeLabel}
               </span>
             )}
           </div>
@@ -218,7 +232,7 @@ const TabataMode = () => {
                   isWork ? "text-primary-foreground" : "text-foreground"
                 )}
               >
-                {isRest ? 'Rest' : current?.exercise.exercise_name}
+                {isRoundRest ? 'Round rest' : isRest ? 'Rest' : current?.exercise.exercise_name}
               </h1>
               {!isRest && current && (
                 <p
