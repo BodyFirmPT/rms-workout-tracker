@@ -67,6 +67,7 @@ export interface WorkoutExercise {
   band_category?: string | null;
   image_url?: string | null;
   raw_import_data?: string | null;
+  sort_order?: number;
   created_at?: string;
   // Keep old fields for migration compatibility
   reps?: string;

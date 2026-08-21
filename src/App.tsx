@@ -17,6 +17,7 @@ import ClientLocations from "./pages/ClientLocations";
 import EditClient from "./pages/EditClient";
 import ImportWorkout from "./pages/ImportWorkout";
 import ActiveWorkout from "./pages/ActiveWorkout";
+import TabataMode from "./pages/TabataMode";
 import PrintWorkout from "./pages/PrintWorkout";
 import SharedWorkout from "./pages/SharedWorkout";
 import MuscleGroups from "./pages/MuscleGroups";
@@ -63,6 +64,7 @@ const App = () => {
               <Route path="/client/:clientId/band-mapping" element={<ProtectedRoute><EditClient /></ProtectedRoute>} />
               <Route path="/client/:clientId/import" element={<ProtectedRoute><ImportWorkout /></ProtectedRoute>} />
               <Route path="/workout/:id?" element={<ProtectedRoute><ActiveWorkout /></ProtectedRoute>} />
+              <Route path="/workout/:id/tabata" element={<ProtectedRoute><TabataMode /></ProtectedRoute>} />
               <Route path="/workout/:id/print" element={<ProtectedRoute><PrintWorkout /></ProtectedRoute>} />
               <Route path="/share/:token" element={<SharedWorkout />} />
               <Route path="/muscle-groups" element={<ProtectedRoute><MuscleGroups /></ProtectedRoute>} />

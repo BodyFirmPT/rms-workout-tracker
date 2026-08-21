@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Play, Pause, RotateCcw, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { playCompletionBeeps } from "@/lib/beep";
 
 interface ExerciseTimerProps {
   duration: number; // in seconds
@@ -16,42 +17,12 @@ export function ExerciseTimer({ duration, setCount = 1, completedSets = 0, onCom
   const [isRunning, setIsRunning] = useState(false);
   const [hasCompleted, setHasCompleted] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
 
   const allSetsComplete = completedSets >= setCount;
   const hasMoreSets = completedSets < setCount;
 
-  // Play beep sound
-  const playBeep = () => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    
-    const context = audioContextRef.current;
-    const oscillator = context.createOscillator();
-    const gainNode = context.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(context.destination);
-    
-    oscillator.frequency.value = 800;
-    oscillator.type = 'sine';
-    
-    gainNode.gain.setValueAtTime(0.3, context.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.1);
-    
-    oscillator.start(context.currentTime);
-    oscillator.stop(context.currentTime + 0.1);
-  };
-
-  const playCompletionBeeps = () => {
-    // Play 6 beeps with 200ms intervals for better notification
-    for (let i = 0; i < 6; i++) {
-      setTimeout(() => playBeep(), i * 200);
-    }
-  };
-
   useEffect(() => {
+
     if (isRunning && timeRemaining > 0) {
       intervalRef.current = setInterval(() => {
         setTimeRemaining((prev) => {

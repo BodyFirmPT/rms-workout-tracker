@@ -41,6 +41,7 @@ interface WorkoutStore {
   createWorkout: (clientId: string, note: string, date?: string, locationId?: string | null, selfLed?: boolean) => Promise<string>;
   startWorkout: (workoutId: string) => Promise<void>;
   addExerciseToWorkout: (workoutId: string, exercise: CreateWorkoutExerciseInput) => Promise<void>;
+  reorderExercises: (workoutId: string, orderedIds: string[]) => Promise<void>;
   completeExerciseSet: (workoutId: string, exerciseId: string, decrement?: boolean) => Promise<void>;
   completeWorkout: (workoutId: string) => Promise<void>;
   duplicateWorkout: (workoutId: string, clientId: string, date: Date, selfLed?: boolean, linkToOriginal?: boolean) => Promise<Workout>;
@@ -243,6 +244,31 @@ export const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
 
   getExerciseMedia: (exerciseId: string) => {
     return get().exerciseMedia[exerciseId] || [];
+  },
+
+  reorderExercises: async (workoutId: string, orderedIds: string[]) => {
+    const previous = get().workoutExercises[workoutId] || [];
+    const byId = new Map(previous.map(ex => [ex.id, ex]));
+    const reordered = orderedIds
+      .map((id, index) => {
+        const ex = byId.get(id);
+        return ex ? { ...ex, sort_order: index } : null;
+      })
+      .filter(Boolean) as typeof previous;
+
+    set((state) => ({
+      workoutExercises: { ...state.workoutExercises, [workoutId]: reordered }
+    }));
+
+    try {
+      await WorkoutService.reorderExercises(workoutId, orderedIds);
+    } catch (error) {
+      console.error('Failed to reorder exercises:', error);
+      set((state) => ({
+        workoutExercises: { ...state.workoutExercises, [workoutId]: previous }
+      }));
+      toast({ title: 'Could not save order', description: 'Please try again.', variant: 'destructive' });
+    }
   },
 
   addExerciseToWorkout: async (workoutId: string, exercise: CreateWorkoutExerciseInput) => {

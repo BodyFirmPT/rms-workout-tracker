@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown, Pencil, MoreVertical, XCircle, Wrench, Copy } from "lucide-react";
+import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown, Pencil, MoreVertical, XCircle, Wrench, Copy, ArrowUpDown, LayoutList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ import { MuscleGroupSuggestions } from "@/components/workout/muscle-group-sugges
 import { MuscleGroupHeader } from "@/components/workout/muscle-group-header";
 import { CategoryHeader } from "@/components/workout/category-header";
 import { CopyExercisesDialog } from "@/components/workout/copy-exercises-dialog";
+import { ExerciseOrderList } from "@/components/workout/exercise-order-list";
 import { AddInjuryDialog } from "@/components/injury/add-injury-dialog";
 import { EditInjuryDialog } from "@/components/injury/edit-injury-dialog";
 import { ManageEquipmentDialog } from "@/components/workout/manage-equipment-dialog";
@@ -40,6 +41,7 @@ export function ActiveWorkout({
   workoutId
 }: ActiveWorkoutProps) {
   const [showAddExercise, setShowAddExercise] = useState(false);
+  const [viewMode, setViewMode] = useState<'group' | 'order'>('group');
   const [showEditExercise, setShowEditExercise] = useState(false);
   const [editingExercise, setEditingExercise] = useState<WorkoutExercise | null>(null);
   const [selectedMuscleGroupId, setSelectedMuscleGroupId] = useState<string | null>(null);
@@ -71,6 +73,7 @@ export function ActiveWorkout({
     deleteExercise,
     updateExercise,
     addExerciseToWorkout,
+    reorderExercises,
     getClientExerciseHistory,
     startWorkout,
     getExerciseMedia
@@ -524,8 +527,55 @@ export function ActiveWorkout({
       )}
 
 
+      {/* View toggle: grouped by muscle group vs. custom exercise order */}
+      {exercises.length > 0 && (
+        <div className="flex justify-end px-1">
+          <div className="inline-flex rounded-md border p-0.5">
+            <Button
+              variant={viewMode === 'group' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-8 text-xs"
+              onClick={() => setViewMode('group')}
+            >
+              <LayoutList className="h-3.5 w-3.5 mr-1.5" />
+              Muscle group
+            </Button>
+            <Button
+              variant={viewMode === 'order' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-8 text-xs"
+              onClick={() => setViewMode('order')}
+            >
+              <ArrowUpDown className="h-3.5 w-3.5 mr-1.5" />
+              Order
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Exercises Section - Split into incomplete and completed when started */}
-      {isStarted ? (
+      {viewMode === 'order' ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ArrowUpDown className="h-5 w-5" />
+              Exercise Order
+            </CardTitle>
+            <CardDescription>
+              Drag exercises to set the sequence used in tabata mode and printouts
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+            <ExerciseOrderList
+              exercises={exercises}
+              getMuscleGroupName={(mgId) => getMuscleGroupById(mgId)?.name || 'Unknown'}
+              onReorder={(orderedIds) => reorderExercises(currentWorkout.id, orderedIds)}
+              disabled={isCompleted}
+            />
+          </CardContent>
+        </Card>
+      ) : isStarted ? (
+
         <>
           {/* Incomplete Exercises Section */}
           <Card>
