@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Play, Timer, MoreVertical, Printer, Edit, Plus, XCircle, Share2, Check, Copy } from "lucide-react";
+import { ArrowLeft, Play, Timer, MoreVertical, Printer, Edit, Plus, XCircle, Share2, Check, Copy, Zap } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useWorkoutStore } from "@/stores/workoutStore";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import {
 import { ActiveWorkout as ActiveWorkoutComponent } from "@/components/workout/active-workout";
 import { EditWorkoutDialog } from "@/components/workout/edit-workout-dialog";
 import { AddInjuryDialog } from "@/components/injury/add-injury-dialog";
+import { TabataSettingsDialog } from "@/components/workout/tabata-settings-dialog";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -25,6 +26,7 @@ const ActiveWorkout = () => {
   const [showEditWorkout, setShowEditWorkout] = useState(false);
   const [showAddInjury, setShowAddInjury] = useState(false);
   const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+  const [showTabataSettings, setShowTabataSettings] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -180,6 +182,10 @@ const ActiveWorkout = () => {
                       </>
                     )}
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowTabataSettings(true)}>
+                    <Zap className="h-4 w-4 mr-2" />
+                    Start Tabata
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate(`/workout/${currentWorkout.id}/print`)}>
                     <Printer className="h-4 w-4 mr-2" />
                     Print Workout
@@ -203,6 +209,18 @@ const ActiveWorkout = () => {
             open={showEditWorkout}
             onOpenChange={setShowEditWorkout}
             workout={currentWorkout}
+          />
+          <TabataSettingsDialog
+            open={showTabataSettings}
+            onOpenChange={setShowTabataSettings}
+            onStart={async () => {
+              setShowTabataSettings(false);
+              if (currentWorkout.status === 'draft') {
+                await startWorkout(currentWorkout.id);
+                await loadData();
+              }
+              navigate(`/workout/${currentWorkout.id}/tabata`);
+            }}
           />
           <AddInjuryDialog
             open={showAddInjury}
