@@ -283,6 +283,50 @@ export function ActiveWorkout({
     acc[exercise.muscle_group_id].push(exercise);
     return acc;
   }, {} as Record<string, typeof exercises>);
+  // Equipment still needed: derived from incomplete exercises while the workout is in progress.
+  interface RemainingEquipmentItem {
+    key: string;
+    label: string;
+    detail?: string;
+    hex?: string;
+    count: number;
+  }
+  const remainingEquipment: RemainingEquipmentItem[] = [];
+  if (isStarted) {
+    const items = new Map<string, RemainingEquipmentItem>();
+    const addItem = (item: Omit<RemainingEquipmentItem, 'count'>) => {
+      const existing = items.get(item.key);
+      if (existing) existing.count += 1;
+      else items.set(item.key, { ...item, count: 1 });
+    };
+    for (const ex of exercises) {
+      if (ex.is_completed) continue;
+      if (ex.type === 'band') {
+        const nt = normalizeBandType(ex.band_type);
+        const label = nt ? BAND_TYPE_LABELS[nt] : 'Band';
+        let detail: string | undefined;
+        let hex: string | undefined;
+        if (nt && ex.resistance_level) {
+          const resolved = resolveBandColor({
+            clientId: currentWorkout.client_id,
+            bandType: nt,
+            resistanceLevel: ex.resistance_level as ResistanceLevel,
+            palette: bandColors,
+            mappings: clientBandMappings,
+          });
+          detail = resolved.name;
+          hex = resolved.hex;
+        } else if (ex.band_color) {
+          detail = ex.band_color;
+        }
+        addItem({ key: `band|${label}|${detail ?? ''}`, label, detail, hex });
+      } else if (ex.type !== 'stretch' && ex.weight_count > 0) {
+        const detail = `${ex.weight_count} ${ex.weight_unit || 'lbs'}`;
+        addItem({ key: `weight|${detail}`, label: 'Free weights', detail });
+      }
+    }
+    remainingEquipment.push(...items.values());
+  }
   const handleAddExerciseForMuscleGroup = (muscleGroupId: string) => {
     setSelectedMuscleGroupId(muscleGroupId || null);
     setShowAddExercise(true);
