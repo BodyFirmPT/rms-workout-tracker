@@ -63,6 +63,7 @@ export function ActiveWorkout({
   const [workoutLocation, setWorkoutLocation] = useState<Location | null>(null);
   const [availableEquipment, setAvailableEquipment] = useState<Equipment[]>([]);
   const [equipmentOpen, setEquipmentOpen] = useState(false);
+  const [neededOpen, setNeededOpen] = useState(false);
   const [showManageEquipment, setShowManageEquipment] = useState(false);
   const navigate = useNavigate();
   const {
@@ -581,15 +582,22 @@ export function ActiveWorkout({
 
       {/* Remaining equipment for incomplete exercises */}
       {isStarted && remainingEquipment.length > 0 && (
-        <Card className="border-border mx-4">
-          <CardHeader className="pt-4 pb-1.5">
-            <div className="flex items-center gap-2">
-              <Dumbbell className="h-4 w-4 text-primary" />
-              <CardTitle className="text-sm font-medium">
-                Equipment still needed
-              </CardTitle>
-            </div>
-          </CardHeader>
+        <Collapsible open={neededOpen} onOpenChange={setNeededOpen}>
+          <Card className={`border-border mx-4 relative rounded-t-none ${(activeInjuries.length > 0 || availableEquipment.length > 0) ? '-mt-5 sm:-mt-8' : ''} z-[1]`}>
+            <CollapsibleTrigger className="w-full">
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors pt-4 pb-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Dumbbell className="h-4 w-4 text-primary" />
+                    <CardTitle className="text-sm font-medium">
+                      {remainingEquipment.length} Equipment {remainingEquipment.length === 1 ? 'Item' : 'Items'} Still Needed
+                    </CardTitle>
+                  </div>
+                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${neededOpen ? 'rotate-180' : ''}`} />
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
           <CardContent className="pt-0 pb-3">
             <ul className="space-y-1 list-disc pl-5 ml-8">
               {remainingEquipment.map((item) => (
@@ -616,7 +624,9 @@ export function ActiveWorkout({
               ))}
             </ul>
           </CardContent>
-        </Card>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
       )}
 
       {/* View toggle: grouped by muscle group vs. custom exercise order */}
