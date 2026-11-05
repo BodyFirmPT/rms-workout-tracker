@@ -579,6 +579,46 @@ export function ActiveWorkout({
       )}
 
 
+      {/* Remaining equipment for incomplete exercises */}
+      {isStarted && remainingEquipment.length > 0 && (
+        <Card className="border-border mx-4">
+          <CardHeader className="pt-4 pb-1.5">
+            <div className="flex items-center gap-2">
+              <Dumbbell className="h-4 w-4 text-primary" />
+              <CardTitle className="text-sm font-medium">
+                Equipment still needed
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0 pb-3">
+            <ul className="space-y-1 list-disc pl-5 ml-8">
+              {remainingEquipment.map((item) => (
+                <li key={item.key} className="text-sm">
+                  <span className="font-semibold">{item.label}</span>
+                  {item.detail && (
+                    <>
+                      {' · '}
+                      {item.hex && (
+                        <span
+                          className="inline-block h-3 w-3 rounded-full border border-border align-[-2px] mr-1"
+                          style={{ backgroundColor: item.hex }}
+                        />
+                      )}
+                      <span className="text-muted-foreground">{item.detail}</span>
+                    </>
+                  )}
+                  {item.count > 1 && (
+                    <span className="text-muted-foreground">
+                      {' '}({item.count} exercises)
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
       {/* View toggle: grouped by muscle group vs. custom exercise order */}
       {exercises.length > 0 && (
         <div className="flex justify-end px-1">
