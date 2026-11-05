@@ -82,7 +82,9 @@ export function ActiveWorkout({
     reorderExercises,
     getClientExerciseHistory,
     startWorkout,
-    getExerciseMedia
+    getExerciseMedia,
+    bandColors,
+    clientBandMappings
   } = useWorkoutStore();
   useEffect(() => {
     loadData();
