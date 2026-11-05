@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown, Pencil, MoreVertical, XCircle, Wrench, Copy, ArrowUpDown, LayoutList } from "lucide-react";
+import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown, Pencil, MoreVertical, XCircle, Wrench, Copy, ArrowUpDown, LayoutList, Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,12 @@ import { format } from "date-fns";
 import { CreateWorkoutExerciseInput, Workout, WorkoutExercise } from "@/types/workout";
 import { Injury } from "@/types/injury";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  resolveBandColor,
+  normalizeBandType,
+  BAND_TYPE_LABELS,
+  type ResistanceLevel,
+} from "@/lib/band-colors";
 
 interface Location {
   id: string;
