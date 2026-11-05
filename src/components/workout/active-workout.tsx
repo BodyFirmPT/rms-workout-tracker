@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown, Pencil, MoreVertical, XCircle, Wrench, Copy, ArrowUpDown, LayoutList } from "lucide-react";
+import { CheckCircle, Plus, StopCircle, Timer, Target, AlertCircle, ChevronDown, Pencil, MoreVertical, XCircle, Wrench, Copy, ArrowUpDown, LayoutList, Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,12 @@ import { format } from "date-fns";
 import { CreateWorkoutExerciseInput, Workout, WorkoutExercise } from "@/types/workout";
 import { Injury } from "@/types/injury";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  resolveBandColor,
+  normalizeBandType,
+  BAND_TYPE_LABELS,
+  type ResistanceLevel,
+} from "@/lib/band-colors";
 
 interface Location {
   id: string;
@@ -76,7 +82,9 @@ export function ActiveWorkout({
     reorderExercises,
     getClientExerciseHistory,
     startWorkout,
-    getExerciseMedia
+    getExerciseMedia,
+    bandColors,
+    clientBandMappings
   } = useWorkoutStore();
   useEffect(() => {
     loadData();
@@ -275,6 +283,50 @@ export function ActiveWorkout({
     acc[exercise.muscle_group_id].push(exercise);
     return acc;
   }, {} as Record<string, typeof exercises>);
+  // Equipment still needed: derived from incomplete exercises while the workout is in progress.
+  interface RemainingEquipmentItem {
+    key: string;
+    label: string;
+    detail?: string;
+    hex?: string;
+    count: number;
+  }
+  const remainingEquipment: RemainingEquipmentItem[] = [];
+  if (isStarted) {
+    const items = new Map<string, RemainingEquipmentItem>();
+    const addItem = (item: Omit<RemainingEquipmentItem, 'count'>) => {
+      const existing = items.get(item.key);
+      if (existing) existing.count += 1;
+      else items.set(item.key, { ...item, count: 1 });
+    };
+    for (const ex of exercises) {
+      if (ex.is_completed) continue;
+      if (ex.type === 'band') {
+        const nt = normalizeBandType(ex.band_type);
+        const label = nt ? BAND_TYPE_LABELS[nt] : 'Band';
+        let detail: string | undefined;
+        let hex: string | undefined;
+        if (nt && ex.resistance_level) {
+          const resolved = resolveBandColor({
+            clientId: currentWorkout.client_id,
+            bandType: nt,
+            resistanceLevel: ex.resistance_level as ResistanceLevel,
+            palette: bandColors,
+            mappings: clientBandMappings,
+          });
+          detail = resolved.name;
+          hex = resolved.hex;
+        } else if (ex.band_color) {
+          detail = ex.band_color;
+        }
+        addItem({ key: `band|${label}|${detail ?? ''}`, label, detail, hex });
+      } else if (ex.type !== 'stretch' && ex.weight_count > 0) {
+        const detail = `${ex.weight_count} ${ex.weight_unit || 'lbs'}`;
+        addItem({ key: `weight|${detail}`, label: 'Free weights', detail });
+      }
+    }
+    remainingEquipment.push(...items.values());
+  }
   const handleAddExerciseForMuscleGroup = (muscleGroupId: string) => {
     setSelectedMuscleGroupId(muscleGroupId || null);
     setShowAddExercise(true);
@@ -526,6 +578,46 @@ export function ActiveWorkout({
         </Collapsible>
       )}
 
+
+      {/* Remaining equipment for incomplete exercises */}
+      {isStarted && remainingEquipment.length > 0 && (
+        <Card className="border-border mx-4">
+          <CardHeader className="pt-4 pb-1.5">
+            <div className="flex items-center gap-2">
+              <Dumbbell className="h-4 w-4 text-primary" />
+              <CardTitle className="text-sm font-medium">
+                Equipment still needed
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0 pb-3">
+            <ul className="space-y-1 list-disc pl-5 ml-8">
+              {remainingEquipment.map((item) => (
+                <li key={item.key} className="text-sm">
+                  <span className="font-semibold">{item.label}</span>
+                  {item.detail && (
+                    <>
+                      {' · '}
+                      {item.hex && (
+                        <span
+                          className="inline-block h-3 w-3 rounded-full border border-border align-[-2px] mr-1"
+                          style={{ backgroundColor: item.hex }}
+                        />
+                      )}
+                      <span className="text-muted-foreground">{item.detail}</span>
+                    </>
+                  )}
+                  {item.count > 1 && (
+                    <span className="text-muted-foreground">
+                      {' '}({item.count} exercises)
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       {/* View toggle: grouped by muscle group vs. custom exercise order */}
       {exercises.length > 0 && (
